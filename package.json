@@ -1,6 +1,6 @@
 {
   "name": "clipcc-vm",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.1",
   "description": "Virtual Machine for Clip CC",
   "author": "Clip Team",
   "license": "BSD-3-Clause",
@@ -69,7 +69,7 @@
     "lodash.defaultsdeep": "4.6.1",
     "pngjs": "^3.3.2",
     "scratch-audio": "latest",
-    "scratch-blocks": "latest",
+    "clipcc-block": "latest",
     "scratch-l10n": "^3.1.20181129221712",
     "scratch-render": "latest",
     "scratch-storage": "^1.1.0",

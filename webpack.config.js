@@ -109,7 +109,7 @@ module.exports = [
                     loader: 'script-loader'
                 },
                 {
-                    test: require.resolve('scratch-blocks/dist/vertical.js'),
+                    test: require.resolve('clipcc-block/dist/vertical.js'),
                     loader: 'expose-loader?Blockly'
                 },
                 {
@@ -131,7 +131,7 @@ module.exports = [
         },
         plugins: base.plugins.concat([
             new CopyWebpackPlugin([{
-                from: 'node_modules/scratch-blocks/media',
+                from: 'node_modules/clipcc-block/media',
                 to: 'media'
             }, {
                 from: 'node_modules/scratch-storage/dist/web'

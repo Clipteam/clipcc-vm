@@ -20,7 +20,6 @@ class Scratch3OperatorsBlocks {
             operator_subtract: this.subtract,
             operator_multiply: this.multiply,
             operator_divide: this.divide,
-            operator_power: this.power,
             operator_lt: this.lt,
             operator_equals: this.equals,
             operator_gt: this.gt,
@@ -34,7 +33,16 @@ class Scratch3OperatorsBlocks {
             operator_contains: this.contains,
             operator_mod: this.mod,
             operator_round: this.round,
-            operator_mathop: this.mathop
+            operator_mathop: this.mathop,
+
+            operator_power: this.power,
+            operator_bitand: this.bitand,
+            operator_bitor: this.bitor,
+            operator_bitxor: this.bitxor,
+            operator_bitnot: this.bitnot,
+            operator_le: this.le,
+            operator_ge: this.ge,
+            operator_nequals: this.nequals
         };
     }
 
@@ -149,6 +157,46 @@ class Scratch3OperatorsBlocks {
         case '10 ^': return Math.pow(10, n);
         }
         return 0;
+    }
+
+    power (args) {
+        return Math.pow(Cast.toNumber(args.NUM1), Cast.toNumber(args.NUM2));
+    }
+
+    bitand (args) {
+        return Cast.toNumber(args.NUM1) & Cast.toNumber(args.NUM2);
+    }
+
+    bitor (args) {
+        return Cast.toNumber(args.NUM1) | Cast.toNumber(args.NUM2);
+    }
+
+    bitxor (args) {
+        return Cast.toNumber(args.NUM1) ^ Cast.toNumber(args.NUM2);
+    }
+
+    bitnot (args) {
+        return ~Cast.toNumber(args.NUM1);
+    }
+
+    ge (args) {
+        return Cast.compare(args.OPERAND1, args.OPERAND2) >= 0;
+    }
+
+    le (args) {
+        return Cast.compare(args.OPERAND1, args.OPERAND2) <= 0;
+    }
+
+    nequals (args) {
+        return Cast.compare(args.OPERAND1, args.OPERAND2) !== 0;
+    }
+
+    gcd (args) {
+        return MathUtil.gcd(Cast.toNumber(args.NUM1), Cast.toNumber(args.NUM2));
+    }
+
+    lcm (args) {
+        return MathUtil.lcm(Cast.toNumber(args.NUM1), Cast.toNumber(args.NUM2));
     }
 }
 

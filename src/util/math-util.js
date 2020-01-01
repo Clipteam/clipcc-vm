@@ -91,6 +91,24 @@ class MathUtil {
         const p = (i - iMin) / (iMax - iMin);
         return (p * (oMax - oMin)) + oMin;
     }
+
+    /**
+     * Get the gcd of x and y.
+     * @param {number} x the first number
+     * @param {number} y the second number
+     */
+    static gcd (x, y) {
+        return y == 0 ? x : gcd(y, x % y);
+    }
+
+    /**
+     * Get the lcm of x and y.
+     * @param {number} x the first number
+     * @param {number} y the second number
+     */
+    static lcm (x, y) {
+        return x * y / gcd(x, y);
+    }
 }
 
 module.exports = MathUtil;

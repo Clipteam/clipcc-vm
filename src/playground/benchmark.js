@@ -667,6 +667,7 @@ const runBenchmark = function () {
     canvas.addEventListener('mousedown', e => {
         const rect = canvas.getBoundingClientRect();
         const data = {
+            button: e.button,
             isDown: true,
             x: e.clientX - rect.left,
             y: e.clientY - rect.top,
@@ -679,6 +680,7 @@ const runBenchmark = function () {
     canvas.addEventListener('mouseup', e => {
         const rect = canvas.getBoundingClientRect();
         const data = {
+            button: e.button,
             isDown: false,
             x: e.clientX - rect.left,
             y: e.clientY - rect.top,

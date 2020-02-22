@@ -4,7 +4,11 @@ class Mouse {
     constructor (runtime) {
         this._x = 0;
         this._y = 0;
-        this._isDown = false;
+        //this._isDown = false;
+        /**
+         * Press state for [left, midlle, right]
+         */
+        this._isDown = [false, false, false];
         /**
          * Reference to the owning Runtime.
          * Can be used, for example, to activate hats.
@@ -74,11 +78,11 @@ class Mouse {
             ));
         }
         if (typeof data.isDown !== 'undefined') {
-            const previousDownState = this._isDown;
-            this._isDown = data.isDown;
+            const previousDownState = this._isDown[data.button];
+            this._isDown[data.button] = data.isDown;
 
             // Do not trigger if down state has not changed
-            if (previousDownState === this._isDown) return;
+            if (previousDownState === this._isDown[data.button]) return;
 
             // Never trigger click hats at the end of a drag
             if (data.wasDragged) return;
@@ -88,8 +92,8 @@ class Mouse {
                 data.y > 0 && data.y < data.canvasHeight)) return;
 
             const target = this._pickTarget(data.x, data.y);
-            const isNewMouseDown = !previousDownState && this._isDown;
-            const isNewMouseUp = previousDownState && !this._isDown;
+            const isNewMouseDown = !previousDownState && data.isDown;
+            const isNewMouseUp = previousDownState && !data.isDown;
 
             // Draggable targets start click hats on mouse up.
             // Non-draggable targets start click hats on mouse down.
@@ -138,7 +142,16 @@ class Mouse {
      * @return {boolean} Is the mouse down?
      */
     getIsDown () {
-        return this._isDown;
+        return this._isDown[0];
+    }
+
+    /**
+     * Get the down state of the mouse.
+     * @param {number} button Button number.
+     * @return {boolean} Is the mouse down?
+     */
+    getMousePressed(button) {
+        return this._isDown[button];
     }
 }
 

@@ -692,6 +692,7 @@ class Runtime extends EventEmitter {
      */
     static get THREAD_STEP_INTERVAL () {
         return 1000 / 120;
+        //return 0;
     }
 
     /**
@@ -699,6 +700,7 @@ class Runtime extends EventEmitter {
      */
     static get THREAD_STEP_INTERVAL_COMPATIBILITY () {
         return 1000 / 60;
+        //return 0;
     }
 
     /**

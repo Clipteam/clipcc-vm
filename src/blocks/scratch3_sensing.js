@@ -1,4 +1,6 @@
 const Cast = require('../util/cast');
+const MathUtil = require('../util/math-util.js');
+const Runtime = require('../engine/runtime');
 const Timer = require('../util/timer');
 const getMonitorIdForBlockWithArgs = require('../util/get-monitor-id');
 
@@ -72,7 +74,12 @@ class Scratch3SensingBlocks {
             sensing_askandwait: this.askAndWait,
             sensing_answer: this.getAnswer,
             sensing_username: this.getUsername,
-            sensing_userid: () => {} // legacy no-op block
+            sensing_userid: () => {}, // legacy no-op block
+            sensing_turnonturbomode: (args, util) => { this.setTurboMode(true); },
+            sensing_turnoffturbomode: (args, util) => { this.setTurboMode(false); },
+            sensing_isturbomode: (args, util) => { return this.runtime.turboMode; },
+            sensing_distancebetweenposition: this.distanceBetweenPosition,
+            sensing_directionbetweenposition: this.directionBetweenPosition
         };
     }
 
@@ -204,6 +211,32 @@ class Scratch3SensingBlocks {
         const dx = util.target.x - targetX;
         const dy = util.target.y - targetY;
         return Math.sqrt((dx * dx) + (dy * dy));
+    }
+
+    distanceBetweenPosition (args, util) {
+        const dx = args.X1 - args.X2;
+        const dy = args.Y1 - args.Y2;
+        return Math.sqrt((dx * dx) + (dy * dy));
+    }
+
+    directionBetweenPosition (args, util) {
+        const dx = args.X2 - args.X1;
+        const dy = args.Y2 - args.Y1;
+        const d = MathUtil.radToDeg(Math.atan(dx / dy));
+        if (dy < 0) {
+            if (d > 0) d = d - 180;
+            else d = d + 180;
+        }
+        return d;
+    }
+
+    setTurboMode (turboModeOn) {
+        this.runtime.turboMode = !!turboModeOn;
+        if (this.runtime.turboMode) {
+            this.runtime.emit(Runtime.TURBO_MODE_ON);
+        } else {
+            this.runtime.emit(Runtime.TURBO_MODE_OFF);
+        }
     }
 
     setDragMode (args, util) {

@@ -8,12 +8,12 @@ const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyBpZD0i5Zu+5bGCXzEiIGRhdGEt
 
 const menuIconURI = blockIconURI
 
-class SCPRedlist {
+class Libra {
     constructor(runtime) {
         this.runtime = runtime;
     }
     static get STATE_KEY() {
-        return 'Libra.Libra';
+        return 'Libra.libra';
     }
     getInfo() {
         return {
@@ -21,7 +21,7 @@ class SCPRedlist {
             name: formatMessage({
                 id: "libra",
                 default: "Libra",
-                description: "Labra Redlist Plugin"
+                description: "Libra Redlist Plugin"
             }),
             menuIconURI: menuIconURI,
             blockIconURI: blockIconURI,
@@ -80,4 +80,4 @@ class SCPRedlist {
         });
     }
 }
-module.exports = SCPRedlist;
+module.exports = Libra;

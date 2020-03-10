@@ -95,7 +95,7 @@ class json {
         var val = args.VALUE;
         var _json=JSON.parse(json);
         _json[name]=val;
-        return JSON.stringify(_json)
+        return JSON.stringify(_json);
     }
     toStr(args) {
         var json = args.JSON;

@@ -63,7 +63,7 @@ class Libra {
 	data.append('method', 'isInList');
         data.append('value', args.NAME);
         data.append('format', 'username');
-        data.append('platform', 'acamp');
+        data.append('platform', 'aerfaying');
         return new Promise(function (resolve, reject) {
             axios.post(apiURL, data).then(function (res) {
                 resolve(res['data']['status'] == "yes" ?  true : false);
@@ -74,7 +74,7 @@ class Libra {
         let data = new FormData();
         data.append('username', args.NAME);
         data.append('format', 'username');
-        data.append('platform', 'acamp');
+        data.append('platform', 'aerfaying');
         return new Promise(function (resolve, reject) {
             axios.post(apiURL, data).then(function (res) {
                 resolve(res['data']['status'] == "yes" ?  res['data']['reason'] : "The user isn't in the redlist");

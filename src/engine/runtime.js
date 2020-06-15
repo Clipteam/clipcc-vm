@@ -691,7 +691,7 @@ class Runtime extends EventEmitter {
      * How rapidly we try to step threads by default, in ms.
      */
     static get THREAD_STEP_INTERVAL () {
-        return 1000 / 60;
+        return 1000 / 120;
         //return 0;
     }
 
@@ -699,7 +699,7 @@ class Runtime extends EventEmitter {
      * In compatibility mode, how rapidly we try to step threads, in ms.
      */
     static get THREAD_STEP_INTERVAL_COMPATIBILITY () {
-        return 1000 / 30;
+        return 1000 / 60;
         //return 0;
     }
 

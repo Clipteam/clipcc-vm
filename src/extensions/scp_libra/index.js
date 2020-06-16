@@ -8,7 +8,8 @@ const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyBpZD0i5Zu+5bGCXzEiIGRhdGEt
 
 const menuIconURI = 'data:image/svg+xml;base64,PHN2ZyBpZD0i5Zu+5bGCXzEiIGRhdGEtbmFtZT0i5Zu+5bGCIDEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQwIDQwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6bm9uZTt9LmNscy0ye2ZpbGw6IzBmYmQ4Yzt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPlJlZGxpc3QgTE9HT2luU2NyaXB0PC90aXRsZT48cmVjdCBjbGFzcz0iY2xzLTEiIHg9IjcuMDkiIHk9IjE0LjcyIiB3aWR0aD0iMTEuOTUiIGhlaWdodD0iMi4xNyIgcng9IjAuNjkiLz48cmVjdCBjbGFzcz0iY2xzLTEiIHg9IjcuMDkiIHk9IjguMiIgd2lkdGg9IjE3LjM4IiBoZWlnaHQ9IjIuMTciIHJ4PSIwLjY5Ii8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTkuMDUsMTkuMThhLjU1LjU1LDAsMCwwLS4xNi4zOHYyLjc2QTEuMDksMS4wOSwwLDAsMCwyMCwyMy40MWgyLjc2YS41Ny41NywwLDAsMCwuMzktLjE2bDcuNzEtNy43MlY3LjM5WiIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMiIgcG9pbnRzPSIzMC44NCA3LjM4IDMwLjg0IDE1LjUzIDM0Ljk4IDExLjM5IDMwLjkxIDcuMzIgMzAuODQgNy4zOCIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTM3LjM2LDUuOTRsLTEtMWEyLjE3LDIuMTcsMCwwLDAtMy4wNywwTDMyLjA3LDYuMTZsNC4wOCw0LjA3TDM3LjM2LDlBMi4xNywyLjE3LDAsMCwwLDM3LjM2LDUuOTRaIi8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMjIuNzQsMjMuNDFIMjBhMS4wOSwxLjA5LDAsMCwxLTEuMDktMS4wOVYxOS41NmEuNTUuNTUsMCwwLDEsLjE2LS4zOEwzMC44NCw3LjM5VjYuODJhMywzLDAsMCwwLTMtM0g1LjU2YTMsMywwLDAsMC0zLDNWMzNhMywzLDAsMCwwLDMsM0gyNy44OGEzLDMsMCwwLDAsMy0zVjE1LjUzbC03LjcxLDcuNzJBLjU3LjU3LDAsMCwxLDIyLjc0LDIzLjQxWk03LjA5LDguOWEuNjkuNjksMCwwLDEsLjY5LS43aDE2YS42OS42OSwwLDAsMSwuNjkuN3YuNzhhLjY5LjY5LDAsMCwxLS42OS42OWgtMTZhLjY5LjY5LDAsMCwxLS42OS0uNjlaTTE3LjgxLDMyLjNINlYzMUgxNy44MVptMC0yLjYySDEyLjU3VjI4LjNhMy4xNiwzLjE2LDAsMCwwLDEuMDYtLjQxLDMuNTQsMy41NCwwLDAsMCwuODItLjcyLDMuNDksMy40OSwwLDAsMCwuNTQtMSwzLjE3LDMuMTcsMCwwLDAsLjItMS4xMSwzLjIxLDMuMjEsMCwwLDAtLjI2LTEuMjcsMy4yNywzLjI3LDAsMCwwLTEuNzQtMS43NCwzLjM1LDMuMzUsMCwwLDAtMi41NCwwLDMuMjcsMy4yNywwLDAsMC0xLjc0LDEuNzQsMy4yMSwzLjIxLDAsMCwwLS4yNiwxLjI3LDMuMTcsMy4xNywwLDAsMCwuMiwxLjExLDMuNDksMy40OSwwLDAsMCwuNTQsMSwzLjU0LDMuNTQsMCwwLDAsLjgyLjcyLDMuMTksMy4xOSwwLDAsMCwxLC40MXYxLjM4SDZ2LTEuM0g4LjcyYTQuNzUsNC43NSwwLDAsMS0xLTEuNSw0LjU4LDQuNTgsMCwwLDEsMC0zLjU2LDQuNzQsNC43NCwwLDAsMSwyLjQ0LTIuNDQsNC43LDQuNywwLDAsMSwzLjU2LDAsNC43NCw0Ljc0LDAsMCwxLDIuNDQsMi40NCw0LjU4LDQuNTgsMCwwLDEsMCwzLjU2LDQuNzUsNC43NSwwLDAsMS0xLDEuNWgyLjY5Wm0uNTQtMTIuNzlINy43OGEuNjkuNjksMCwwLDEtLjY5LS42OXYtLjc5YS42OS42OSwwLDAsMSwuNjktLjY5SDE4LjM1YS42OS42OSwwLDAsMSwuNjkuNjl2Ljc5QS42OS42OSwwLDAsMSwxOC4zNSwxNi44OVoiLz48L3N2Zz4=';
 
-const apiURL = 'https://redlist.zerlight.top:1100/v2'
+const apiURL = 'https://www.scpo.top:1120/v2';
+
 class Libra {
     constructor(runtime) {
         this.runtime = runtime;
@@ -70,39 +71,43 @@ class Libra {
     }
     
     isRedlistAvailable() {
-        let data = new FormData();
-	data.append('method', 'isInList');
-        data.append('value', 'Zerdot');
-        data.append('format', 'username');
-        data.append('platform', 'aerfaying');
+		const data = {
+			method: 'isInList',
+			value: 'Zerdot',
+			format: 'username',
+			platform: 'aerfaying'
+		};
         return new Promise(function (resolve, reject) {
             axios.post(apiURL, data).then(function (res) {
-                resolve(res['data']['status'] == "yes" ?  true : false);
+                resolve(res.data.status);
             });
         });
     }
     
     isInList(args) {
-        let data = new FormData();
-	data.append('method', 'isInList');
-        data.append('value', args.NAME);
-        data.append('format', 'username');
-        data.append('platform', 'aerfaying');
+		const data = {
+			method: 'isInList',
+			value: args.NAME,
+			format: 'username',
+			platform: 'aerfaying'
+		};
         return new Promise(function (resolve, reject) {
             axios.post(apiURL, data).then(function (res) {
-                resolve(res['data']['status'] == "yes" ?  true : false);
+                resolve(res.data.status);
             });
         });
     }
     
     reason(args){
-        let data = new FormData();
-        data.append('username', args.NAME);
-        data.append('format', 'username');
-        data.append('platform', 'aerfaying');
+		const data = {
+			method: 'isInList',
+			value: args.NAME,
+			format: 'username',
+			platform: 'aerfaying'
+		};
         return new Promise(function (resolve, reject) {
             axios.post(apiURL, data).then(function (res) {
-                resolve(res['data']['status'] == "yes" ?  res['data']['reason'] : "The user isn't in the redlist");
+                resolve(res.data.status ? res.data.reason : 'The user isn\'t in the redlist');
             });
         });
     }

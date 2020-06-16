@@ -26,7 +26,17 @@ class Libra {
             }),
             menuIconURI: menuIconURI,
             blockIconURI: blockIconURI,
-            blocks: [{
+            blocks: [
+            {
+                opcode: 'isRedlistAvailable',
+                blockType: BlockType.BOOLEAN,
+                text: formatMessage({
+                    id: 'isRedlistAvailable',
+                    default: 'is redlist available?',
+                    description: 'redlist status'
+                })
+            },
+            {
                 opcode: 'isInList',
                 text: formatMessage({
                     id: 'isInList',
@@ -58,6 +68,20 @@ class Libra {
             }]
         }
     }
+    
+    isRedlistAvailable() {
+        let data = new FormData();
+	data.append('method', 'isInList');
+        data.append('value', 'Zerdot');
+        data.append('format', 'username');
+        data.append('platform', 'aerfaying');
+        return new Promise(function (resolve, reject) {
+            axios.post(apiURL, data).then(function (res) {
+                resolve(res['data']['status'] == "yes" ?  true : false);
+            });
+        });
+    }
+    
     isInList(args) {
         let data = new FormData();
 	data.append('method', 'isInList');
@@ -70,6 +94,7 @@ class Libra {
             });
         });
     }
+    
     reason(args){
         let data = new FormData();
         data.append('username', args.NAME);

@@ -8,5 +8,7 @@ To set up a development environment to edit scratch-vm yourself:
 ```bash
 git clone https://github.com/Clipteam/clipcc-vm.git
 cd clipcc-vm
-npm install
+yarn
 ```
+## Build
+Modifications to clipcc-vm require build to take effect. please enter ``yarn run build`` to build.

@@ -40,6 +40,9 @@ class Scratch3OperatorsBlocks {
             operator_bitor: this.bitor,
             operator_bitxor: this.bitxor,
             operator_bitnot: this.bitnot,
+            operator_bitlsh: this.bitlsh,
+            operator_bitrsh: this.bitrsh,
+            operator_bitursh: this.bitursh,
             operator_le: this.le,
             operator_ge: this.ge,
             operator_nequals: this.nequals
@@ -173,6 +176,18 @@ class Scratch3OperatorsBlocks {
 
     bitxor (args) {
         return Cast.toNumber(args.NUM1) ^ Cast.toNumber(args.NUM2);
+    }
+
+    bitlsh (args) {
+        return Cast.toNumber(args.NUM1) << Cast.toNumber(args.NUM2);
+    }
+
+    bitrsh (args) {
+        return Cast.toNumber(args.NUM1) >> Cast.toNumber(args.NUM2);
+    }
+
+    bitursh (args) {
+        return Cast.toNumber(args.NUM1) >>> Cast.toNumber(args.NUM2);
     }
 
     bitnot (args) {

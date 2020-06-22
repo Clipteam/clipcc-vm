@@ -58,7 +58,7 @@ class HTTPIO {
                 opcode: 'httpPost',
                 text: formatMessage({
                     id: 'httpPost',
-                    default: 'post [URL] with prefix variable [VAR]',
+                    default: 'post [URL] with prefix variable [PREFIX]',
                     description: 'http post'
                 }),
                 blockType: BlockType.REPORTER,
@@ -66,8 +66,8 @@ class HTTPIO {
                     URL: {
                         type: ArgumentType.STRING,
                         defaultValue: "https://www.example.com"
-                    }
-                    VAR: {
+                    },
+                    PREFIX: {
                             type: ArgumentType.STRING,
                             defaultValue: "SuperCowPower."
                         }

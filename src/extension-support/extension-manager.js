@@ -9,7 +9,7 @@ const BlockType = require('./block-type');
 // TODO: change extension spec so that library info, including extension ID, can be collected through static methods
 
 const libra=require('../extensions/scp_libra');
-const HTTPIO=require('../extensions/clip_httpio');
+const httpio=require('../extensions/clip_httpio');
 
 const builtinExtensions = {
     // This is an example that isn't loaded with the other core blocks,
@@ -28,7 +28,7 @@ const builtinExtensions = {
     boost: () => require('../extensions/scratch3_boost'),
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
     libra: () => require('../extensions/scp_libra'),
-    HTTPIO: () => require('../extensions/clip_httpio'),
+    httpio: () => require('../extensions/clip_httpio'),
 };
 
 /**

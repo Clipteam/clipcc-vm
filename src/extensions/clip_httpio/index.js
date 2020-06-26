@@ -89,7 +89,7 @@ class HTTPIO {
         */
         return new Promise(function (resolve, reject) {
             axios.get(args.URL).then(function (res) {
-                resolve(res.data);
+                resolve(JSON.stringify(res.data));
             });
         });
     }

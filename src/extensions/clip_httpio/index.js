@@ -77,7 +77,13 @@ class HTTPIO {
         }
     }
     httpGet(args){
-        return "Work in progress";
+        let result='';
+        http.get(args.URL,function(req,res){
+	        req.on('data',function(data){
+		        result+=data;
+	        });
+        });
+        return result;
     }
     httpPost(args){
         return "Work in progress";

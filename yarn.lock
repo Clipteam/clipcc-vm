@@ -865,9 +865,9 @@
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
 
 "@types/node@*":
-  version "14.0.13"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.0.13.tgz#ee1128e881b874c371374c1f72201893616417c9"
-  integrity sha512-rouEWBImiRaSJsVA+ITTFM6ZxibuAlTuNOCyxVbwreu6k6+ujs7DfnU9o+PShFhET78pMBl3eH+AGSI5eOTkPA==
+  version "14.0.14"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.0.14.tgz#24a0b5959f16ac141aeb0c5b3cd7a15b7c64cbce"
+  integrity sha512-syUgf67ZQpaJj01/tRTknkMNoBBLWJOBODF0Zm4NrXmiSuxjymFrxnTu1QVYRubhVkRcZLYZG8STTwJRdVm/WQ==
 
 "@vernier/godirect@1.5.0":
   version "1.5.0"
@@ -1741,14 +1741,14 @@ browserify-zlib@^0.2.0:
     pako "~1.0.5"
 
 browserslist@^4.12.0, browserslist@^4.8.5:
-  version "4.12.0"
-  resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.12.0.tgz#06c6d5715a1ede6c51fc39ff67fd647f740b656d"
-  integrity sha512-UH2GkcEDSI0k/lRkuDSzFl9ZZ87skSy9w2XAn1MsZnL+4c4rqbBd3e82UWHbYDpztABrPBhZsTEeuxVfHppqDg==
+  version "4.12.1"
+  resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.12.1.tgz#6d08bef149b70d153930780ba762644e0f329122"
+  integrity sha512-WMjXwFtPskSW1pQUDJRxvRKRkeCr7usN0O/Za76N+F4oadaTdQHotSGcX9jT/Hs7mSKPkyMFNvqawB/1HzYDKQ==
   dependencies:
-    caniuse-lite "^1.0.30001043"
-    electron-to-chromium "^1.3.413"
-    node-releases "^1.1.53"
-    pkg-up "^2.0.0"
+    caniuse-lite "^1.0.30001088"
+    electron-to-chromium "^1.3.481"
+    escalade "^3.0.1"
+    node-releases "^1.1.58"
 
 btoa@1.2.1:
   version "1.2.1"
@@ -1891,10 +1891,10 @@ camelcase@^5.0.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-5.3.1.tgz#e3c9b31569e106811df242f715725a1f4c494320"
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
-caniuse-lite@^1.0.30001043:
-  version "1.0.30001087"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001087.tgz#4a0bdc5998a114fcf8b7954e7ba6c2c29831c54a"
-  integrity sha512-KAQRGtt+eGCQBSp2iZTQibdCf9oe6cNTi5lmpsW38NnxP4WMYzfU6HCRmh4kJyh6LrTM9/uyElK4xcO93kafpg==
+caniuse-lite@^1.0.30001088:
+  version "1.0.30001088"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001088.tgz#23a6b9e192106107458528858f2c0e0dba0d9073"
+  integrity sha512-6eYUrlShRYveyqKG58HcyOfPgh3zb2xqs7NvT2VVtP3hEUeeWvc3lqhpeMTxYWBBeeaT9A4bKsrtjATm66BTHg==
 
 canvas-toBlob@1.0.0:
   version "1.0.0"
@@ -2712,10 +2712,10 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
-electron-to-chromium@^1.3.413:
-  version "1.3.481"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.481.tgz#0d59e72a0aaeb876b43fb1d6e84bf0dfc99617e8"
-  integrity sha512-q2PeCP2PQXSYadDo9uNY+uHXjdB9PcsUpCVoGlY8TZOPHGlXdevlqW9PkKeqCxn2QBkGB8b6AcMO++gh8X82bA==
+electron-to-chromium@^1.3.481:
+  version "1.3.483"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.483.tgz#9269e7cfc1c8e72709824da171cbe47ca5e3ca9e"
+  integrity sha512-+05RF8S9rk8S0G8eBCqBRBaRq7+UN3lDs2DAvnG8SBSgQO3hjy0+qt4CmRk5eiuGbTcaicgXfPmBi31a+BD3lg==
 
 elliptic@^6.0.0, elliptic@^6.5.2:
   version "6.5.3"
@@ -2920,6 +2920,11 @@ es6-weak-map@^2.0.1:
     es5-ext "^0.10.46"
     es6-iterator "^2.0.3"
     es6-symbol "^3.1.1"
+
+escalade@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/escalade/-/escalade-3.0.1.tgz#52568a77443f6927cd0ab9c73129137533c965ed"
+  integrity sha512-DR6NO3h9niOT+MZs7bjxlj2a1k+POu5RN8CLTPX2+i78bRi9eLe7+0zXgUHMnGXWybYcL61E9hGhPKqedy8tQA==
 
 escape-html@~1.0.3:
   version "1.0.3"
@@ -5787,7 +5792,7 @@ node-libs-browser@^2.2.1:
     util "^0.11.0"
     vm-browserify "^1.0.1"
 
-node-releases@^1.1.53:
+node-releases@^1.1.58:
   version "1.1.58"
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-1.1.58.tgz#8ee20eef30fa60e52755fcc0942def5a734fe935"
   integrity sha512-NxBudgVKiRh/2aPWMgPR7bPTX0VPmGx5QBwCtdHitnqFE5/O8DeBXuIMH1nwNnw/aMo6AjOrpsHzfY3UbUJ7yg==
@@ -6334,13 +6339,6 @@ pkg-dir@^3.0.0:
   integrity sha512-/E57AYkoeQ25qkxMj5PBOVgF8Kiu/h7cYS30Z5+R7WaiCCBfLq58ZI/dSeaEKb9WVJV5n/03QwrN3IeWIFllvw==
   dependencies:
     find-up "^3.0.0"
-
-pkg-up@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/pkg-up/-/pkg-up-2.0.0.tgz#c819ac728059a461cab1c3889a2be3c49a004d7f"
-  integrity sha1-yBmscoBZpGHKscOImivjxJoATX8=
-  dependencies:
-    find-up "^2.1.0"
 
 pluralize@^1.2.1:
   version "1.2.1"
@@ -7004,9 +7002,9 @@ scratch-audio@latest:
     startaudiocontext "1.2.1"
 
 scratch-l10n@^3.1.20181129221712:
-  version "3.10.20200622132359"
-  resolved "https://registry.yarnpkg.com/scratch-l10n/-/scratch-l10n-3.10.20200622132359.tgz#f38756c468b2db4815bd882577d3bfdda4057366"
-  integrity sha512-HNP24ApW6y8lv73nveyRMk1phRq38/Gy4qfZ/Db/AbHB/SQriwmjV2SlKA4LyqdkNqvzx38Mh0u2O45tjIio/w==
+  version "3.10.20200624030914"
+  resolved "https://registry.yarnpkg.com/scratch-l10n/-/scratch-l10n-3.10.20200624030914.tgz#159d73ef57b12713e6215e32bef11651907c3cf7"
+  integrity sha512-t4cMsRLTNvSqJ9zv6JSBugy1FKXQcmkL52k27e1uaH9biadXWtWdEXujIOd200fpS9nZ911MpqT7OY+pG3tkdw==
   dependencies:
     "@babel/cli" "^7.1.2"
     "@babel/core" "^7.1.2"

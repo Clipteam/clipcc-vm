@@ -2036,10 +2036,10 @@ cli-width@^2.0.0:
   resolved "https://registry.yarnpkg.com/cli-width/-/cli-width-2.2.1.tgz#b0433d0b4e9c847ef18868a4ef16fd5fc8271c48"
   integrity sha512-GRMWDxpOB6Dgk2E5Uo+3eEBvtOOlimMmpbFiKuLFnQzYDavtLFY3K5ona41jgN/WdRZtG7utuVSVTL4HbZHGkw==
 
-clipcc-block@latest:
+clipcc-block@3.0.0-7:
   version "3.0.0-7"
-  resolved "https://registry.yarnpkg.com/clipcc-block/-/clipcc-block-3.0.0-7.tgz#49686172472800e6055b96d0d8deaf19fcb9ded0"
-  integrity sha512-vvp6AKAxyKGI8ktu2FsGvbBxdf8khKJYNxEu0W+6E50HAUEXk8M+57Dt89CsfKu5T+GlFmQZhgL3FI3/rMeNoQ==
+  resolved "https://registry.npm.taobao.org/clipcc-block/download/clipcc-block-3.0.0-7.tgz#49686172472800e6055b96d0d8deaf19fcb9ded0"
+  integrity sha1-SWhhckcoAOYFW5bQ2N6vGfy53tA=
   dependencies:
     exports-loader "0.6.3"
     imports-loader "0.6.5"

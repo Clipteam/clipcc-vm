@@ -1,6 +1,6 @@
 {
   "name": "clipcc-vm",
-  "version": "3.0.0-5",
+  "version": "3.0.0-6",
   "description": "Virtual Machine for Clip CC",
   "author": "Clip Team",
   "license": "BSD-3-Clause",
@@ -8,9 +8,9 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/clipteam/clipcc-vm.git",
-    "sha": "618d29cadf5a94fe32d666b47ac71aed10574212"
+    "sha": "4f2e98b7f8698661d4f57ea97f0388f752ec0a4b"
   },
-  "main": "./dist/node/scratch-vm.js",
+  "main": "./dist/node/clipcc-vm.js",
   "browser": "./src/index.js",
   "scripts": {
     "build": "webpack --progress --colors --bail",

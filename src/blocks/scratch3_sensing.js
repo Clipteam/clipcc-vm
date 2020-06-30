@@ -1,6 +1,5 @@
 const Cast = require('../util/cast');
 const MathUtil = require('../util/math-util.js');
-const Runtime = require('../engine/runtime');
 const Timer = require('../util/timer');
 const getMonitorIdForBlockWithArgs = require('../util/get-monitor-id');
 
@@ -233,9 +232,9 @@ class Scratch3SensingBlocks {
     setTurboMode (turboModeOn) {
         this.runtime.turboMode = !!turboModeOn;
         if (this.runtime.turboMode) {
-            this.runtime.emit(Runtime.TURBO_MODE_ON);
+            this.runtime.emit('TURBO_MODE_ON');
         } else {
-            this.runtime.emit(Runtime.TURBO_MODE_OFF);
+            this.runtime.emit('TURBO_MODE_OFF');
         }
     }
 

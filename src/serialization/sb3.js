@@ -1,7 +1,7 @@
 /**
  * @fileoverview
  * An SB3 serializer and deserializer. Parses provided
- * JSON and then generates all needed scratch-vm runtime structures.
+ * JSON and then generates all needed clipcc-vm runtime structures.
  */
 
 const vmPackage = require('../../package.json');
@@ -315,7 +315,7 @@ const serializeBlocks = function (blocks) {
         // second pass on connecting primitives to serialized inputs directly
     }
     // Do one last pass and remove any top level shadows (these are caused by
-    // a bug: LLK/scratch-vm#1011, and this pass should be removed once that is
+    // a bug: LLK/clipcc-vm#1011, and this pass should be removed once that is
     // completely fixed)
     for (const blockID in obj) {
         const serializedBlock = obj[blockID];

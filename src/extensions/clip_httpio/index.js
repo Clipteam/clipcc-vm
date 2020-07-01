@@ -47,6 +47,21 @@ class HTTPIO {
                 }
             },
             {
+                opcode: 'setHeader',
+                text: formatMessage({
+                    id: 'setHeader',
+                    default: 'set header to [HEADER]',
+                    description: 'http set header'
+                }),
+                blockType: BlockType.COMMAND,
+                arguments: {
+                    HEADER: {
+                        type: ArgumentType.STRING,
+                        defaultValue: "{'Content-Type': 'application/json;charset=utf-8', 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'}"
+                    }
+                }
+            },
+            {
                 opcode: 'httpGet',
                 text: formatMessage({
                     id: 'httpGet',
@@ -82,6 +97,14 @@ class HTTPIO {
             }]
         }
     }
+    setUA(args){
+        console.log(config.headers);//debug
+        config.headers['User-Agent'] = args.UA;
+    }
+    setHeader(args){
+        console.log(config.headers);//debug
+        config.headers= JSON.parse(args.HEADER);
+    }
     httpGet(args){
         return new Promise(function (resolve, reject) {
             axios.get(args.URL, config).then(function (res) {
@@ -90,7 +113,7 @@ class HTTPIO {
                 else resolve(res.data);
             }).catch(function (err){
                 console.log(err);//debug
-                reject("Something went wrong");
+                resolve("Error:" + err);
             });
         });
     }
@@ -106,17 +129,14 @@ class HTTPIO {
         }
         return new Promise(function (resolve, reject) {
             axios.post(args.URL, postData, config).then(function (res) {
+                console.log(res.data);//debug
                 if (typeof(res.data) == "object") resolve(JSON.stringify(res.data));
                 else resolve(res.data);
             }).catch(function (err){
                 console.log(err);//debug
-                reject("Something went wrong");
+                resolve("Error:" + err);
             });
         });
-    }
-    setUA(args){
-        console.log(config.headers);//debug
-        config.headers['User-Agent'] = args.UA;
     }
 }
 module.exports = HTTPIO;

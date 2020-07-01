@@ -1,6 +1,6 @@
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
-const ObjectToArrayUtil = require('./ObjectToArrayUtil');
+const util = require('./util');
 const formatMessage = require('format-message');
 
 const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyBpZD0i5Zu+5bGCXzEiIGRhdGEtbmFtZT0i5Zu+5bGCIDEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDE4MC4zMyAxOTkuMTMiPjxkZWZzPjxzdHlsZT4uY2xzLTF7ZmlsbDojZmZmO308L3N0eWxlPjwvZGVmcz48dGl0bGU+Q2xpcExPR08tQ2xhc3NpY19XaGl0ZTwvdGl0bGU+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTMxLjU5LDEuM2M5LjE2LS44NCwxOC45LS44NSwyNy4yLDMuNjcsMTQuMzksNi4yNiwyNC43NywyMC40OCwyNi43OSwzNiwuMjMsNi40MS43LDEzLjA3LTEuNDcsMTkuMjRhNTUuMTQsNTUuMTQsMCwwLDEtNS44NiwxMi42OWMtMy4wNyw0LjkyLTcuNjUsOC41OC0xMS41OSwxMi43NHEtMzYuODEsMzYuNzYtNzMuNTUsNzMuNjFjLTQuNjcsNC42NS05LjI5LDkuNzEtMTUuNjMsMTIuMDUtNSwyLjM1LTEwLjYyLDIuNDgtMTYuMDcsMi4yMUM0OCwxNzIuNCwzNi4yNSwxNjIsMzIuOSwxNDkuMTJjLTMuMTQtMTAuOTEuMjUtMjMuMDYsNy43Ny0zMS4zOVE1OS40LDk5LDc4LjA3LDgwLjI5YzIuMTktMi4zNyw2LTMuNDksOC45LTEuODMsMy44NywxLjksNSw3LjkyLDEuODIsMTAuOTFDNzYuMTYsMTAyLjI1LDYzLDExNC42Myw1MC42OCwxMjcuNzhjLTQuNjMsNC43MS01LjkxLDExLjk0LTQuMzUsMTguMiwyLjI4LDYuNTQsOCwxMi4yNCwxNS4wNiwxMy4xMiwzLjc1LjM1LDcuNjguMzEsMTEuMi0xLjIsMy45NC0xLjU5LDYuNjktNSw5LjYyLTcuODcsMjYuNTgtMjYuNDIsNTIuNzktNTMuMTgsNzkuMzgtNzkuNTdhMzIuNTIsMzIuNTIsMCwwLDAsMTAuMTctMjEuMUMxNzMsMzIuNjIsMTU5LjMsMTUuNjksMTQyLjE0LDE1LjE5YTMxLjgsMzEuOCwwLDAsMC0yNC44Myw4LjQ2Qzg4Ljc0LDUyLDYwLjYxLDgwLjc2LDMyLjA1LDEwOS4xMSwyNS4yOCwxMTUuNzksMjEuNDEsMTI1LDIwLDEzNC4yN2MtMi4yNSwxNS45LDQuNjcsMzIuODYsMTcuNzIsNDIuMzJhNDUuMSw0NS4xLDAsMCwwLDI5LjYyLDkuMzJjMTIuNjQtLjUxLDI0LjQ2LTcsMzIuOTMtMTYuMThDMTEwLjU1LDE1OS4zLDEyMSwxNDksMTMxLjI5LDEzOC41NWMxLjY1LTEuNjQsMy4xOC0zLjUxLDUuMzEtNC41NGExMC42MywxMC42MywwLDAsMSw2LjYyLjI1YzIuNjEsMS4wNywzLjUsNC4xNywzLjQxLDYuNzYtLjMxLDIuNi0yLjIxLDQuNTktNCw2LjMycS02LjQyLDYuMjEtMTIuNTUsMTIuNjhjLTguNTgsNy45NS0xNi42MSwxNi40Ny0yNSwyNC42M2E1OCw1OCwwLDAsMS0zMy44OSwxNC45M2MtOS40MiwxLjMtMTktLjU4LTI3Ljg4LTMuNjVBNDguNDgsNDguNDgsMCwwLDEsMzMsMTkwLjQ3QzI1LDE4NS43NSwxOC44NSwxNzguNTcsMTMuODEsMTcxYy01LjI2LTkuMzUtOC42NS0yMC04LjMzLTMwLjgtLjI1LTEwLjc3LDMuMjEtMjEuMzEsOC41My0zMC41Nyw0Ljg3LTguMDcsMTItMTQuMzgsMTguNTUtMjFDNTcsNjQsODEuODIsMzkuNzUsMTA2LjIxLDE1LjA5QTQ1LjI2LDQ1LjI2LDAsMCwxLDEzMS41OSwxLjNaIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtNS40NiAtMC44NykiLz48L3N2Zz4=';
@@ -16,9 +16,6 @@ let config = {
 class HTTPIO {
     constructor(runtime) {
         this.runtime = runtime;
-    }
-    static get STATE_KEY() {
-        return 'Clip.HTTPIO';
     }
     getInfo() {
         return {
@@ -97,14 +94,17 @@ class HTTPIO {
             }]
         }
     }
+    
     setUA(args){
         console.log(config.headers);//debug
         config.headers['User-Agent'] = args.UA;
     }
+    
     setHeader(args){
         console.log(config.headers);//debug
         config.headers= JSON.parse(args.HEADER);
     }
+    
     httpGet(args){
         return new Promise(function (resolve, reject) {
             axios.get(args.URL, config).then(function (res) {
@@ -117,11 +117,11 @@ class HTTPIO {
             });
         });
     }
+    
     httpPost(args){
         let postData = new Object();
-        const oc = new ObjectToArrayUtil();
         const editingTarget = this.runtime.getEditingTarget();
-        const varList = oc.objOfPropertyToArr(editingTarget.variables);
+        const varList = util.objOfPropertyToArr(editingTarget.variables);
         for(var i = 0; i<varList.length; i++) {
             if(editingTarget.variables[varList[i]].name.indexOf(args.PREFIX) == "1"){
                 postData[editingTarget.variables[varList[i]].name.substring(args.PREFIX.length)] = editingTarget.variables[varList[i]].value;
@@ -139,4 +139,5 @@ class HTTPIO {
         });
     }
 }
+
 module.exports = HTTPIO;

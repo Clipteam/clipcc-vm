@@ -1,7 +1,5 @@
-class ObjectToArrayUtil {
-    constructor () {   
-    }
-    objOfPropertyToArr(object) {
+class util {
+    static objOfPropertyToArr(object) {
         let array = [];
         let i = 0;
         for (var item in object) {
@@ -11,7 +9,7 @@ class ObjectToArrayUtil {
         return array;
         }
        
-        objOfValueToArr(object) {
+        static objOfValueToArr(object) {
             let array= [];
             let i = 0;
             for (var item in object) {
@@ -23,4 +21,4 @@ class ObjectToArrayUtil {
 
 }
 
-module.exports = ObjectToArrayUtil;
+module.exports = util;

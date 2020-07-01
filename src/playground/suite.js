@@ -498,7 +498,7 @@ window.download = function (_this) {
             .filter(view => view.status === BENCH_STATUS.COMPLETE)
     })], {type: 'application/json'});
 
-    _this.download = 'scratch-vm-benchmark.json';
+    _this.download = 'clipcc-vm-benchmark.json';
     _this.href = URL.createObjectURL(blob);
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "clipcc-vm",
-  "version": "3.0.0-4",
+  "version": "3.0.0-6",
   "description": "Virtual Machine for Clip CC",
   "author": "Clip Team",
   "license": "BSD-3-Clause",
@@ -8,9 +8,9 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/clipteam/clipcc-vm.git",
-    "sha": "b4fd8656ef54d38922ead02e9b5745b754235e40"
+    "sha": "4f2e98b7f8698661d4f57ea97f0388f752ec0a4b"
   },
-  "main": "./dist/node/scratch-vm.js",
+  "main": "./dist/node/clipcc-vm.js",
   "browser": "./src/index.js",
   "scripts": {
     "build": "webpack --progress --colors --bail",
@@ -20,12 +20,12 @@
     "i18n:src": "mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js",
     "i18n:push": "tx-push-src scratch-editor extensions translations/core/en.json",
     "lint": "eslint . && format-message lint src/**/*.js",
-    "prepublish": "in-publish && npm run build || not-in-publish",
+    "prepublish": "in-publish && yarn run build || not-in-publish",
     "start": "webpack-dev-server",
     "tap": "tap ./test/{unit,integration}/*.js",
     "tap:unit": "tap ./test/unit/*.js",
     "tap:integration": "tap ./test/integration/*.js",
-    "test": "npm run lint && npm run docs && npm run tap",
+    "test": "yarn run lint && yarn run docs && yarn run tap",
     "watch": "webpack --progress --colors --watch",
     "version": "json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\""
   },

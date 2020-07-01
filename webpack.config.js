@@ -44,8 +44,8 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'web',
         entry: {
-            'scratch-vm': './src/index.js',
-            'scratch-vm.min': './src/index.js'
+            'clipcc-vm': './src/index.js',
+            'clipcc-vm.min': './src/index.js'
         },
         output: {
             libraryTarget: 'umd',
@@ -64,7 +64,7 @@ module.exports = [
     defaultsDeep({}, base, {
         target: 'node',
         entry: {
-            'scratch-vm': './src/index.js'
+            'clipcc-vm': './src/index.js'
         },
         output: {
             libraryTarget: 'commonjs2',

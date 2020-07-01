@@ -99,15 +99,18 @@ class HTTPIO {
         const oc = new ObjectToArrayUtil();
         const editingTarget = this.runtime.getEditingTarget();
         const varList = oc.objOfPropertyToArr(editingTarget.variables);
-        for(var i = 0; i<varList.length(); i++) {
+        for(var i = 0; i<varList.length; i++) {
             if(editingTarget.variables[varList[i]].name.indexOf(args.PREFIX) == "1"){
-                postData[editingTarget.variables[varList[i]].name.substring(args.PREFIX.length())] = editingTarget.variables[varList[i]].value;
+                postData[editingTarget.variables[varList[i]].name.substring(args.PREFIX.length)] = editingTarget.variables[varList[i]].value;
             }
         }
         return new Promise(function (resolve, reject) {
             axios.post(args.URL, postData, config).then(function (res) {
                 if (typeof(res.data) == "object") resolve(JSON.stringify(res.data));
                 else resolve(res.data);
+            }).catch(function (err){
+                console.log(err);//debug
+                reject("Something went wrong");
             });
         });
     }

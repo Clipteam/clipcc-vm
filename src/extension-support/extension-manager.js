@@ -29,6 +29,7 @@ const builtinExtensions = {
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
     libra: () => require('../extensions/scp_libra'),
     httpio: () => require('../extensions/clip_httpio'),
+    clipcc_json: () => require('../extensions/clipcc_json')
 };
 
 /**
@@ -275,7 +276,8 @@ class ExtensionManager {
      */
     _prepareExtensionInfo (serviceName, extensionInfo) {
         extensionInfo = Object.assign({}, extensionInfo);
-        if (!/^[a-z0-9]+$/i.test(extensionInfo.id)) {
+        //if (!/^[a-z0-9]+(([a-z0-9]+)|(\.[a-z0-9]+))$/i.test(extensionInfo.id)) {
+        if (!/^[a-z0-9_]+$/i.test(extensionInfo.id)) {
             throw new Error('Invalid extension id');
         }
         extensionInfo.name = extensionInfo.name || extensionInfo.id;

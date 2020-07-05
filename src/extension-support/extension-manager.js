@@ -275,7 +275,9 @@ class ExtensionManager {
      */
     _prepareExtensionInfo (serviceName, extensionInfo) {
         extensionInfo = Object.assign({}, extensionInfo);
-        if (!/^[a-z0-9]+$/i.test(extensionInfo.id)) {
+        //if (!/^[a-z0-9]+$/i.test(extensionInfo.id)) {
+        //if (!/^[a-z0-9]+(([a-z0-9]+)|(\.[a-z0-9]+))$/i.test(extensionInfo.id)) {
+        if (!/^[a-z0-9_]+$/i.test(extensionInfo.id)) {
             throw new Error('Invalid extension id');
         }
         extensionInfo.name = extensionInfo.name || extensionInfo.id;

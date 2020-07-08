@@ -11,7 +11,7 @@ let config = {
     baseURL: 'https://data.codingclip.com/',
     timeout: 10000,
     withCredentials: true,
-    headers: {'Content-Type': 'application/json;charset=utf-8', 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'}
+    headers: {'Content-Type': 'application/json;charset=utf-8'}
 }
 class HTTPIO {
     constructor(runtime) {
@@ -107,7 +107,7 @@ class HTTPIO {
     
     httpGet(args){
         return new Promise(function (resolve, reject) {
-            axios.get(args.URL, config).then(function (res) {
+            axios.get(args.URL).then(function (res) {
                 console.log(res.data);//Debug
                 if (typeof(res.data) == "object") resolve(JSON.stringify(res.data));
                 else resolve(res.data);
@@ -128,7 +128,7 @@ class HTTPIO {
             }
         }
         return new Promise(function (resolve, reject) {
-            axios.post(args.URL, postData, config).then(function (res) {
+            axios.post(args.URL, postData).then(function (res) {
                 console.log(res.data);//debug
                 if (typeof(res.data) == "object") resolve(JSON.stringify(res.data));
                 else resolve(res.data);

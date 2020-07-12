@@ -137,6 +137,8 @@ class Thread {
          */
         this.stack = [];
 
+        this.targetChange = [];
+
         /**
          * Stack frames for the thread. Store metadata for the executing blocks.
          * @type {Array.<_StackFrame>}
@@ -160,6 +162,12 @@ class Thread {
          * @type {?Target}
          */
         this.target = null;
+
+        /**
+         * Target stack of this thread.
+         * @type {Array.<Target>}
+         */
+        this.targetStack = [];
 
         /**
          * The Blocks this thread will execute.
@@ -237,15 +245,28 @@ class Thread {
     /**
      * Push stack and update stack frames appropriately.
      * @param {string} blockId Block ID to push to stack.
+     * @param {?Target} target Current target.
      */
-    pushStack (blockId) {
+    pushStack (blockId, target) {
         this.stack.push(blockId);
+        if (target) {
+            this.pushTarget(target);
+            this.targetChange.push(true);
+        } else {
+            this.targetChange.push(false);
+        }
         // Push an empty stack frame, if we need one.
         // Might not, if we just popped the stack.
         if (this.stack.length > this.stackFrames.length) {
             const parent = this.stackFrames[this.stackFrames.length - 1];
             this.stackFrames.push(_StackFrame.create(typeof parent !== 'undefined' && parent.warpMode));
         }
+    }
+
+    pushTarget (target) {
+        this.targetStack.push(this.target);
+        this.target = target;
+        this.blockContainer = this.target.blocks;
     }
 
     /**
@@ -264,7 +285,16 @@ class Thread {
      */
     popStack () {
         _StackFrame.release(this.stackFrames.pop());
+        if (this.targetChange.pop()) {
+            this.popTarget();
+        }
         return this.stack.pop();
+    }
+
+    popTarget () {
+        this.target = this.targetStack.pop();
+        this.blockContainer = this.target.blocks;
+        return this.target;
     }
 
     /**

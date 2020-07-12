@@ -220,6 +220,28 @@ class Blocks {
     }
 
     /**
+     * Get all procedure definitions.
+     * @return {?Array.<String>} Mutations of procedures.
+     */
+    getProcedureList () {
+        const procedures = [];
+
+        for (const id in this._blocks) {
+            if (!this._blocks.hasOwnProperty(id)) continue;
+            const block = this._blocks[id];
+            if (block.opcode === 'procedures_definition') {
+                const internal = this._getCustomBlockInternal(block);
+                if (internal) {
+                    this._cache.procedureDefinitions[internal.mutation.proccode] = id; // The outer define block id
+                    procedures.push(this.mutationToXML(internal.mutation));
+                }
+            }
+        }
+
+        return procedures;
+    }
+
+    /**
      * Get the procedure definition for a given name.
      * @param {?string} name Name of procedure to query.
      * @return {?string} ID of procedure definition.

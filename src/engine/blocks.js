@@ -225,7 +225,6 @@ class Blocks {
      */
     getProcedureList () {
         const procedures = [];
-
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];

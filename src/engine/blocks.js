@@ -221,16 +221,18 @@ class Blocks {
 
     /**
      * Get all procedure definitions.
+     * @param {?boolean} all Get all definitions (including local and global), default for global only.
      * @return {?Array.<String>} Mutations of procedures.
      */
-    getProcedureList () {
+    getProcedureList (all) {
+        all = all || false;
         const procedures = [];
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
             if (block.opcode === 'procedures_definition') {
                 const internal = this._getCustomBlockInternal(block);
-                if (internal) {
+                if (internal && (all || internal.mutation.global === 'true')) {
                     this._cache.procedureDefinitions[internal.mutation.proccode] = id; // The outer define block id
                     procedures.push(this.mutationToXML(internal.mutation));
                 }
@@ -1131,10 +1133,18 @@ class Blocks {
     /**
      * Recursively encode a mutation object to XML.
      * @param {!object} mutation Object representing a mutation.
+     * @param {?object} option Options.
      * @return {string} XML string representing a mutation.
      */
-    mutationToXML (mutation) {
+    mutationToXML (mutation, option) {
         let mutationString = `<${mutation.tagName}`;
+        if (option) {
+            for (const prop in option) {
+                const mutationValue = (typeof option[prop] === 'string') ?
+                    xmlEscape(option[prop]) : option[prop];
+                mutationString += ` ${prop}="${mutationValue}"`;
+            }
+        }
         for (const prop in mutation) {
             if (prop === 'children' || prop === 'tagName') continue;
             let mutationValue = (typeof mutation[prop] === 'string') ?

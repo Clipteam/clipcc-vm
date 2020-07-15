@@ -1373,12 +1373,17 @@ class VirtualMachine extends EventEmitter {
             .filter(c => c.blockId === null);
 
         // Get all mutations of procedures
-        let procedures = [];
+        let globalProcedures = [];
+        const localProcedures = this.editingTarget.blocks.getProcedureList(true);
         for (let i = 0; i < this.runtime.targets.length; i++) {
             const currTarget = this.runtime.targets[i];
+            if (currTarget === this.editingTarget) {
+                continue;
+            }
             const currProcedures = currTarget.blocks.getProcedureList();
-            procedures = procedures.concat(currProcedures);
+            globalProcedures = globalProcedures.concat(currProcedures);
         }
+
 
         const xmlString = `<xml xmlns="http://www.w3.org/1999/xhtml">
                             <variables>
@@ -1386,7 +1391,8 @@ class VirtualMachine extends EventEmitter {
                                 ${localVariables.map(v => v.toXML(true)).join()}
                             </variables>
                             <procedures>
-                                ${procedures.join()}
+                                ${globalProcedures.join()}
+                                ${localProcedures.join()}
                             </procedures>
                             ${workspaceComments.map(c => c.toXML()).join()}
                             ${this.editingTarget.blocks.toXML(this.editingTarget.comments)}

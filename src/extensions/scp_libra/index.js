@@ -20,7 +20,7 @@ class Libra {
         return {
             id: "libra",
             name: formatMessage({
-                id: "libra",
+                id: "libra.categoryName",
                 default: "Libra",
                 description: "Libra Redlist Plugin"
             }),
@@ -31,7 +31,7 @@ class Libra {
                 opcode: 'isRedlistAvailable',
                 blockType: BlockType.BOOLEAN,
                 text: formatMessage({
-                    id: 'isRedlistAvailable',
+                    id: 'libra.isRedlistAvailable',
                     default: 'is redlist available?',
                     description: 'redlist status'
                 })
@@ -39,7 +39,7 @@ class Libra {
             {
                 opcode: 'isInList',
                 text: formatMessage({
-                    id: 'isInList',
+                    id: 'libra.isInList',
                     default: 'is [NAME] in the redlist?',
                     description: 'redlist check'
                 }),
@@ -54,7 +54,7 @@ class Libra {
             {
                 opcode: 'reason',
                 text: formatMessage({
-                    id: 'inListReason',
+                    id: 'libra.inListReason',
                     default: 'reason of [NAME] being in redlist',
                     description: 'redlist reason'
                 }),

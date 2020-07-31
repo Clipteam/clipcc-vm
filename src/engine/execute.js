@@ -4,6 +4,7 @@ const log = require('../util/log');
 const Thread = require('./thread');
 const {Map} = require('immutable');
 const cast = require('../util/cast');
+const compilerExecute = require('../compiler/execute');
 
 /**
  * Single BlockUtility instance reused by execute for every pritimive ran.
@@ -407,6 +408,11 @@ const _prepareBlockProfiling = function (profiler, blockCached) {
  * @param {!Thread} thread Thread which to read and execute.
  */
 const execute = function (sequencer, thread) {
+    if (thread.isCompiled) {
+        compilerExecute(thread);
+        return;
+    }
+
     const runtime = sequencer.runtime;
 
     // store sequencer and thread so block functions can access them through

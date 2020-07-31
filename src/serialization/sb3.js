@@ -273,13 +273,17 @@ const compressInputTree = function (block, blocks) {
 };
 
 /**
- * Get non-core extension ID for a given sb3 opcode.
+ * Get sanitized non-core extension ID for a given sb3 opcode.
+ * Note that this should never return a URL. If in the future the SB3 loader supports loading extensions by URL, this
+ * ID should be used to (for example) look up the extension's full URL from a table in the SB3's JSON.
  * @param {!string} opcode The opcode to examine for extension.
  * @return {?string} The extension ID, if it exists and is not a core extension.
  */
 const getExtensionIdForOpcode = function (opcode) {
+    // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
     const index = opcode.indexOf('_');
-    const prefix = opcode.substring(0, index);
+    const forbiddenSymbols = /[^\w-]/g;
+    const prefix = opcode.substring(0, index).replace(forbiddenSymbols, '-');
     if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
         if (prefix !== '') return prefix;
     }
@@ -1097,6 +1101,20 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
     // Get information about this monitor, if it exists, given the monitor's opcode.
     // This will be undefined for extension blocks
     const monitorBlockInfo = runtime.monitorBlockInfo[monitorData.opcode];
+
+    // Due to a bug (see https://github.com/LLK/scratch-vm/pull/2322), renamed list monitors may have been serialized
+    // with an outdated/incorrect LIST parameter. Fix it up to use the current name of the actual corresponding list.
+    if (monitorData.opcode === 'data_listcontents') {
+        const listTarget = monitorData.targetId ?
+            targets.find(t => t.id === monitorData.targetId) :
+            targets.find(t => t.isStage);
+        if (
+            listTarget &&
+            Object.prototype.hasOwnProperty.call(listTarget.variables, monitorData.id)
+        ) {
+            monitorData.params.LIST = listTarget.variables[monitorData.id].name;
+        }
+    }
 
     // Convert the serialized monitorData params into the block fields structure
     const fields = {};

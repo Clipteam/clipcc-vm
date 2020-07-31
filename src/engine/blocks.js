@@ -81,7 +81,19 @@ class Blocks {
              * A cache of hat opcodes to collection of theads to execute.
              * @type {object.<string, object>}
              */
-            scripts: {}
+            scripts: {},
+
+            /**
+             * A cache of top block (usually hat, but not always) opcodes to compiled scripts.
+             * @type {object.<string, object>}
+             */
+            compiledScripts: {},
+            
+            /**
+             * A cache of procedure code opcodes to compiled scripts.
+             * @type {object.<string, object>}
+             */
+            compiledProcedures: {},
         };
 
         /**
@@ -94,6 +106,27 @@ class Blocks {
          * @type {boolean}
          */
         this.forceNoGlow = optNoGlow || false;
+    }
+
+    /**
+     * Get the cached compiled script of a block.
+     * @param {string} blockId ID of the block
+     * @returns null if cannot be compiled, undefined if no entry, otherwise the result
+     */
+    getCompiledScript(blockId) {
+        if (this._cache.compiledScripts.hasOwnProperty(blockId)) {
+            return this._cache.compiledScripts[blockId];
+        }
+        return undefined;
+    }
+
+    /**
+     * Set the cached compiled script of a block.
+     * @param {string} blockId ID of the top block
+     * @param {*} value The value to store, null if error, otherwise the result
+     */
+    setCompiledScript(blockId, value) {
+        this._cache.compiledScripts[blockId] = value;
     }
 
     /**
@@ -368,6 +401,7 @@ class Blocks {
             this.deleteBlock(e.blockId);
             break;
         case 'var_create':
+            this.resetCache(); // tw: more aggressive cache resetting
             // Check if the variable being created is global or local
             // If local, create a local var on the current editing target, as long
             // as there are no conflicts, and the current target is actually a sprite
@@ -416,6 +450,7 @@ class Blocks {
             this.emitProjectChanged();
             break;
         case 'var_delete': {
+            this.resetCache(); // tw: more aggressive cache resetting
             const target = (editingTarget && editingTarget.variables.hasOwnProperty(e.varId)) ?
                 editingTarget : stage;
             target.deleteVariable(e.varId);
@@ -517,6 +552,8 @@ class Blocks {
         this._cache._executeCached = {};
         this._cache._monitored = null;
         this._cache.scripts = {};
+        this._cache.compiledScripts = {};
+        this._cache.compiledProcedures = {};
     }
 
     /**
@@ -944,6 +981,33 @@ class Blocks {
                 assetField.value = newName;
             }
         }
+    }
+
+    /**
+     * Update sensing_of blocks after a variable gets renamed.
+     * @param {string} oldName The old name of the variable that was renamed.
+     * @param {string} newName The new name of the variable that was renamed.
+     * @param {string} targetName The name of the target the variable belongs to.
+     * @return {boolean} Returns true if any of the blocks were updated.
+     */
+    updateSensingOfReference (oldName, newName, targetName) {
+        const blocks = this._blocks;
+        let blockUpdated = false;
+        for (const blockId in blocks) {
+            const block = blocks[blockId];
+            if (block.opcode === 'sensing_of' &&
+                block.fields.PROPERTY.value === oldName &&
+                // If block and shadow are different, it means a block is inserted to OBJECT, and should be ignored.
+                block.inputs.OBJECT.block === block.inputs.OBJECT.shadow) {
+                const inputBlock = this.getBlock(block.inputs.OBJECT.block);
+                if (inputBlock.fields.OBJECT.value === targetName) {
+                    block.fields.PROPERTY.value = newName;
+                    blockUpdated = true;
+                }
+            }
+        }
+        if (blockUpdated) this.resetCache();
+        return blockUpdated;
     }
 
     /**

@@ -36,6 +36,12 @@ const base = {
             })
         ]
     },
+            loader: 'file-loader',
+            options: {
+                outputPath: 'media/music/',
+            }
+        }]
+    },
     plugins: []
 };
 

@@ -45,6 +45,7 @@ class Scratch3SensingBlocks {
         this.runtime.on('PROJECT_START', this._resetAnswer.bind(this));
         this.runtime.on('PROJECT_STOP_ALL', this._clearAllQuestions.bind(this));
         this.runtime.on('STOP_FOR_TARGET', this._clearTargetQuestions.bind(this));
+        this.runtime.on('RUNTIME_DISPOSED', this._resetAnswer.bind(this));
     }
 
     /**
@@ -64,7 +65,6 @@ class Scratch3SensingBlocks {
             sensing_mousey: this.getMouseY,
             sensing_setdragmode: this.setDragMode,
             sensing_mousedown: this.getMouseDown,
-            sensing_mousepressed: this.getMousePressed,
             sensing_keypressed: this.getKeyPressed,
             sensing_current: this.current,
             sensing_dayssince2000: this.daysSince2000,
@@ -73,12 +73,7 @@ class Scratch3SensingBlocks {
             sensing_askandwait: this.askAndWait,
             sensing_answer: this.getAnswer,
             sensing_username: this.getUsername,
-            sensing_userid: () => {}, // legacy no-op block
-            sensing_turnonturbomode: (args, util) => { this.setTurboMode(true); },
-            sensing_turnoffturbomode: (args, util) => { this.setTurboMode(false); },
-            sensing_isturbomode: (args, util) => { return this.runtime.turboMode; },
-            sensing_distancebetweenposition: this.distanceBetweenPosition,
-            sensing_directionbetweenposition: this.directionBetweenPosition
+            sensing_userid: () => {} // legacy no-op block
         };
     }
 

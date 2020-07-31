@@ -1,3 +1,5 @@
+const log = require('../util/log');
+
 /**
  * Recycle bin for empty stackFrame objects
  * @type Array<_StackFrame>
@@ -187,6 +189,27 @@ class Thread {
         this.warpTimer = null;
 
         this.justReported = null;
+
+        this.triedToCompile = false;
+
+        this.isCompiled = false;
+
+        // compiler data
+        // these values only make sense if isCompiled == true
+        /**
+         * Warp level
+         * @type {number}
+         */
+        this.warp = 0;
+        /**
+         * The thread's generator.
+         * @type {Generator}
+         */
+        this.generator = null;
+        /**
+         * @type {Object.<string, import('../compiler/compiler').CompiledScript>}
+         */
+        this.procedures = {};
     }
 
     /**
@@ -196,7 +219,7 @@ class Thread {
      * @const
      */
     static get STATUS_RUNNING () {
-        return 0;
+        return 0; // used by compiler
     }
 
     /**
@@ -205,7 +228,7 @@ class Thread {
      * @const
      */
     static get STATUS_PROMISE_WAIT () {
-        return 1;
+        return 1; // used by compiler
     }
 
     /**
@@ -213,7 +236,7 @@ class Thread {
      * @const
      */
     static get STATUS_YIELD () {
-        return 2;
+        return 2; // used by compiler
     }
 
     /**
@@ -222,7 +245,7 @@ class Thread {
      * @const
      */
     static get STATUS_YIELD_TICK () {
-        return 3;
+        return 3; // used by compiler
     }
 
     /**
@@ -231,7 +254,7 @@ class Thread {
      * @const
      */
     static get STATUS_DONE () {
-        return 4;
+        return 4; // used by compiler
     }
 
     /**
@@ -398,6 +421,49 @@ class Thread {
             if (--callCount < 0) return false;
         }
         return false;
+    }
+
+    /**
+     * Attempt to compile this thread.
+     */
+    tryCompile () {
+        const blocks = this.blockContainer;
+        if (!blocks) {
+            return;
+        }
+
+        // importing Compiler here avoids circular dependency issues
+        const Compiler = require('../compiler/compiler');
+
+        this.triedToCompile = true;
+
+        const topBlock = this.topBlock;
+        const cachedResult = blocks.getCompiledScript(topBlock);
+        if (cachedResult === null) {
+            // null means an error was cached, cannot be compiled
+            return;
+        }
+
+        let result;
+        if (cachedResult) {
+            result = cachedResult;
+        } else {
+            try {
+                const compiler = new Compiler(this);
+                result = compiler.compile();
+                blocks.setCompiledScript(topBlock, result);
+            } catch (e) {
+                log.error('cannot compile script', this.target.getName(), e);
+                blocks.setCompiledScript(topBlock, null);
+                return;
+            }
+        }
+
+        for (const procedureCode of Object.keys(result.procedures)) {
+            this.procedures[procedureCode] = result.procedures[procedureCode](this.target);
+        }
+        this.generator = result.startingFunction(this.target)();
+        this.isCompiled = true;
     }
 }
 

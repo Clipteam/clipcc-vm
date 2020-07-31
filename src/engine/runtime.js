@@ -392,6 +392,11 @@ class Runtime extends EventEmitter {
          * @type {function}
          */
         this.removeCloudVariable = this._initializeRemoveCloudVariable(newCloudDataManager);
+
+        /**
+         * Whether the script compiler is enabled.
+         */
+        this.compilerEnabled = true;
     }
 
     /**
@@ -465,6 +470,38 @@ class Runtime extends EventEmitter {
      */
     static get TURBO_MODE_OFF () {
         return 'TURBO_MODE_OFF';
+    }
+
+    /**
+     * Event name for turning on compatibility mode.
+     * @const {string}
+     */
+    static get COMPATIBILITY_MODE_ON () {
+        return 'COMPATIBILITY_MODE_ON';
+    }
+
+    /**
+     * Event name for turning off compatibility mode.
+     * @const {string}
+     */
+    static get COMPATIBILITY_MODE_OFF () {
+        return 'COMPATIBILITY_MODE_OFF';
+    }
+
+    /**
+     * Event name for enabling the compiler.
+     * @const {string}
+     */
+    static get COMPILER_ENABLED () {
+        return 'COMPILER_ENABLED';
+    }
+
+    /**
+     * Event name for disabling the compiler.
+     * @const {string}
+     */
+    static get COMPILER_DISABLED () {
+        return 'COMPILER_DISABLED';
     }
 
     /**
@@ -770,8 +807,14 @@ class Runtime extends EventEmitter {
                 if (packageObject.getMonitored) {
                     this.monitorBlockInfo = Object.assign({}, this.monitorBlockInfo, packageObject.getMonitored());
                 }
+
+                this.compilerRegisterExtension(packageName, packageObject);
             }
         }
+    }
+
+    compilerRegisterExtension (name, extensionObject) {
+        this[`ext_${name}`] = extensionObject;
     }
 
     getMonitorState () {
@@ -983,8 +1026,10 @@ class Runtime extends EventEmitter {
             fieldName: fieldName,
             extendedName: extendedName,
             argumentTypeInfo: {
-                shadowType: extendedName,
-                fieldType: `field_${extendedName}`
+                shadow: {
+                    type: extendedName,
+                    fieldName: `field_${extendedName}`
+                }
             },
             scratchBlocksDefinition: this._buildCustomFieldTypeForScratchBlocks(
                 extendedName,
@@ -1590,6 +1635,11 @@ class Runtime extends EventEmitter {
 
         thread.pushStack(id);
         this.threads.push(thread);
+
+        if (!(opts && opts.updateMonitor) && this.compilerEnabled) {
+            thread.tryCompile();
+        }
+
         return thread;
     }
 
@@ -1618,6 +1668,9 @@ class Runtime extends EventEmitter {
         newThread.updateMonitor = thread.updateMonitor;
         newThread.blockContainer = thread.blockContainer;
         newThread.pushStack(thread.topBlock);
+        if (thread.triedToCompile && this.compilerEnabled) {
+            newThread.tryCompile();
+        }
         const i = this.threads.indexOf(thread);
         if (i > -1) {
             this.threads[i] = newThread;
@@ -1815,8 +1868,11 @@ class Runtime extends EventEmitter {
         // For compatibility with Scratch 2, edge triggered hats need to be processed before
         // threads are stepped. See ScratchRuntime.as for original implementation
         newThreads.forEach(thread => {
-            execute(this.sequencer, thread);
-            thread.goToNextBlock();
+            // Compiler: do not step compiled threads, the hat block can't be executed
+            if (!thread.isCompiled) {
+                execute(this.sequencer, thread);
+                thread.goToNextBlock();
+            }
         });
         return newThreads;
     }
@@ -1835,6 +1891,7 @@ class Runtime extends EventEmitter {
         this.targets.map(this.disposeTarget, this);
         this._monitorState = OrderedMap({});
         this.emit(Runtime.RUNTIME_DISPOSED);
+        this.ioDevices.clock.resetProjectTimer();
         // @todo clear out extensions? turboMode? etc.
 
         // *********** Cloud *******************
@@ -2114,10 +2171,29 @@ class Runtime extends EventEmitter {
      */
     setCompatibilityMode (compatibilityModeOn) {
         this.compatibilityMode = compatibilityModeOn;
+        if (this.compatibilityMode) {
+            this.emit(Runtime.COMPATIBILITY_MODE_ON);
+        } else {
+            this.emit(Runtime.COMPATIBILITY_MODE_OFF);
+        }
         if (this._steppingInterval) {
             clearInterval(this._steppingInterval);
             this._steppingInterval = null;
             this.start();
+        }
+    }
+
+    /**
+     * Set whether the compiler is enabled.
+     * This does not affect already running threads.
+     * @param {boolean} compilerEnabled True iff the compiler is to be enabled.
+     */
+    setCompilerEnabled (compilerEnabled) {
+        this.compilerEnabled = compilerEnabled;
+        if (compilerEnabled) {
+            this.emit(Runtime.COMPILER_ENABLED);
+        } else {
+            this.emit(Runtime.COMPILER_DISABLED);
         }
     }
 

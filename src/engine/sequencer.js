@@ -1,6 +1,7 @@
 const Timer = require('../util/timer');
 const Thread = require('./thread');
 const execute = require('./execute.js');
+const compilerExecute = require('../compiler/execute');
 
 /**
  * Profiler frame name for stepping a single thread.
@@ -177,6 +178,11 @@ class Sequencer {
      * @param {!Thread} thread Thread object to step.
      */
     stepThread (thread) {
+        if (thread.isCompiled) {
+            compilerExecute(thread);
+            return;
+        }
+
         let currentBlockId = thread.peekStack();
         if (!currentBlockId) {
             // A "null block" - empty branch.
@@ -355,6 +361,10 @@ class Sequencer {
         thread.stackFrame = [];
         thread.requestScriptGlowInFrame = false;
         thread.status = Thread.STATUS_DONE;
+        if (thread.isCompiled) {
+            thread.procedures = {};
+            thread.generator = null;
+        }
     }
 }
 

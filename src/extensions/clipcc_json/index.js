@@ -10,10 +10,10 @@ class ClipCCJSONBlocks {
     constructor(runtime) {
         this.runtime = runtime;
     }
-    
+
     getInfo() {
         return {
-            id: 'clipcc_json',
+            id: 'clipcc.json',
             name: 'JSON',
             color1: '#FFB11B',
             //menuIconURI: menuIconURI,
@@ -64,11 +64,11 @@ class ClipCCJSONBlocks {
             ]
         }
     }
-    
+
     getValueByKey(args, util) {
         return Cast.toString(JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)]);
     }
-    
+
     setValueByKey(args, util) {
         let obj = JSON.parse(Cast.toString(args.JSON));
         obj[Cast.toString(args.KEY)] = Cast.toString(args.VALUE);

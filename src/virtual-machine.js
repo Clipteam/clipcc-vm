@@ -71,6 +71,8 @@ class VirtualMachine extends EventEmitter {
          */
         this._dragTarget = null;
 
+        formatMessage.setup({locale: 'uninit', translations: {}});
+
         // Runtime emits are passed along as VM emits.
         this.runtime.on(Runtime.SCRIPT_GLOW_ON, glowData => {
             this.emit(Runtime.SCRIPT_GLOW_ON, glowData);
@@ -1133,7 +1135,8 @@ class VirtualMachine extends EventEmitter {
         if (locale !== formatMessage.setup().locale) {
             formatMessage.setup({locale: locale, translations: {[locale]: messages}});
         }
-        return this.extensionManager.refreshBlocks();
+        //return this.extensionManager.refreshBlocks();
+        return Promise.all([this.extensionAPI.refreshBlocks(), this.extensionManager.refreshBlocks()]);
     }
 
     /**

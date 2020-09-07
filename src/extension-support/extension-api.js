@@ -39,15 +39,15 @@ class ExtensionAPI {
 
     _generateBlockInfo (block) {
         const argumentsInfo = {};
-        for (const name in block.arguments) {
+        for (const name in block.argument) {
             argumentsInfo[name] = {
-                type: argumentType[block.arguments[name].type],
-                defaultValue: block.arguments[name].default
+                type: argumentType[block.argument[name].type],
+                defaultValue: block.argument[name].default
             };
         }
         return {
             opcode: block.opcode,
-            func: block.func,
+            func: block.function,
             blockType: blockType[block.type],
             messageId: block.messageId,
             text: formatMessage({

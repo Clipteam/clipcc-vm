@@ -1,6 +1,6 @@
 {
   "name": "clipcc-vm",
-  "version": "3.0.0-6",
+  "version": "3.0.0-7",
   "description": "Virtual Machine for Clip CC",
   "author": "Clip Team",
   "license": "BSD-3-Clause",
@@ -8,7 +8,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/clipteam/clipcc-vm.git",
-    "sha": "4f2e98b7f8698661d4f57ea97f0388f752ec0a4b"
+    "sha": "c3acde06ecfba88036f964ef75f4ec31023577e5"
   },
   "main": "./dist/node/clipcc-vm.js",
   "browser": "./src/index.js",
@@ -58,8 +58,8 @@
     "adm-zip": "0.4.11",
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.4",
-    "clipcc-block": "3.0.0-7",
     "callsite": "^1.0.0",
+    "clipcc-block": "3.0.0-7",
     "copy-webpack-plugin": "^4.5.4",
     "docdash": "^1.0.0",
     "eslint": "^5.3.0",

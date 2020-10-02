@@ -53,7 +53,7 @@ ways.
 ## Defining an Extension
 
 Scratch extensions are defined as a single Javascript class which accepts either a reference to the Scratch
-[VM](https://github.com/llk/clipcc-vm) runtime or a "runtime proxy" which handles communication with the Scratch VM
+[VM](https://github.com/Clipteam/clipcc-vm) runtime or a "runtime proxy" which handles communication with the Scratch VM
 across a well defined worker boundary (i.e. the sandbox).
 
 ```js
@@ -310,6 +310,7 @@ class SomeBlocks {
         return {
             // Required: the machine-readable name of this extension.
             // Will be used as the extension's namespace.
+            // Allowed characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
             id: 'someBlocks',
 
             // Core extensions only: override the default extension block colors.

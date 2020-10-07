@@ -5,20 +5,24 @@ const maybeFormatMessage = require('../util/maybe-format-message');
 const formatMessage = require('format-message');
 
 const blockType = [
-    '', // ERROR
-    'command',
-    'reporter',
-    'Boolean',
-    '', // BRANCH
-    'hat'
+    '', // ERROR: 0
+    'command', // COMMAND: 1
+    'reporter', // REPORTER: 2
+    'Boolean', // BOOLEAN: 3
+    '', // BRANCH: 4
+    'hat' // HAT: 5
 ];
 
 const argumentType = [
-    '', // ERROR
-    'number',
-    'string',
-    'Boolean',
-    'color'
+    '', // ERROR: 0
+    'number', // NUMBER: 1
+    'string', // STRING: 2
+    'Boolean', // BOOLEAN: 3
+    'any', // ANY: 4
+    'color', // COLOR: 5
+    '', // MATRIX: 6
+    '', // NOTE: 7
+    '' // ANGLE: 8
 ];
 
 class ExtensionAPI {
@@ -42,7 +46,8 @@ class ExtensionAPI {
         for (const name in block.argument) {
             argumentsInfo[name] = {
                 type: argumentType[block.argument[name].type],
-                defaultValue: block.argument[name].default
+                defaultValue: block.argument[name].default || '',
+                shadow: block.argument[name].shadow,
             };
         }
         return {

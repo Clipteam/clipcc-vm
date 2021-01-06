@@ -33,7 +33,7 @@
     "@vernier/godirect": "1.5.0",
     "arraybuffer-loader": "^1.0.6",
     "atob": "2.1.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "btoa": "1.2.1",
     "canvas-toBlob": "1.0.0",
     "decode-html": "2.0.0",

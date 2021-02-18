@@ -15,12 +15,18 @@ const base = {
         library: 'VirtualMachine',
         filename: '[name].js'
     },
+    resolve: {
+        fallback: {
+            buffer: require.resolve('buffer/'),
+            stream: require.resolve("stream-browserify")
+        }
+    },
     module: {
         rules: [{
             test: /\.js$/,
             loader: 'babel-loader',
             include: path.resolve(__dirname, 'src'),
-            query: {
+            options: {
                 presets: [['@babel/preset-env', {targets: {browsers: ['last 3 versions', 'Safari >= 8', 'iOS >= 8']}}]]
             }
         },
@@ -55,7 +61,10 @@ module.exports = [
             rules: base.module.rules.concat([
                 {
                     test: require.resolve('./src/index.js'),
-                    loader: 'expose-loader?VirtualMachine'
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'VirtualMachine'
+                    }
                 }
             ])
         }
@@ -98,11 +107,17 @@ module.exports = [
             rules: base.module.rules.concat([
                 {
                     test: require.resolve('./src/index.js'),
-                    loader: 'expose-loader?VirtualMachine'
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'VirtualMachine'
+                    }
                 },
                 {
                     test: require.resolve('./src/extensions/scratch3_video_sensing/debug.js'),
-                    loader: 'expose-loader?Scratch3VideoSensingDebug'
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'Scratch3VideoSensingDebug'
+                    }
                 },
                 {
                     test: require.resolve('stats.js/build/stats.min.js'),
@@ -110,19 +125,31 @@ module.exports = [
                 },
                 {
                     test: require.resolve('clipcc-block/dist/vertical.js'),
-                    loader: 'expose-loader?Blockly'
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'Blockly'
+                    }
                 },
                 {
                     test: require.resolve('scratch-audio/src/index.js'),
-                    loader: 'expose-loader?AudioEngine'
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'AudioEngine'
+                    }
                 },
                 {
                     test: require.resolve('scratch-storage/src/index.js'),
-                    loader: 'expose-loader?ScratchStorage'
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'ScratchStorage'
+                    }
                 },
                 {
                     test: require.resolve('scratch-render/src/index.js'),
-                    loader: 'expose-loader?ScratchRender'
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'ScratchRender'
+                    }
                 }
             ])
         },
@@ -130,18 +157,20 @@ module.exports = [
             hints: false
         },
         plugins: base.plugins.concat([
-            new CopyWebpackPlugin([{
-                from: 'node_modules/clipcc-block/media',
-                to: 'media'
-            }, {
-                from: 'node_modules/scratch-storage/dist/web'
-            }, {
-                from: 'node_modules/scratch-render/dist/web'
-            }, {
-                from: 'node_modules/scratch-svg-renderer/dist/web'
-            }, {
-                from: 'src/playground'
-            }])
+            new CopyWebpackPlugin({
+                patterns: [{
+                    from: 'node_modules/clipcc-block/media',
+                    to: 'media'
+                }, {
+                    from: 'node_modules/scratch-storage/dist/web'
+                }, {
+                    from: 'node_modules/scratch-render/dist/web'
+                }, {
+                    from: 'node_modules/scratch-svg-renderer/dist/web'
+                }, {
+                    from: 'src/playground'
+                }]
+            })
         ])
     })
 ];

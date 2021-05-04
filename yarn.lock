@@ -2674,10 +2674,10 @@ domhandler@^2.3.0:
   dependencies:
     domelementtype "1"
 
-dompurify@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.1.1.tgz#b5aa988676b093a9c836d8b855680a8598af25fe"
-  integrity sha512-NijiNVkS/OL8mdQL1hUbCD6uty/cgFpmNiuFxrmJ5YPH2cXrPKIewoixoji56rbZ6XBPmtM8GA8/sf9unlSuwg==
+dompurify@2.2.7:
+  version "2.2.7"
+  resolved "https://r.cnpmjs.org/dompurify/download/dompurify-2.2.7.tgz#a5f055a2a471638680e779bd08fc334962d11fd8"
+  integrity sha1-pfBVoqRxY4aA53m9CPwzSWLRH9g=
 
 domutils@^1.5.1:
   version "1.7.0"
@@ -7025,6 +7025,13 @@ scratch-render-fonts@1.0.0-prerelease.20200507182347:
   dependencies:
     base64-loader "1.0.0"
 
+scratch-render-fonts@^1.0.0-prerelease.20210401210003:
+  version "1.0.0-prerelease.20210401210003"
+  resolved "https://r.cnpmjs.org/scratch-render-fonts/download/scratch-render-fonts-1.0.0-prerelease.20210401210003.tgz#1665433b19382c7e50de3f56cb36631bacc39b1c"
+  integrity sha1-FmVDOxk4LH5Q3j9WyzZjG6zDmxw=
+  dependencies:
+    base64-loader "1.0.0"
+
 scratch-render@latest:
   version "0.1.0-prerelease.20200622210757"
   resolved "https://registry.yarnpkg.com/scratch-render/-/scratch-render-0.1.0-prerelease.20200622210757.tgz#a0db06b6af4d3de268c4f7b4c27d30765e7e7054"
@@ -7073,16 +7080,15 @@ scratch-svg-renderer@0.2.0-prerelease.20200610220938:
     scratch-render-fonts "1.0.0-prerelease.20200507182347"
     transformation-matrix "1.15.0"
 
-scratch-svg-renderer@latest:
-  version "0.2.0-prerelease.20201019174008"
-  resolved "https://registry.yarnpkg.com/scratch-svg-renderer/-/scratch-svg-renderer-0.2.0-prerelease.20201019174008.tgz#d99b9500b9cf11f84cda38133ead7fbd4a57228e"
-  integrity sha512-RF3Zx09Nl+uLTrPD7K4tR6Sqq/JqRTsLVRugohEJ8pGHXshvBh/A4zWx7XmMZHOdEDHunPxpCDHkW2LoMCFioQ==
+scratch-svg-renderer@^0.2.0-prerelease.20210325225314:
+  version "0.2.0-prerelease.20210408171934"
+  resolved "https://r.cnpmjs.org/scratch-svg-renderer/download/scratch-svg-renderer-0.2.0-prerelease.20210408171934.tgz#9ab5f9bfb266d608edc1653b62a3f6ae019345e3"
+  integrity sha1-mrX5v7Jm1gjtwWU7YqP2rgGTReM=
   dependencies:
     base64-js "1.2.1"
     base64-loader "1.0.0"
-    dompurify "2.1.1"
+    dompurify "2.2.7"
     minilog "3.1.0"
-    scratch-render-fonts "1.0.0-prerelease.20200507182347"
     transformation-matrix "1.15.0"
 
 scratch-translate-extension-languages@0.0.20191118205314:

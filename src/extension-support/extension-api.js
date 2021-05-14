@@ -64,7 +64,7 @@ class ExtensionAPI {
     }
 
     refreshBlocks () {
-        return new Promise(() => {
+        return new Promise((resolve, reject) => {
             for (const i in this.categorys) {
                 this.categorys[i].name = formatMessage({
                     id: this.categorys[i].messageId,
@@ -78,6 +78,7 @@ class ExtensionAPI {
                 }
                 this.vm.runtime.emit('BLOCKSINFO_UPDATE', this.categorys[i]);
             }
+            resolve();
         });
     }
 

@@ -70,11 +70,48 @@ class ExtensionAPI {
                     id: this.categorys[i].messageId,
                     default: this.categorys[i].messageId
                 });
+                console.log(this.categorys[i]);
                 for (const j in this.categorys[i].blocks) {
-                    this.categorys[i].blocks[j].text = formatMessage({
-                        id: this.categorys[i].blocks[j].messageId,
-                        default: this.categorys[i].blocks[j].messageId
+                    this.categorys[i].blocks[j].info.text = formatMessage({
+                        id: this.categorys[i].blocks[j].info.messageId,
+                        default: this.categorys[i].blocks[j].info.messageId
                     });
+                    // Regen json info
+                    const blockInfo = this.categorys[i].blocks[j].info;
+                    const blockJSON = this.categorys[i].blocks[j].json;
+                    const context = {
+                        argsMap: {},
+                        blockJSON,
+                        categoryInfo: this.categorys[i],
+                        blockInfo,
+                        inputList: []
+                    };
+                    const blockText = Array.isArray(blockInfo.text) ? blockInfo.text : [blockInfo.text];
+                    const convertPlaceholders = this.vm.runtime._convertPlaceholders.bind(this.vm.runtime, context);
+                    let inTextNum = 0;
+                    let inBranchNum = 0;
+                    let outLineNum = 0;
+                    while (inTextNum < blockText.length || inBranchNum < blockInfo.branchCount) {
+                        if (inTextNum < blockText.length) {
+                            context.outLineNum = outLineNum;
+                            const lineText = maybeFormatMessage(blockText[inTextNum]);
+                            blockJSON[`args${outLineNum}`] = [];
+                            const convertedText = lineText.replace(/\[(.+?)]/g, convertPlaceholders);
+                            blockJSON[`message${outLineNum}`] = convertedText;
+                            ++inTextNum;
+                            ++outLineNum;
+                        }
+                        if (inBranchNum < blockInfo.branchCount) {
+                            blockJSON[`message${outLineNum}`] = '%1';
+                            blockJSON[`args${outLineNum}`] = [{
+                                type: 'input_statement',
+                                name: `SUBSTACK${inBranchNum > 0 ? inBranchNum + 1 : ''}`
+                            }];
+                            ++inBranchNum;
+                            ++outLineNum;
+                        }
+                    }
+                    console.log(this.categorys[i].blocks[j]);
                 }
                 this.vm.runtime.emit('BLOCKSINFO_UPDATE', this.categorys[i]);
             }
@@ -142,7 +179,7 @@ class ExtensionAPI {
                 context.outLineNum = outLineNum;
                 const lineText = maybeFormatMessage(blockText[inTextNum]);
                 console.log(1, lineText);
-                const convertedText = blockText[inTextNum].replace(/\[(.+?)]/g, convertPlaceholders);
+                const convertedText = lineText.replace(/\[(.+?)]/g, convertPlaceholders);
                 if (blockJSON[`message${outLineNum}`]) {
                     blockJSON[`message${outLineNum}`] += convertedText;
                 } else {

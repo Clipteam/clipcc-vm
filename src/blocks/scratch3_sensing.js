@@ -12,7 +12,7 @@ class Scratch3SensingBlocks {
         this.runtime = runtime;
 
         /**
-         * The "answer" block value.
+         * The 'answer' block value.
          * @type {string}
          */
         this._answer = '';
@@ -75,6 +75,7 @@ class Scratch3SensingBlocks {
             sensing_answer: this.getAnswer,
             sensing_username: this.getUsername,
             sensing_userid: () => {}, // legacy no-op block
+            sensing_operatingsystem: this.getOS,
             sensing_turnonturbomode: (args, util) => { this.setTurboMode(true); },
             sensing_turnoffturbomode: (args, util) => { this.setTurboMode(false); },
             sensing_isturbomode: (args, util) => { return this.runtime.turboMode; },
@@ -367,6 +368,32 @@ class Scratch3SensingBlocks {
 
     getUsername (args, util) {
         return util.ioQuery('userData', 'getUsername');
+    }
+
+    getOS() {
+        let userAgent = navigator.userAgent;
+        let isWin = (navigator.platform == 'Win32') || (navigator.platform == 'Windows');
+        let isMac = (navigator.platform == 'Mac68K') || (navigator.platform == 'MacPPC') || (navigator.platform == 'Macintosh') || (navigator.platform == 'MacIntel');
+        if (isMac) return 'Mac';
+        let isUnix = (navigator.platform == 'X11') && !isWin && !isMac;
+        if (isUnix) return 'Unix';
+        let isLinux = (String(navigator.platform).indexOf('Linux') > -1);
+        if (isLinux) return 'Linux';
+        if (isWin) {
+            let isWin2K = userAgent.indexOf('Windows NT 5.0') > -1 || userAgent.indexOf('Windows 2000') > -1;
+            if (isWin2K) return 'Win2000';
+            let isWinXP = userAgent.indexOf('Windows NT 5.1') > -1 || userAgent.indexOf('Windows XP') > -1;
+            if (isWinXP) return 'WinXP';
+            let isWin2003 = userAgent.indexOf('Windows NT 5.2') > -1 || userAgent.indexOf('Windows 2003') > -1;
+            if (isWin2003) return 'Win2003';
+            let isWinVista= userAgent.indexOf('Windows NT 6.0') > -1 || userAgent.indexOf('Windows Vista') > -1;
+            if (isWinVista) return 'WinVista';
+            let isWin7 = userAgent.indexOf('Windows NT 6.1') > -1 || userAgent.indexOf('Windows 7') > -1;
+            if (isWin7) return 'Win7';
+            let isWin10 = userAgent.indexOf('Windows NT 10') > -1 || userAgent.indexOf('Windows 10') > -1;
+            if (isWin10) return 'Win10';
+        }
+        return 'Other';
     }
 }
 

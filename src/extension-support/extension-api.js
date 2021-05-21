@@ -160,7 +160,12 @@ class ExtensionAPI {
             // TODO: Block with branch
             break;
         case 5: // HAT
-            // TODO: Hat
+            //blockInfo.isEdgeActivated = block.isEdgeActivated;
+            if (!blockInfo.isEdgeActivated) {
+                blockInfo.isEdgeActivated = true;
+            }
+            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
+            blockJSON.nextStatement = null;
             break;
         default:
             // TODO: Error, unknown
@@ -219,14 +224,17 @@ class ExtensionAPI {
         if (convertedBlock.json) {
             const opcode = convertedBlock.json.type;
             this.vm.runtime._primitives[opcode] = convertedBlock.info.func;
-            // TODO: For hat and event
-            // engine/runtime.js: line 902-912
+            if (block.type === 5) {
+                // TODO: shouldRestartExistingThreads ?
+                // TODO: edgeActivated ?
+                this.vm.runtime._hats[opcode] = {
+                    edgeActivated: blockInfo.isEdgeActivated
+                }
+            }
         }
 
         this.blocks.push(blockInfo);
-        console.log('Add a new block', blockInfo, category);
         this.vm.emit('BLOCKSINFO_UPDATE', category);
-        //this.vm.emit('EXTENSION_ADDED', category);
     }
 
     removeBlock (blockId) {

@@ -351,6 +351,11 @@ class Runtime extends EventEmitter {
         this.peripheralExtensions = {};
 
         /**
+         * A list of extension IDs.
+         */
+        this.extensions = [];
+
+        /**
          * A runtime profiler that records timed events for later playback to
          * diagnose Scratch performance.
          * @type {Profiler}
@@ -2601,6 +2606,21 @@ class Runtime extends EventEmitter {
      */
     updateCurrentMSecs () {
         this.currentMSecs = Date.now();
+    }
+
+    registerExtension(extensionId) {
+        if (this.extensions.includes(extensionId)) {
+            throw new Error(`Failed to register an existed extension: ${extensionId}`);
+        }
+        this.extensions.push(extensionId);
+    }
+
+    unregisterExtension(extensionId) {
+        const index = this.extensions.indexOf(extensionId);
+        if (index == -1) {
+            throw new Error(`Failed to unregister an unexisted extension: ${extensionId}`);
+        }
+        this.extensions.splice(index);
     }
 }
 

@@ -1553,6 +1553,14 @@ class VirtualMachine extends EventEmitter {
     configureScratchLinkSocketFactory (factory) {
         this.runtime.configureScratchLinkSocketFactory(factory);
     }
+
+    registerExtension(extensionId) {
+        this.runtime.registerExtension(extensionId);
+    }
+
+    unregisterExtension(extensionId) {
+        this.runtime.unregisterExtension(extensionId);
+    }
 }
 
 module.exports = VirtualMachine;

@@ -243,6 +243,18 @@ class ExtensionAPI {
     }
 
     removeBlock (blockId) {
+        for (let i in this.vm.runtime._blockInfo) {
+            const category = this.vm.runtime._blockInfo[i];
+            for (let j in category.blocks){
+                // console.log(category.blocks[j])
+                if (category.blocks[j].info.opcode === blockId) {
+                    this.vm.runtime._blockInfo[i].blocks.splice(j, 1);
+                    // console.log("blocks found!", blockId, this.vm.runtime._blockInfo[i].blocks[j]);
+                    this.vm.emit('BLOCK_REMOVED', blockId);
+                }
+            }
+        }
+        this.refreshBlocks();
         console.log('Remove a block', blockId);
     }
 

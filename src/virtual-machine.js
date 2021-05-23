@@ -307,9 +307,10 @@ class VirtualMachine extends EventEmitter {
     /**
      * Load a Scratch project from a .sb, .sb2, .sb3 or json string.
      * @param {string | object} input A json string, object, or ArrayBuffer representing the project to load.
+     * @param {function} extensionCallback A function to deal with extension list.
      * @return {!Promise} Promise that resolves after targets are installed.
      */
-    loadProject (input) {
+    loadProject (input, extensionCallback) {
         if (typeof input === 'object' && !(input instanceof ArrayBuffer) &&
           !ArrayBuffer.isView(input)) {
             // If the input is an object and not any ArrayBuffer
@@ -354,7 +355,7 @@ class VirtualMachine extends EventEmitter {
             });
 
         return validationPromise
-            .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1]))
+            .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1], extensionCallback))
             .then(() => this.runtime.emitProjectLoaded())
             .catch(error => {
                 // Intentionally rejecting here (want errors to be handled by caller)
@@ -484,9 +485,10 @@ class VirtualMachine extends EventEmitter {
      * Load a project from a Scratch JSON representation.
      * @param {string} projectJSON JSON string representing a project.
      * @param {?JSZip} zip Optional zipped project containing assets to be loaded.
+     * @param {function} extensionCallback
      * @returns {Promise} Promise that resolves after the project has loaded
      */
-    deserializeProject (projectJSON, zip) {
+    deserializeProject (projectJSON, zip, extensionCallback) {
         // Clear the current runtime
         this.clear();
 
@@ -503,19 +505,24 @@ class VirtualMachine extends EventEmitter {
             }
             return Promise.reject('Unable to verify Scratch Project version.');
         };
-        return deserializePromise()
-            .then(({targets, extensions}) =>
-                this.installTargets(targets, extensions, true));
+        return deserializePromise().then(({targets, extensions}) => {
+            extensionCallback(extensions.extensionIDs);
+            return this.installTargets(targets, extensions, true)
+        });
     }
 
     /**
      * Install `deserialize` results: zero or more targets after the extensions (if any) used by those targets.
      * @param {Array.<Target>} targets - the targets to be installed
-     * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
+     * @param {ImportedExtensionsInfo} extensions - Deprecated: metadata about extensions used by these targets
      * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
      * @returns {Promise} resolved once targets have been installed
      */
     installTargets (targets, extensions, wholeProject) {
+        /*
+        // Since the extension loader was established in gui, so that
+        // we shouldn't load extension here.
+        // See: clipcc-gui/src/lib/sb-file-uploader-hoc.jsx
         const extensionPromises = [];
 
         extensions.extensionIDs.forEach(extensionID => {
@@ -524,10 +531,11 @@ class VirtualMachine extends EventEmitter {
                 extensionPromises.push(this.extensionManager.loadExtensionURL(extensionURL));
             }
         });
+        */
 
         targets = targets.filter(target => !!target);
 
-        return Promise.all(extensionPromises).then(() => {
+        //return Promise.all(extensionPromises).then(() => {
             targets.forEach(target => {
                 this.runtime.addTarget(target);
                 (/** @type RenderedTarget */ target).updateAllDrawableProperties();
@@ -557,7 +565,7 @@ class VirtualMachine extends EventEmitter {
             this.emitWorkspaceUpdate();
             this.runtime.setEditingTarget(this.editingTarget);
             this.runtime.ioDevices.cloud.setStage(this.runtime.getTargetForStage());
-        });
+        //});
     }
 
     /**

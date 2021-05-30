@@ -106,22 +106,28 @@ class HttpIO {
         this.client.defaults.headers.common = Object.assign(this.client.defaults.headers.common, header);
     }
     
-    async httpGet (args){
-        const res = await this.client.get(args.URL);
-        if (typeof res.data === 'object') return JSON.stringify(res.data);
-        return res.data;
+    httpGet (args){
+        return new Promise((resolve, reject) => {
+            this.client.get(args.URL).then(res => {
+                if (typeof res.data === 'object') resolve(JSON.stringify(res.data));
+                resolve(res.data);
+            }).catch(err => reject(err));
+        });
     }
     
-    async httpPost (args, util){
-        const postData = {};
-        const target = util.target;
-        const keys = Object.keys(target.variables).filter(k => k.startsWith(args.PREFIX));
-        for (const key of keys) {
-            postData[key] = target.variables[key].value;
-        }
-        const res = await this.client.post(args.URL, postData);
-        if (typeof res.data === 'object') return JSON.stringify(res.data);
-        return res.data;
+    httpPost (args, util){
+        return new Promise((resolve, reject) => {
+            const postData = {};
+            const target = util.target;
+            const keys = Object.keys(target.variables).filter(k => k.startsWith(args.PREFIX));
+            for (const key of keys) {
+                postData[key] = target.variables[key].value;
+            }
+            this.client.post(args.URL, postData).then(res => {
+                if (typeof res.data === 'object') resolve(JSON.stringify(res.data));
+                resolve(res.data);
+            }).catch(err => reject(err));
+        });
     }
 }
 

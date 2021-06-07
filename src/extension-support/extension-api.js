@@ -301,6 +301,10 @@ class ExtensionAPI {
         return block;
     }
 
+    updateWorkspace() {
+        this.vm.emitWorkspaceUpdate();
+    }
+
     loadProject (input, extensionCallback) {
         return this.vm.loadProject(input, extensionCallback);
     }

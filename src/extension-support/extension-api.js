@@ -29,6 +29,7 @@ const argumentType = [
 class ExtensionAPI {
     constructor (vm) {
         this.vm = vm;
+        this.blockly = ClipCCBlocks;
         this.categorys = [];
         this.blocks = [];
     }

@@ -3,6 +3,7 @@ const ScratchBlocksConstants = require('../engine/scratch-blocks-constants');
 const xmlEscape = require('../util/xml-escape');
 const maybeFormatMessage = require('../util/maybe-format-message');
 const formatMessage = require('format-message');
+const ClipCCBlocks = require('clipcc-block');
 
 const blockType = [
     '', // ERROR: 0
@@ -295,11 +296,17 @@ class ExtensionAPI {
         return this.vm.getPlaygroundData();
     }
 
+    getBlockly () {
+        const block = ClipCCBlocks;
+        return block;
+    }
+
     loadProject (input, extensionCallback) {
         return this.vm.loadProject(input, extensionCallback);
     }
 
     getRuntime () {
+        console.log(this.vm);
         return this.vm.runtime;
     }
 

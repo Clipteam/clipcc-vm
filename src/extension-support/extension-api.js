@@ -290,6 +290,20 @@ class ExtensionAPI {
         this.refreshBlocks();
         console.log('Remove a category', categoryId);
     }
+
+    getPlaygroundData () {
+        return this.vm.getPlaygroundData();
+    }
+
+    loadProject (input, extensionCallback) {
+        return this.vm.loadProject(input, extensionCallback);
+    }
+
+    getRuntime () {
+        return this.vm.runtime;
+    }
+
+
 }
 
 module.exports = ExtensionAPI;

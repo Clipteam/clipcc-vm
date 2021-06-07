@@ -296,25 +296,9 @@ class ExtensionAPI {
         return this.vm.getPlaygroundData();
     }
 
-    getBlockly () {
-        const block = ClipCCBlocks;
-        return block;
-    }
-
-    updateWorkspace() {
-        this.vm.emitWorkspaceUpdate();
-    }
-
     loadProject (input, extensionCallback) {
         return this.vm.loadProject(input, extensionCallback);
     }
-
-    getRuntime () {
-        console.log(this.vm);
-        return this.vm.runtime;
-    }
-
-
 }
 
 module.exports = ExtensionAPI;

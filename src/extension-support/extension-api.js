@@ -3,7 +3,6 @@ const ScratchBlocksConstants = require('../engine/scratch-blocks-constants');
 const xmlEscape = require('../util/xml-escape');
 const maybeFormatMessage = require('../util/maybe-format-message');
 const formatMessage = require('format-message');
-const ClipCCBlocks = require('clipcc-block');
 
 const blockType = [
     '', // ERROR: 0
@@ -29,7 +28,6 @@ const argumentType = [
 class ExtensionAPI {
     constructor (vm) {
         this.vm = vm;
-        this.blockly = ClipCCBlocks;
         this.categorys = [];
         this.blocks = [];
         //console.log("ExtensionAPI已加载！",this.vm, this.blockly);//DEBUG

@@ -32,6 +32,7 @@ class ExtensionAPI {
         this.blockly = ClipCCBlocks;
         this.categorys = [];
         this.blocks = [];
+        //console.log("ExtensionAPI已加载！",this.vm, this.blockly);//DEBUG
     }
 
     _getCategory (categoryId) {

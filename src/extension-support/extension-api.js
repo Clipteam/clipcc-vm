@@ -267,7 +267,7 @@ class ExtensionAPI {
                 id: category.messageId,
                 default: category.messageId
             }),
-            showStatusButton: category,showStatusButton,
+            showStatusButton: category.showStatusButton,
             color1: category.color || '#0FBD8C',
             blocks: [],
             customFieldTypes: {},

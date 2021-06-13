@@ -1,14 +1,13 @@
 {
   "name": "clipcc-vm",
-  "version": "3.0.0-7",
+  "version": "3.0.8",
   "description": "Virtual Machine for Clip CC",
   "author": "Clip Team",
   "license": "BSD-3-Clause",
   "homepage": "https://github.com/clipteam/clipcc-vm",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/clipteam/clipcc-vm.git",
-    "sha": "c3acde06ecfba88036f964ef75f4ec31023577e5"
+    "url": "git+ssh://git@github.com/clipteam/clipcc-vm.git"
   },
   "main": "./dist/node/clipcc-vm.js",
   "browser": "./src/index.js",
@@ -20,7 +19,6 @@
     "i18n:src": "mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js",
     "i18n:push": "tx-push-src scratch-editor extensions translations/core/en.json",
     "lint": "eslint . && format-message lint src/**/*.js",
-    "prepublish": "in-publish && yarn run build || not-in-publish",
     "start": "webpack-dev-server",
     "tap": "tap ./test/{unit,integration}/*.js",
     "tap:unit": "tap ./test/unit/*.js",

@@ -34,6 +34,7 @@ jobs:
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
+          always-auth: true
       - name: Download results
         uses: actions/download-artifact@v2
         with:
@@ -54,10 +55,11 @@ jobs:
         with:
           node-version: 14
           registry-url: https://npm.pkg.github.com/
+          always-auth: true
       - name: Download results
         uses: actions/download-artifact@v2
         with:
           name: dist
       - run: yarn publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}

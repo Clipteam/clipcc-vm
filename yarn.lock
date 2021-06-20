@@ -1779,9 +1779,9 @@ bindings@^1.5.0:
     file-uri-to-path "1.0.0"
 
 bl@^1.0.0:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/bl/-/bl-1.2.2.tgz#a160911717103c07410cef63ef51b397c025af9c"
-  integrity sha512-e8tQYnZodmebYDWGH7KMRvtzKXaJHx3BbilrgZCfvyLUYdKpK1t5PSPmpkny/SgiTSCnjfLW7v5rlONXVFkQEA==
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/bl/-/bl-1.2.3.tgz#1e8dd80142eac80d7158c9dccc047fb620e035e7"
+  integrity sha512-pvcNpa0UU69UT341rO6AYy4FVAIkUHuZXRIWbq+zHnsVcRzDDjIAhGuuYoi0d//cwIwtt4pkpKycWEfjdV+vww==
   dependencies:
     readable-stream "^2.3.5"
     safe-buffer "^5.1.1"
@@ -2263,14 +2263,15 @@ clipcc-block@3.0.0-7:
     google-closure-compiler-osx "^20200112.0.0"
     google-closure-compiler-windows "^20200112.0.0"
 
-clipcc-l10n@^3.0.0-1:
-  version "3.0.0-1"
-  resolved "https://registry.npmjs.org/clipcc-l10n/-/clipcc-l10n-3.0.0-1.tgz#c27fa7f30808b79939a2be048019bebfbbc83a77"
-  integrity sha512-mp28lZ6wyURV5gh0yyOKWDJ7mIBBDlAMcUf8wVMcRetIgg+m7m/VhKJxeXX671LNrSUDWwhDeX82Kri+Z3zvKg==
+clipcc-l10n@3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/clipcc-l10n/-/clipcc-l10n-3.0.3.tgz#c570f900d4e1a910835f3eca054060c37b9e8664"
+  integrity sha512-F44+F5M7SVcA4naQdNi8TQI/uzyfnLLy8R0aXLPi7nSfRa3P8EL3HDQM3rLWf88yoY/6iLL/YXEu5nx4OxvGHA==
   dependencies:
     "@babel/cli" "^7.1.2"
     "@babel/core" "^7.1.2"
     babel-plugin-react-intl "^3.0.1"
+    form-data "^4.0.0"
     poeditor-api "^1.0.0"
 
 cliui@^5.0.0:
@@ -2327,7 +2328,7 @@ colors@~0.6.0-1:
   resolved "https://registry.yarnpkg.com/colors/-/colors-0.6.2.tgz#2423fe6678ac0c5dae8852e5d0e5be08c997abcc"
   integrity sha1-JCP+ZnisDF2uiFLl0OW+CMmXq8w=
 
-combined-stream@^1.0.6, combined-stream@~1.0.6:
+combined-stream@^1.0.6, combined-stream@^1.0.8, combined-stream@~1.0.6:
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/combined-stream/-/combined-stream-1.0.8.tgz#c3d45a8b34fd730631a110a8a2520682b31d5a7f"
   integrity sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==
@@ -3853,6 +3854,15 @@ forever-agent@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
+
+form-data@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/form-data/-/form-data-4.0.0.tgz#93919daeaf361ee529584b9b31664dc12c9fa452"
+  integrity sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==
+  dependencies:
+    asynckit "^0.4.0"
+    combined-stream "^1.0.8"
+    mime-types "^2.1.12"
 
 form-data@~2.3.2:
   version "2.3.3"

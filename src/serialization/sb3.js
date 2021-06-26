@@ -282,7 +282,7 @@ const compressInputTree = function (block, blocks) {
 const getExtensionIdForOpcode = function (opcode) {
     // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
     const index = opcode.indexOf('_');
-    const forbiddenSymbols = /[^\w-]/g;
+    const forbiddenSymbols = /[^\w-\.]/g;
     const prefix = opcode.substring(0, index).replace(forbiddenSymbols, '-');
     if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
         if (prefix !== '') return prefix;
@@ -555,7 +555,8 @@ const serialize = function (runtime, targetId) {
     obj.monitors = serializeMonitors(runtime.getMonitorState());
 
     // Assemble extension list
-    obj.extensions = Array.from(extensions);
+    //obj.extensions = Array.from(extensions);
+    obj.extensions = Array.from(runtime.extensions); // Test: use cc extension
 
     // Assemble metadata
     const meta = Object.create(null);
@@ -1231,7 +1232,7 @@ const replaceUnsafeCharsInVariableIds = function (targets) {
  */
 const deserialize = function (json, runtime, zip, isSingleSprite) {
     const extensions = {
-        extensionIDs: new Set(),
+        extensionIDs: new Set(json.extensions),
         extensionURLs: new Map()
     };
 

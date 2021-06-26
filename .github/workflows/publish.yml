@@ -6,6 +6,7 @@ name: Publish Package
 on:
   release:
     types: [created]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -40,6 +41,6 @@ jobs:
         with:
           name: dist
           path: dist
-      - run: yarn publish
+      - run: yarn publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

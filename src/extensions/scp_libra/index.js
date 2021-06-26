@@ -68,7 +68,7 @@ class Libra {
             }]
         }
     }
-    
+
     isRedlistAvailable() {
 		const data = {
 			method: 'isInList',
@@ -82,7 +82,7 @@ class Libra {
             });
         });
     }
-    
+
     isInList(args) {
 		const data = {
 			method: 'isInList',
@@ -96,7 +96,7 @@ class Libra {
             });
         });
     }
-    
+
     reason(args){
 		const data = {
 			method: 'isInList',

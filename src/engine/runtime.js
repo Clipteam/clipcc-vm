@@ -351,6 +351,11 @@ class Runtime extends EventEmitter {
         this.peripheralExtensions = {};
 
         /**
+         * A list of extension IDs.
+         */
+        this.extensions = [];
+
+        /**
          * A runtime profiler that records timed events for later playback to
          * diagnose Scratch performance.
          * @type {Profiler}
@@ -848,6 +853,7 @@ class Runtime extends EventEmitter {
                 });
             }
         }
+        console.log(categoryInfo);
 
         this.emit(Runtime.EXTENSION_ADDED, categoryInfo);
     }
@@ -1155,6 +1161,7 @@ class Runtime extends EventEmitter {
             if (inTextNum < blockText.length) {
                 context.outLineNum = outLineNum;
                 const lineText = maybeFormatMessage(blockText[inTextNum], extensionMessageContext);
+                console.log(2, blockText, lineText, new Error('debug'));
                 const convertedText = lineText.replace(/\[(.+?)]/g, convertPlaceholders);
                 if (blockJSON[`message${outLineNum}`]) {
                     blockJSON[`message${outLineNum}`] += convertedText;
@@ -1333,8 +1340,11 @@ class Runtime extends EventEmitter {
                 }
             } else {
                 valueName = placeholder;
-                shadowType = (argTypeInfo.shadow && argTypeInfo.shadow.type) || null;
-                fieldName = (argTypeInfo.shadow && argTypeInfo.shadow.fieldName) || null;
+                shadowType = argInfo.shadow;
+                if (argInfo.shadow === undefined || argInfo.shadow === true) {
+                    shadowType = (argTypeInfo.shadow && argTypeInfo.shadow.type) || null;
+                    fieldName = (argTypeInfo.shadow && argTypeInfo.shadow.fieldName) || null;
+                }
             }
 
             // <value> is the ScratchBlocks name for a block input.
@@ -2596,6 +2606,21 @@ class Runtime extends EventEmitter {
      */
     updateCurrentMSecs () {
         this.currentMSecs = Date.now();
+    }
+
+    registerExtension(extensionId) {
+        if (this.extensions.includes(extensionId)) {
+            throw new Error(`Failed to register an existed extension: ${extensionId}`);
+        }
+        this.extensions.push(extensionId);
+    }
+
+    unregisterExtension(extensionId) {
+        const index = this.extensions.indexOf(extensionId);
+        if (index == -1) {
+            throw new Error(`Failed to unregister an unexisted extension: ${extensionId}`);
+        }
+        this.extensions.splice(index);
     }
 }
 

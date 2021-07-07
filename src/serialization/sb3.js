@@ -283,7 +283,7 @@ const getExtensionIdForOpcode = function (opcode) {
     // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
     const index = opcode.indexOf('_');
     const forbiddenSymbols = /[^\w-]/g;
-    const prefix = opcode.substring(0, index).replace(forbiddenSymbols, '-');
+    const prefix = opcode.substring(0, index);
     if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
         if (prefix !== '') return prefix;
     }

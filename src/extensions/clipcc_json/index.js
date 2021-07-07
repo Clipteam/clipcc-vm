@@ -13,7 +13,7 @@ class ClipCCJSONBlocks {
 
     getInfo() {
         return {
-            id: 'clipcc.json',
+            id: 'ccjson',
             name: 'JSON',
             color1: '#FFB11B',
             //menuIconURI: menuIconURI,
@@ -22,7 +22,7 @@ class ClipCCJSONBlocks {
                 {
                     opcode: 'getValueByKey',
                     text: formatMessage({
-                        id: 'clipcc.json.getValueByKey',
+                        id: 'ccjson.getValueByKey',
                         default: 'get [KEY] in [JSON]',
                         description: 'get value in json object by key'
                     }),
@@ -41,7 +41,7 @@ class ClipCCJSONBlocks {
                 {
                     opcode: 'setValueByKey',
                     text: formatMessage({
-                        id: 'clipcc.json.setValueByKey',
+                        id: 'ccjson.setValueByKey',
                         default: 'set [KEY] to [VALUE] in [JSON]',
                         description: 'set value in json object by key'
                     }),

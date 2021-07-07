@@ -8,9 +8,6 @@ const BlockType = require('./block-type');
 // TODO: move these out into a separate repository?
 // TODO: change extension spec so that library info, including extension ID, can be collected through static methods
 
-const libra=require('../extensions/scp_libra');
-const httpio=require('../extensions/clip_httpio');
-
 const builtinExtensions = {
     // This is an example that isn't loaded with the other core blocks,
     // but serves as a reference for loading core blocks as extensions.
@@ -29,7 +26,7 @@ const builtinExtensions = {
     'gdxfor': () => require('../extensions/scratch3_gdx_for'),
     'libra': () => require('../extensions/scp_libra'),
     'httpio': () => require('../extensions/clip_httpio'),
-    'clipcc.json': () => require('../extensions/clipcc_json')
+    'ccjson': () => require('../extensions/clipcc_json')
 };
 
 /**

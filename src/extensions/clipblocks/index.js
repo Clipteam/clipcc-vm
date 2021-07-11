@@ -33,6 +33,45 @@ class ClipBlocks {
                             defaultValue: 'clipccno1'
                         }
                     }
+                },
+                {
+                    opcode: 'deleteVariable',
+                    text: formatMessage({
+                        id: 'clipblocks.deletevar',
+                        default: 'delete a variable [NAME]',
+                        description: 'delete a variable'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'clipccno1'
+                        }
+                    }
+                },
+                {
+                    opcode: 'isVariableExist',
+                    text: formatMessage({
+                        id: 'clipblocks.lookup',
+                        default: 'is [NAME] exist?',
+                        description: 'is the variable exist?'
+                    }),
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'clipccno1'
+                        }
+                    }
+                },
+                {
+                    opcode: 'hideAllSprite',
+                    text: formatMessage({
+                        id: 'clipblocks.hideAllSprite',
+                        default: 'hide all sprite',
+                        description: 'hide all sprite'
+                    }),
+                    blockType: BlockType.COMMAND
                 }
             ]
         }

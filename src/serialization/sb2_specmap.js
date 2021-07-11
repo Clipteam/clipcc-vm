@@ -1649,6 +1649,30 @@ const specMap = {
             }
         ]
     },
+    'deleteVar': {
+        opcode: 'clipblocks_deleteVariable',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'NAME'
+            }
+        ]
+    },
+    'lookup': {
+        opcode: 'clipblocks_isVariableExist',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'NAME'
+            }
+        ]
+    },
+    'setAllSpriteVisible': {
+        opcode: 'clipblocks_hideAllSprite',
+        argMap: []
+    },
 };
 
 /**

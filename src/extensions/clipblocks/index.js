@@ -104,7 +104,88 @@ class ClipBlocks {
                             defaultValue: BooleanParam.FALSE
                         }
                     }
-                }
+                },
+                {
+                    opcode: 'showDialog',
+                    text: formatMessage({
+                        id: 'clipblocks.showDialog',
+                        default: 'show dialog title:[TITLE] content: [CONTENT] left-layout: [BOOLEANMENU] buttontext:[BUTTONTEXT] ',
+                        description: 'show dialog'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        TITLE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "FBI WARNING"
+                        },
+                        CONTENT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "A quick brown fox jumps over the lazy dog!!"
+                        },
+                        BOOLEANMENU: {
+                            type: ArgumentType.STRING,
+                            menu: 'booleanParam',
+                            defaultValue: BooleanParam.FALSE
+                        },
+                        BUTTONTEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "OMG"
+                        }
+                    }
+                },
+                {
+                    opcode: 'colorInPosition',
+                    text: formatMessage({
+                        id: 'clipblocks.colorInPosition',
+                        default: 'color of x:[X] y:[Y]',
+                        description: 'color in position'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        X: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        Y: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        }
+                    }
+                },
+                {
+                    opcode: 'setStageSize',
+                    text: formatMessage({
+                        id: 'clipblocks.setStageSize',
+                        default: 'set stage size to [WIDTH] x [HEIGHT]',
+                        description: 'set stage size'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        WIDTH: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 480
+                        },
+                        HEIGHT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 360
+                        }
+                    }
+                },
+                {
+                    opcode: 'setRate',
+                    text: formatMessage({
+                        id: 'clipblocks.setRate',
+                        default: 'set rate to [RATE]',
+                        description: 'set rate'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        RATE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 30
+                        }
+                    }
+                },
             ],
             menus: {
                 booleanParam: {

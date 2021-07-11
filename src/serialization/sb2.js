@@ -1097,11 +1097,6 @@ const parseBlock = function (sb2block, addBroadcastMsg, getVariableId, extension
                 if (shadowObscured) {
                     fieldValue = 'on';
                 }
-            } else if (expectedArg.inputOp === 'clipblocks.menu.booleanParam') {
-                fieldName = 'booleanParam';
-                if (shadowObscured) {
-                    fieldValue = false;
-                }
             } else if (shadowObscured) {
                 // Filled drop-down menu.
                 fieldValue = '';

@@ -1681,12 +1681,127 @@ const specMap = {
     },
     //it's broken
     'setAllSpriteVisible': {
-        opcode: 'setVisibility',
+        opcode: 'clipblocks_setVisibility',
         argMap: [
             {
                 type: 'input',
-                inputOp: 'clipblocks_menu_booleanParam',
+                inputOp: 'text',
                 inputName: 'BOOLEANMENU'
+            }
+        ]
+    },
+    'showtip': {
+        opcode: 'clipblocks_showDialog',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'TITLE'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'CONTENT'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'BOOLEANMENU'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'BUTTONTEXT'
+            }
+        ]
+    },
+    'dFromX1:Y1:toX2:Y2:': {
+        opcode: 'sensing_distancebetweenposition',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'X1'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'Y1'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'X2'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'Y2'
+            }
+        ]
+    },
+    'dirFromX1:Y1:toX2:Y2:': {
+        opcode: 'sensing_directionbetweenposition',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'X1'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'Y1'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'X2'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'Y2'
+            }
+        ]
+    },
+    'getColorOn': {
+        opcode: 'clipblocks_colorInPosition',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'X'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'Y'
+            }
+        ]
+    },
+    'setResolution': {
+        opcode: 'clipblocks_setStageSize',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'WIDTH'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'HEIGHT'
+            }
+        ]
+    },
+    'setRate': {
+        opcode: 'clipblocks_setRate',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'RATE'
             }
         ]
     },

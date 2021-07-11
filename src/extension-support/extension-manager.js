@@ -26,7 +26,8 @@ const builtinExtensions = {
     'gdxfor': () => require('../extensions/scratch3_gdx_for'),
     'libra': () => require('../extensions/scp_libra'),
     'httpio': () => require('../extensions/clip_httpio'),
-    'ccjson': () => require('../extensions/clipcc_json')
+    'ccjson': () => require('../extensions/clipcc_json'),
+    'clipblocks': () => require('../extensions/clipblocks')
 };
 
 /**

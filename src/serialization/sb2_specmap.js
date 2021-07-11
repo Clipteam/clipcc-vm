@@ -1637,7 +1637,18 @@ const specMap = {
     'call': {
         opcode: 'procedures_call',
         argMap: []
-    }
+    },
+    //Clip Blocks
+    'createVar': {
+        opcode: 'clipblocks_createVariable',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'NAME'
+            }
+        ]
+    },
 };
 
 /**

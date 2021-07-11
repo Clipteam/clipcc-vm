@@ -1669,9 +1669,26 @@ const specMap = {
             }
         ]
     },
+    'getVariableValue': {
+        opcode: 'clipblocks_valueOfVariable',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'NAME'
+            }
+        ]
+    },
+    //it's broken
     'setAllSpriteVisible': {
-        opcode: 'clipblocks_hideAllSprite',
-        argMap: []
+        opcode: 'setVisibility',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'clipblocks_menu_booleanParam',
+                inputName: 'BOOLEANMENU'
+            }
+        ]
     },
 };
 

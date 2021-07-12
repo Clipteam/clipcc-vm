@@ -1685,7 +1685,7 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'clipblocks_menu_booleanParam',
                 inputName: 'BOOLEANMENU'
             }
         ]
@@ -1705,7 +1705,7 @@ const specMap = {
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'clipblocks_menu_booleanParam',
                 inputName: 'BOOLEANMENU'
             },
             {
@@ -1804,6 +1804,50 @@ const specMap = {
                 inputName: 'RATE'
             }
         ]
+    },
+    'JSONparse': {
+        opcode: 'ccjson_getValueByKey',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'VALUE'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'KEY'
+            }
+        ]
+    },
+    'EXsetGraphicEffect:to:': {
+        opcode: 'clipblocks_setFlashGraphicEffect',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'clipblocks_menu_flashGraphicParam',
+                inputName: 'FLASHEFFECT'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'VALUE1'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'VALUE2'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'VALUE3'
+            }
+        ]
+    },
+    'EXfilterReset': {
+        opcode: 'clearFlashGraphicEffect',
+        argMap: []
     },
 };
 

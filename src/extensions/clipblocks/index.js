@@ -11,9 +11,21 @@ const menuIconURI = 'data:image/svg+xml;base64,PHN2ZyBpZD0i5Zu+5bGCXzEiIGRhdGEtb
  * @readonly
  * @enum {string}
  */
- const BooleanParam = {
+const BooleanParam = {
     TRUE: true,
     FALSE: false
+};
+
+/**
+ * Enum for flash graphics.
+ * @readonly
+ * @enum {string}
+ */
+ const FlashGraphicParam = {
+    BEVEL: "bevel",
+    BLUR: "blur",
+    SHADOW: "shadow",
+    GLOW: "glow"
 };
 
 class ClipBlocks {
@@ -186,11 +198,52 @@ class ClipBlocks {
                         }
                     }
                 },
+                {
+                    opcode: 'setFlashGraphicEffect',
+                    text: formatMessage({
+                        id: 'clipblocks.setFlashGraphicEffect',
+                        default: 'set [FLASHEFFECT] flash effect to [VALUE1] [VALUE2] [VALUE3]',
+                        description: 'set flash graphic effect'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        FLASHEFFECT: {
+                            type: ArgumentType.STRING,
+                            menu: 'flashGraphicParam',
+                            defaultValue: FlashGraphicParam.BLUR
+                        },
+                        VALUE1: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 5
+                        },
+                        VALUE2: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 5
+                        },
+                        VALUE3: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 5
+                        },
+                    }
+                },
+                {
+                    opcode: 'clearFlashGraphicEffect',
+                    text: formatMessage({
+                        id: 'clipblocks.clearFlashGraphicEffect',
+                        default: 'clear all flash effect',
+                        description: 'clear all flash effect'
+                    }),
+                    blockType: BlockType.COMMAND
+                },
             ],
             menus: {
                 booleanParam: {
                     acceptReporters: true,
                     items: this.getBooleanParamItem()
+                },
+                flashGraphicParam: {
+                    acceptReporters: true,
+                    items: this.getFlashGraphicParamItem()
                 }
             }
         }
@@ -213,6 +266,43 @@ class ClipBlocks {
                     description: 'label for false'
                 }),
                 value: BooleanParam.FALSE
+            }
+        ];
+    }
+
+    getFlashGraphicParamItem () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'clipblocks.graphicMenu.bevel',
+                    default: 'bevel',
+                    description: 'label for bevel'
+                }),
+                value: FlashGraphicParam.BEVEL
+            },
+            {
+                text: formatMessage({
+                    id: 'clipblocks.graphicMenu.blur',
+                    default: 'blur',
+                    description: 'label for blur'
+                }),
+                value: FlashGraphicParam.BLUR
+            },
+            {
+                text: formatMessage({
+                    id: 'clipblocks.graphicMenu.glow',
+                    default: 'glow',
+                    description: 'label for glow'
+                }),
+                value: FlashGraphicParam.GLOW
+            },
+            {
+                text: formatMessage({
+                    id: 'clipblocks.graphicMenu.shadow',
+                    default: 'shadow',
+                    description: 'label for shadow'
+                }),
+                value: FlashGraphicParam.SHADOW
             }
         ];
     }

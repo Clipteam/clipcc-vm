@@ -1929,6 +1929,20 @@ const specMap = {
             }
         ]
     },
+    'setClipboradData': {
+        opcode: 'clipblocks_setClipboard',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'TEXT'
+            }
+        ]
+    },
+    'getClipboardData': {
+        opcode: 'clipblocks_getClipboard',
+        argMap: []
+    },
 };
 
 /**

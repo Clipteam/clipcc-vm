@@ -235,6 +235,30 @@ class ClipBlocks {
                     }),
                     blockType: BlockType.COMMAND
                 },
+                {
+                    opcode: 'setClipboard',
+                    text: formatMessage({
+                        id: 'clipblocks.setClipboard',
+                        default: 'set the content of clipboard to [TEXT]',
+                        description: 'set clipboard'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "A quick brown fox jumps over the lazy dog."
+                        }
+                    }
+                },
+                {
+                    opcode: 'getClipboard',
+                    text: formatMessage({
+                        id: 'clipblocks.getClipboard',
+                        default: 'content of clipboard',
+                        description: 'get clipboard'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
             ],
             menus: {
                 booleanParam: {
@@ -260,6 +284,56 @@ class ClipBlocks {
     setRate (args){return }
     setFlashGraphicEffect (args){return }
     clearFlashGraphicEffect (args){return }
+    async setClipboard (args){
+        /* 该方法用于http协议下使用
+        const input = document.createElement('INPUT');
+        input.style.opacity  = 0;
+        input.style.position = 'absolute';
+        input.style.left = '-100000px';
+        document.body.appendChild(input);
+        // 创建一个不可见的input
+
+        input.value = args.TEXT;
+        input.select();
+        input.setSelectionRange(0, args.TEXT.length);
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        //自动选中复制销毁
+        */
+        if (!navigator.clipboard) return ; // 不支持该操作
+        navigator.clipboard.writeText(args.TEXT)
+    }
+    async getClipboard (args){
+        if (!navigator.clipboard) return ""; // 不支持该操作
+        if (this.getBroswer().broswer == "FireFox" && parseInt(this.getBroswer().version) < 90) {
+            console.log("Unsupported firefox version!")
+            return ;
+        };//Firefox不支持
+        const permissionStatus = await navigator.permissions.query({name:'clipboard-read'});
+        if (permissionStatus.state != 'granted') return "" // 未授权
+        return await navigator.clipboard.readText();
+    }
+
+    getBroswer(){
+        var Sys = {};
+        var ua = navigator.userAgent.toLowerCase();  
+        var s;  
+        (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? Sys.ie = s[1] :
+        (s = ua.match(/msie ([\d\.]+)/)) ? Sys.ie = s[1] :  
+        (s = ua.match(/edge\/([\d\.]+)/)) ? Sys.edge = s[1] :
+        (s = ua.match(/firefox\/([\d\.]+)/)) ? Sys.firefox = s[1] :  
+        (s = ua.match(/(?:opera|opr).([\d\.]+)/)) ? Sys.opera = s[1] :  
+        (s = ua.match(/chrome\/([\d\.]+)/)) ? Sys.chrome = s[1] :  
+        (s = ua.match(/version\/([\d\.]+).*safari/)) ? Sys.safari = s[1] : 0;  
+        // 根据关系进行判断
+        if (Sys.ie) return {'broswer': "IE", "version": Sys.ie};
+        if (Sys.edge) return {'broswer': "Edge", "version": Sys.edge};
+        if (Sys.firefox) return {'broswer': "FireFox", "version": Sys.firefox};
+        if (Sys.chrome) return {'broswer': "Chrome", "version": Sys.chrome}; 
+        if (Sys.opera) return {'broswer': "Opera", "version": Sys.opera};
+        if (Sys.safari) return {'broswer': "Safari", "version": Sys.safari};
+        return 'Unkonwn';
+      }
 
     getBooleanParamItem () {
         return [

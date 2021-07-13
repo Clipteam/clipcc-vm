@@ -39,6 +39,25 @@ class ClipCCJSONBlocks {
                     }
                 },
                 {
+                    opcode: 'getValueByArray',
+                    text: formatMessage({
+                        id: 'ccjson.getValueByArray',
+                        default: 'get value ([POS] of [ARRAY])',
+                        description: 'export array to list'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        ARRAY: {
+                            type: ArgumentType.STRING,
+                            defaultValue: '["clipcc","is","good"]'
+                        },
+                        POS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        }
+                    }
+                },
+                {
                     opcode: 'setValueByKey',
                     text: formatMessage({
                         id: 'ccjson.setValueByKey',
@@ -66,7 +85,16 @@ class ClipCCJSONBlocks {
     }
 
     getValueByKey(args, util) {
-        return Cast.toString(JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)]);
+        let decodedText = JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)];
+        //console.log(decodedText);
+        if (typeof decodedText == "object") return JSON.stringify(decodedText);
+        return Cast.toString(decodedText);
+    }
+
+    getValueByArray(args, util) {
+        let array = JSON.parse(args.ARRAY);
+        if (typeof array[args.POS] == "object") return JSON.stringify(array[args.POS]);
+        return Cast.toString(array[args.POS]);
     }
 
     setValueByKey(args, util) {

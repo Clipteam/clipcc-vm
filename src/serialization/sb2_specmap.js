@@ -1685,7 +1685,7 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'clipblocks_menu_booleanParam',
+                inputOp: /*'clipblocks_menu_booleanParam'*/'text',
                 inputName: 'BOOLEANMENU'
             }
         ]
@@ -1705,7 +1705,7 @@ const specMap = {
             },
             {
                 type: 'input',
-                inputOp: 'clipblocks_menu_booleanParam',
+                inputOp: /*'clipblocks_menu_booleanParam'*/'text',
                 inputName: 'BOOLEANMENU'
             },
             {
@@ -1720,22 +1720,22 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'X1'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'Y1'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'X2'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'Y2'
             }
         ]
@@ -1745,22 +1745,22 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'X1'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'Y1'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'X2'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'Y2'
             }
         ]
@@ -1770,12 +1770,12 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'X'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'Y'
             }
         ]
@@ -1785,12 +1785,12 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'WIDTH'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'HEIGHT'
             }
         ]
@@ -1800,7 +1800,7 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'RATE'
             }
         ]
@@ -1811,7 +1811,7 @@ const specMap = {
             {
                 type: 'input',
                 inputOp: 'text',
-                inputName: 'VALUE'
+                inputName: 'JSON'
             },
             {
                 type: 'input',
@@ -1825,29 +1825,109 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'clipblocks_menu_flashGraphicParam',
+                inputOp: /*'clipblocks_menu_falshGraphicParam'*/'text',
                 inputName: 'FLASHEFFECT'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'VALUE1'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'VALUE2'
             },
             {
                 type: 'input',
-                inputOp: 'text',
+                inputOp: 'math_number',
                 inputName: 'VALUE3'
             }
         ]
     },
     'EXfilterReset': {
-        opcode: 'clearFlashGraphicEffect',
+        opcode: 'clipblocks_clearFlashGraphicEffect',
         argMap: []
+    },
+    'setFontUnderline': {
+        opcode: 'pen_setPrintFontUnderline',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputName: 'BOOLEANMENU'
+            }
+        ]
+    },
+    'setFontBold': {
+        opcode: 'pen_setPrintFontBold',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputName: 'BOOLEANMENU'
+            }
+        ]
+    },
+    'setFontItalic': {
+        opcode: 'pen_setPrintFontItalic',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputName: 'BOOLEANMENU'
+            }
+        ]
+    },
+    'setFont': {
+        opcode: 'pen_setPrintFont',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'FONT'
+            }
+        ]
+    },
+    'setFontSize': {
+        opcode: 'pen_setPrintFontSize',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'SIZE'
+            }
+        ]
+    },
+    'setFontColor': {
+        opcode: 'pen_setPrintFontColor',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'SIZE'
+            }
+        ]
+    },
+    'printText': {
+        opcode: 'pen_printText',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'TEXT'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'Y'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'X'
+            }
+        ]
     },
 };
 

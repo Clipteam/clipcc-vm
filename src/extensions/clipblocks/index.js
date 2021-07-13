@@ -152,7 +152,7 @@ class ClipBlocks {
                         default: 'color of x:[X] y:[Y]',
                         description: 'color in position'
                     }),
-                    blockType: BlockType.COMMAND,
+                    blockType: BlockType.REPORTER,
                     arguments: {
                         X: {
                             type: ArgumentType.NUMBER,
@@ -248,6 +248,18 @@ class ClipBlocks {
             }
         }
     }
+
+    createVariable (args){return }
+    deleteVariable (args){return }
+    isVariableExist (args){return false}
+    valueOfVariable (args){return 114514}
+    setVisibility (args){return }
+    showDialog (args){return }
+    colorInPosition (args){return 16777215}
+    setStageSize (args){return }
+    setRate (args){return }
+    setFlashGraphicEffect (args){return }
+    clearFlashGraphicEffect (args){return }
 
     getBooleanParamItem () {
         return [

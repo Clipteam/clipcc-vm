@@ -1,5 +1,6 @@
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
+const Variable = require('../../engine/variable');
 const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 
@@ -273,7 +274,10 @@ class ClipBlocks {
         }
     }
 
-    createVariable (args){return }
+    createVariable (args, util){
+        const editingTarget = util.target.sprite.runtime.getEditingTarget();
+        //editingTarget.createVariable(1,"NMSL",Variable.BROADCAST_MESSAGE_TYPE);
+    }
     deleteVariable (args){return }
     isVariableExist (args){return false}
     valueOfVariable (args){return 114514}
@@ -284,6 +288,7 @@ class ClipBlocks {
     setRate (args){return }
     setFlashGraphicEffect (args){return }
     clearFlashGraphicEffect (args){return }
+
     async setClipboard (args){
         /* 该方法用于http协议下使用
         const input = document.createElement('INPUT');
@@ -303,6 +308,7 @@ class ClipBlocks {
         if (!navigator.clipboard) return ; // 不支持该操作
         navigator.clipboard.writeText(args.TEXT)
     }
+
     async getClipboard (args){
         if (!navigator.clipboard) return ""; // 不支持该操作
         if (this.getBroswer().broswer == "FireFox" && parseInt(this.getBroswer().version) < 90) {
@@ -333,7 +339,7 @@ class ClipBlocks {
         if (Sys.opera) return {'broswer': "Opera", "version": Sys.opera};
         if (Sys.safari) return {'broswer': "Safari", "version": Sys.safari};
         return 'Unkonwn';
-      }
+    }
 
     getBooleanParamItem () {
         return [

@@ -46,7 +46,7 @@ const CORE_EXTENSIONS = [
  * @constructor
  */
 class VirtualMachine extends EventEmitter {
-    constructor () {
+    constructor (extensionManager) {
         super();
 
         /**
@@ -166,6 +166,7 @@ class VirtualMachine extends EventEmitter {
         });
 
         this.extensionManager = new ExtensionManager(this.runtime);
+        this.ccExtensionManager = extensionManager;
 
         // Load core extensions
         for (const id of CORE_EXTENSIONS) {
@@ -307,10 +308,9 @@ class VirtualMachine extends EventEmitter {
     /**
      * Load a Scratch project from a .sb, .sb2, .sb3 or json string.
      * @param {string | object} input A json string, object, or ArrayBuffer representing the project to load.
-     * @param {function} extensionCallback A function to deal with extension list.
      * @return {!Promise} Promise that resolves after targets are installed.
      */
-    loadProject (input, extensionCallback) {
+    loadProject (input) {
         if (typeof input === 'object' && !(input instanceof ArrayBuffer) &&
           !ArrayBuffer.isView(input)) {
             // If the input is an object and not any ArrayBuffer
@@ -355,7 +355,7 @@ class VirtualMachine extends EventEmitter {
             });
 
         return validationPromise
-            .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1], extensionCallback))
+            .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1]))
             .then(() => this.runtime.emitProjectLoaded())
             .catch(error => {
                 // Intentionally rejecting here (want errors to be handled by caller)
@@ -485,10 +485,9 @@ class VirtualMachine extends EventEmitter {
      * Load a project from a Scratch JSON representation.
      * @param {string} projectJSON JSON string representing a project.
      * @param {?JSZip} zip Optional zipped project containing assets to be loaded.
-     * @param {function} extensionCallback
      * @returns {Promise} Promise that resolves after the project has loaded
      */
-    deserializeProject (projectJSON, zip, extensionCallback) {
+    deserializeProject (projectJSON, zip) {
         // Clear the current runtime
         this.clear();
 
@@ -506,7 +505,26 @@ class VirtualMachine extends EventEmitter {
             return Promise.reject('Unable to verify Scratch Project version.');
         };
         return deserializePromise().then(({targets, extensions}) => {
-            extensionCallback(extensions.extensionIDs);
+            // Load required extension
+            console.log(this.ccExtensionManager);
+            for (const extensionId of extensions.extensionIDs) {
+                if (this.ccExtensionManager.getLoadStatus(extensionId)) {
+                    continue;
+                }
+                if (this.ccExtensionManager.getInfo(extensionId).api) {
+                    this.ccExtensionManager.getInstance(extensionId).onInit();
+                }
+                else {
+                    this.extensionManager.loadExtensionURL(extensionId);
+                }
+                this.ccExtensionManager.setLoadStatus(extensionId, true);
+            }
+
+            // Migration
+            for (const extensionId of this.ccExtensionManager.getLoadedExtensions()) {
+                this.ccExtensionManager.getInstance(extensionId).onMigration(targets);
+            }
+
             return this.installTargets(targets, extensions, true)
         });
     }

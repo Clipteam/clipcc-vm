@@ -297,8 +297,8 @@ class ExtensionAPI {
         return this.vm.getPlaygroundData();
     }
 
-    loadProject (input, extensionCallback) {
-        return this.vm.loadProject(input, extensionCallback);
+    loadProject (input) {
+        return this.vm.loadProject(input);
     }
 }
 

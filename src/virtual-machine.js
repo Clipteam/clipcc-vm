@@ -521,9 +521,7 @@ class VirtualMachine extends EventEmitter {
             }
 
             // Migration
-            for (const extensionId of this.ccExtensionManager.getLoadedExtensions()) {
-                this.ccExtensionManager.getInstance(extensionId).onMigration(targets);
-            }
+            this.ccExtensionManager.emitEvent('onMigration', targets);
 
             return this.installTargets(targets, extensions, true)
         });

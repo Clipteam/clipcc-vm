@@ -252,6 +252,21 @@ class ClipBlocks {
                     }
                 },
                 {
+                    opcode: 'playSoundFromInternet',
+                    text: formatMessage({
+                        id: 'clipblocks.playSoundFromInternet',
+                        default: 'play sound from URL: [URL]',
+                        description: 'set clipboard'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        URL: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "https://example.music.site/Brain Power.mp3"
+                        }
+                    }
+                },
+                {
                     opcode: 'getClipboard',
                     text: formatMessage({
                         id: 'clipblocks.getClipboard',
@@ -339,6 +354,11 @@ class ClipBlocks {
         if (Sys.opera) return {'broswer': "Opera", "version": Sys.opera};
         if (Sys.safari) return {'broswer': "Safari", "version": Sys.safari};
         return 'Unkonwn';
+    }
+
+    playSoundFromInternet (args){
+        let audio= new Audio(args.URL);
+        audio.play();
     }
 
     getBooleanParamItem () {

@@ -1943,6 +1943,32 @@ const specMap = {
         opcode: 'clipblocks_getClipboard',
         argMap: []
     },
+    'turboOn': {
+        opcode: 'sensing_turnonturbomode',
+        argMap: []
+    },
+    'turboOff': {
+        opcode: 'sensing_turnoffturbomode',
+        argMap: []
+    },
+    'turbo': {
+        opcode: 'sensing_isturbomode',
+        argMap: []
+    },
+    'Sys': {
+        opcode: 'sensing_operatingsystem',
+        argMap: []
+    },
+    'playSoundFromNetwork': {
+        opcode: 'clipblocks_playSoundFromInternet',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'URL'
+            }
+        ]
+    },
 };
 
 /**

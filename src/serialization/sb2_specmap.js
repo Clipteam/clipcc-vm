@@ -1904,7 +1904,7 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: 'math_number',
+                inputOp: 'colour_picker',
                 inputName: 'SIZE'
             }
         ]
@@ -1961,6 +1961,20 @@ const specMap = {
     },
     'playSoundFromNetwork': {
         opcode: 'clipblocks_playSoundFromInternet',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'URL'
+            }
+        ]
+    },
+    'stopSoundFromNetwork': {
+        opcode: 'clipblocks_stopSoundFromInternet',
+        argMap: []
+    },
+    'goto\tWeb': {
+        opcode: 'clipblocks_gotoWebsite',
         argMap: [
             {
                 type: 'input',

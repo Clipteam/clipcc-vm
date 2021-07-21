@@ -3,8 +3,6 @@ const BlockType = require('../../extension-support/block-type');
 const formatMessage = require('format-message');
 const {blockIconURI, menuIconURI} = require('./icons');
 
-const axios = require('axios').default;
-
 class TextFormat {
     constructor(runtime) {
         this.runtime = runtime;

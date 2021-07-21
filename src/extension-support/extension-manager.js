@@ -27,7 +27,8 @@ const builtinExtensions = {
     'libra': () => require('../extensions/scp_libra'),
     'httpio': () => require('../extensions/clip_httpio'),
     'ccjson': () => require('../extensions/clipcc_json'),
-    'clipblocks': () => require('../extensions/clipblocks')
+    'clipblocks': () => require('../extensions/clipblocks'),
+    'textformat': () => require('../extensions/clipcc_textformat')
 };
 
 /**

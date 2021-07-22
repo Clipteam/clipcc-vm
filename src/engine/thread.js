@@ -123,12 +123,13 @@ class _StackFrame {
  * @constructor
  */
 class Thread {
-    constructor (firstBlock) {
+    constructor (firstBlock, runtime) {
         /**
          * ID of top block of the thread
          * @type {!string}
          */
         this.topBlock = firstBlock;
+        this.runtime = runtime;
 
         /**
          * Stack for the thread. When the sequencer enters a control structure,
@@ -420,12 +421,17 @@ class Thread {
         let callCount = 5; // Max number of enclosing procedure calls to examine.
         const sp = this.stack.length - 1;
         for (let i = sp - 1; i >= 0; i--) {
-            const block = this.target.blocks.getBlock(this.stack[i]);
+            let block = this.target.blocks.getBlock(this.stack[i]);
+            if (typeof(block) == "undefined") {
+                block = this.runtime.getProcedureDefinition(procedureCode);
+            }
             if (block.opcode === 'procedures_call' &&
                 block.mutation.proccode === procedureCode) {
-                return true;
+                    return true;
             }
-            if (--callCount < 0) return false;
+            if (--callCount < 0) {
+                return false;
+            }
         }
         return false;
     }

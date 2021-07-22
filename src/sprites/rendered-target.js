@@ -39,6 +39,12 @@ class RenderedTarget extends Target {
         this.drawableID = null;
 
         /**
+         * object that used for store audio.
+         * @type {?Number}
+         */
+         this.audio = new Audio();
+
+        /**
          * Drag state of this rendered target. If true, x/y position can't be
          * changed by blocks.
          * @type {boolean}
@@ -342,23 +348,6 @@ class RenderedTarget extends Target {
     }
 
     /**
-     * Set a say bubble.
-     * @param {?string} type Type of say bubble: "say", "think", or null.
-     * @param {?string} message Message to put in say bubble.
-     */
-    setSay (type, message) {
-        if (this.isStage) {
-            return;
-        }
-        // @todo: Render to stage.
-        if (!type || !message) {
-            log.info('Clearing say bubble');
-            return;
-        }
-        log.info('Setting say bubble:', type, message);
-    }
-
-    /**
      * Set visibility; i.e., whether it's shown or hidden.
      * @param {!boolean} visible True if should be shown.
      */
@@ -458,19 +447,7 @@ class RenderedTarget extends Target {
         );
         if (this.renderer) {
             const costume = this.getCostumes()[this.currentCostume];
-            if (
-                typeof costume.rotationCenterX !== 'undefined' &&
-                typeof costume.rotationCenterY !== 'undefined'
-            ) {
-                const scale = costume.bitmapResolution || 2;
-                const rotationCenter = [
-                    costume.rotationCenterX / scale,
-                    costume.rotationCenterY / scale
-                ];
-                this.renderer.updateDrawableSkinIdRotationCenter(this.drawableID, costume.skinId, rotationCenter);
-            } else {
-                this.renderer.updateDrawableSkinId(this.drawableID, costume.skinId);
-            }
+            this.renderer.updateDrawableSkinId(this.drawableID, costume.skinId);
 
             if (this.visible) {
                 this.emit(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this);
@@ -709,11 +686,7 @@ class RenderedTarget extends Target {
             this.renderer.updateDrawableVisible(this.drawableID, this.visible);
 
             const costume = this.getCostumes()[this.currentCostume];
-            const bitmapResolution = costume.bitmapResolution || 2;
-            this.renderer.updateDrawableSkinIdRotationCenter(this.drawableID, costume.skinId, [
-                costume.rotationCenterX / bitmapResolution,
-                costume.rotationCenterY / bitmapResolution
-            ]);
+            this.renderer.updateDrawableSkinId(this.drawableID, costume.skinId);
 
             for (const effectName in this.effects) {
                 if (!this.effects.hasOwnProperty(effectName)) continue;
@@ -1046,6 +1019,8 @@ class RenderedTarget extends Target {
      * Stop all sounds and clear graphic effects.
      */
     onStopAll () {
+        this.audio.pause();
+        this.audio.currentTime = 0;
         this.clearEffects();
     }
 

@@ -1093,6 +1093,10 @@ const parseBlock = function (sb2block, addBroadcastMsg, getVariableId, extension
                 if (shadowObscured) {
                     fieldValue = 'this sprite';
                 }
+            }  else if (expectedArg.inputOp === 'clipblocks.menu.booleanParam') {
+                if (shadowObscured) {
+                    fieldValue = 'false';
+                }
             } else if (expectedArg.inputOp === 'videoSensing.menu.VIDEO_STATE') {
                 if (shadowObscured) {
                     fieldValue = 'on';

@@ -1,5 +1,6 @@
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
+const TargetType = require('../../extension-support/target-type');
 const Cast = require('../../util/cast');
 const Clone = require('../../util/clone');
 const Color = require('../../util/color');
@@ -26,6 +27,16 @@ const ColorParam = {
     SATURATION: 'saturation',
     BRIGHTNESS: 'brightness',
     TRANSPARENCY: 'transparency'
+};
+
+/**
+ * Enum for true/false.
+ * @readonly
+ * @enum {string}
+ */
+ const BooleanParam = {
+    TRUE: true,
+    FALSE: false
 };
 
 /**
@@ -132,7 +143,7 @@ class Scratch3PenBlocks {
         if (this._penSkinId < 0 && this.runtime.renderer) {
             this._penSkinId = this.runtime.renderer.createPenSkin();
             this._penDrawableId = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
-            this.runtime.renderer.updateDrawableProperties(this._penDrawableId, {skinId: this._penSkinId});
+            this.runtime.renderer.updateDrawableSkinId(this._penDrawableId, this._penSkinId);
         }
         return this._penSkinId;
     }
@@ -243,6 +254,27 @@ class Scratch3PenBlocks {
         ];
     }
 
+    getBooleanParamItem () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'pen.booleanMenu.true',
+                    default: 'true',
+                    description: 'label for true'
+                }),
+                value: BooleanParam.TRUE
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.booleanMenu.false',
+                    default: 'false',
+                    description: 'label for false'
+                }),
+                value: BooleanParam.FALSE
+            }
+        ];
+    }
+
     /**
      * Clamp a pen color parameter to the range (0,100).
      * @param {number} value - the value to be clamped.
@@ -300,13 +332,159 @@ class Scratch3PenBlocks {
                     })
                 },
                 {
+                    opcode: 'setPrintFontUnderline',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setPrintFontUnderline',
+                        default: 'set print font underline to [BOOLEANMENU]',
+                        description: 'set print font underline'
+                    }),
+                    arguments: {
+                        BOOLEANMENU: {
+                            type: ArgumentType.STRING,
+                            menu: 'booleanParam',
+                            defaultValue: BooleanParam.TRUE
+                        }
+                    }
+                },
+                {
+                    opcode: 'setPrintFontBold',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setPrintFontBold',
+                        default: 'set print font bold to [BOOLEANMENU]',
+                        description: 'set print font bold'
+                    }),
+                    arguments: {
+                        BOOLEANMENU: {
+                            type: ArgumentType.STRING,
+                            menu: 'booleanParam',
+                            defaultValue: BooleanParam.TRUE
+                        }
+                    }
+                },
+                {
+                    opcode: 'setPrintFontItalic',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setPrintFontItalic',
+                        default: 'set print font italic to [BOOLEANMENU]',
+                        description: 'set print font italic'
+                    }),
+                    arguments: {
+                        BOOLEANMENU: {
+                            type: ArgumentType.STRING,
+                            menu: 'booleanParam',
+                            defaultValue: BooleanParam.TRUE
+                        }
+                    }
+                },
+                {
+                    opcode: 'setPrintFont',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setPrintFont',
+                        default: 'set print font to [FONT]',
+                        description: 'set print font'
+                    }),
+                    arguments: {
+                        FONT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "Arial"
+                        }
+                    }
+                },
+                {
+                    opcode: 'setPrintFontSize',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setPrintFontSize',
+                        default: 'set print font size to [SIZE]',
+                        description: 'set print font size'
+                    }),
+                    arguments: {
+                        SIZE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 24
+                        }
+                    }
+                },
+                {
+                    opcode: 'setPrintFontColor',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.setPrintFontColor',
+                        default: 'set print font color to [COLOR]',
+                        description: 'set print font color'
+                    }),
+                    arguments: {
+                        COLOR: {
+                            type: ArgumentType.COLOR
+                        }
+                    }
+                },
+                {
+                    opcode: 'printText',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.printText',
+                        default: 'print [TEXT] on x:[X] y:[Y]',
+                        description: 'print text'
+                    }),
+                    arguments: {
+                        TEXT: {
+                            type: ArgumentType.STRING,
+                            defaultValue: "I love ClipCC!"
+                        },
+                        X: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        Y: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        }
+                    }
+                },
+                {
+                    opcode: 'drawRect',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.drawRect',
+                        default: 'use [COLOR] to draw a square on x:[X] y:[Y] width:[WIDTH] height:[HEIGHT]',
+                        description: 'draw a square'
+                    }),
+                    arguments: {
+                        COLOR: {
+                            type: ArgumentType.COLOR
+                        },
+                        X: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        Y: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        },
+                        WIDTH: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 10
+                        },
+                        HEIGHT: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 10
+                        }
+                    }
+                },
+                {
                     opcode: 'stamp',
                     blockType: BlockType.COMMAND,
                     text: formatMessage({
                         id: 'pen.stamp',
                         default: 'stamp',
                         description: 'render current costume on the background'
-                    })
+                    }),
+                    filter: [TargetType.SPRITE]
                 },
                 {
                     opcode: 'penDown',
@@ -315,7 +493,8 @@ class Scratch3PenBlocks {
                         id: 'pen.penDown',
                         default: 'pen down',
                         description: 'start leaving a trail when the sprite moves'
-                    })
+                    }),
+                    filter: [TargetType.SPRITE]
                 },
                 {
                     opcode: 'penUp',
@@ -324,7 +503,8 @@ class Scratch3PenBlocks {
                         id: 'pen.penUp',
                         default: 'pen up',
                         description: 'stop leaving a trail behind the sprite'
-                    })
+                    }),
+                    filter: [TargetType.SPRITE]
                 },
                 {
                     opcode: 'setPenColorToColor',
@@ -338,7 +518,8 @@ class Scratch3PenBlocks {
                         COLOR: {
                             type: ArgumentType.COLOR
                         }
-                    }
+                    },
+                    filter: [TargetType.SPRITE]
                 },
                 {
                     opcode: 'changePenColorParamBy',
@@ -358,7 +539,8 @@ class Scratch3PenBlocks {
                             type: ArgumentType.NUMBER,
                             defaultValue: 10
                         }
-                    }
+                    },
+                    filter: [TargetType.SPRITE]
                 },
                 {
                     opcode: 'setPenColorParamTo',
@@ -378,7 +560,8 @@ class Scratch3PenBlocks {
                             type: ArgumentType.NUMBER,
                             defaultValue: 50
                         }
-                    }
+                    },
+                    filter: [TargetType.SPRITE]
                 },
                 {
                     opcode: 'changePenSizeBy',
@@ -393,7 +576,8 @@ class Scratch3PenBlocks {
                             type: ArgumentType.NUMBER,
                             defaultValue: 1
                         }
-                    }
+                    },
+                    filter: [TargetType.SPRITE]
                 },
                 {
                     opcode: 'setPenSizeTo',
@@ -408,7 +592,8 @@ class Scratch3PenBlocks {
                             type: ArgumentType.NUMBER,
                             defaultValue: 1
                         }
-                    }
+                    },
+                    filter: [TargetType.SPRITE]
                 },
                 /* Legacy blocks, should not be shown in flyout */
                 {
@@ -480,10 +665,24 @@ class Scratch3PenBlocks {
                 colorParam: {
                     acceptReporters: true,
                     items: this._initColorParam()
+                },
+                booleanParam: {
+                    acceptReporters: true,
+                    items: this.getBooleanParamItem()
                 }
             }
         };
     }
+
+    //ClipBlocks
+    setPrintFontUnderline () {return }
+    setPrintFontBold () {return }
+    setPrintFontItalic () {return }
+    setPrintFont () {return }
+    setPrintFontSize () {return }
+    setPrintFontColor () {return }
+    printText () {return }
+    drawRect () {return }
 
     /**
      * The pen "clear" block clears the pen layer's contents.

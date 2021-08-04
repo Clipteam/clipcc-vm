@@ -85,22 +85,34 @@ class ClipCCJSONBlocks {
     }
 
     getValueByKey(args, util) {
-        let decodedText = JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)];
-        //console.log(decodedText);
-        if (typeof decodedText == "object") return JSON.stringify(decodedText);
-        return Cast.toString(decodedText);
+        try {
+            let decodedText = JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)];
+            //console.log(decodedText);
+            if (typeof decodedText == "object") return JSON.stringify(decodedText);
+            return Cast.toString(decodedText);
+        } catch (e) {
+            return "[ERROR] " + e;
+        }
     }
 
     getValueByArray(args, util) {
-        let array = JSON.parse(args.ARRAY);
-        if (typeof array[args.POS] == "object") return JSON.stringify(array[args.POS]);
-        return Cast.toString(array[args.POS]);
+        try {
+            let array = JSON.parse(args.ARRAY);
+            if (typeof array[args.POS] == "object") return JSON.stringify(array[args.POS]);
+            return Cast.toString(array[args.POS]);
+        } catch (e) {
+            return "[ERROR]" + e;
+        }
     }
 
     setValueByKey(args, util) {
-        let obj = JSON.parse(Cast.toString(args.JSON));
-        obj[Cast.toString(args.KEY)] = Cast.toString(args.VALUE);
-        return JSON.stringify(obj);
+        try {
+            let obj = JSON.parse(Cast.toString(args.JSON));
+            obj[Cast.toString(args.KEY)] = Cast.toString(args.VALUE);
+            return JSON.stringify(obj);
+        } catch (e) {
+            return "[ERROR] " + e;
+        }
     }
 }
 

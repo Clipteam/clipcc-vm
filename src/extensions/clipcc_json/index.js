@@ -106,8 +106,9 @@ class ClipCCJSONBlocks {
     }
 
     setValueByKey(args, util) {
+        let obj = {};
         try {
-            let obj = JSON.parse(Cast.toString(args.JSON));
+            if (args.JSON != "") obj = JSON.parse(Cast.toString(args.JSON));
             obj[Cast.toString(args.KEY)] = Cast.toString(args.VALUE);
             return JSON.stringify(obj);
         } catch (e) {

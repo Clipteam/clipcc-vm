@@ -506,7 +506,7 @@ class VirtualMachine extends EventEmitter {
         };
         return deserializePromise().then(({targets, extensions}) => {
             // Load required extension
-            console.log(this.ccExtensionManager);
+            /*console.log(this.ccExtensionManager);
             for (const extensionId of extensions.extensionIDs) {
                 if (this.ccExtensionManager.getLoadStatus(extensionId)) {
                     continue;
@@ -518,7 +518,10 @@ class VirtualMachine extends EventEmitter {
                     this.extensionManager.loadExtensionURL(extensionId);
                 }
                 this.ccExtensionManager.setLoadStatus(extensionId, true);
-            }
+            }*/
+            const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(extensions.extensionIDs);
+            console.log(loadOrder);
+            this.ccExtensionManager.loadExtensionsWithMode(loadOrder, this.extensionManager.loadExtensionURL);
 
             // Migration
             this.ccExtensionManager.emitEvent('onMigration', targets);

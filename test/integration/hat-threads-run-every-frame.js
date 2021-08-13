@@ -75,7 +75,7 @@ test('edge activated hat thread runs after being added to previously executed ta
     // Start VM, load project, and run
     t.doesNotThrow(() => {
         // Note: don't run vm.start(), we handle calling _step() manually in this test
-        vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
+        vm.runtime.currentStepTime = vm.runtime.fps;
         vm.clear();
         vm.setCompatibilityMode(false);
         vm.setTurboMode(false);
@@ -327,7 +327,7 @@ test('edge activated hat thread does not interrupt stack click thread', t => {
             checkIsHatThread(t, vm, vm.runtime.threads[0]);
             t.assert(vm.runtime.threads[0].status === Thread.STATUS_RUNNING);
 
-            vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
+            vm.runtime.currentStepTime = vm.runtime.fps;
 
             // Add stack click thread on this hat
             vm.runtime.toggleScript(vm.runtime.threads[0].topBlock, {stackClick: true});

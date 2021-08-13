@@ -520,7 +520,6 @@ class VirtualMachine extends EventEmitter {
                 this.ccExtensionManager.setLoadStatus(extensionId, true);
             }*/
             const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(extensions.extensionIDs);
-            console.log(loadOrder);
             this.ccExtensionManager.loadExtensionsWithMode(loadOrder, this.extensionManager.loadExtensionURL);
 
             // Migration

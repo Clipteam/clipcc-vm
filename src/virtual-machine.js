@@ -398,7 +398,7 @@ class VirtualMachine extends EventEmitter {
         // into scratch-storage
         const zip = new JSZip();
 
-        this.ccExtensionManager.emitEvent('onProjectSave', data);
+        this.ccExtensionManager.emitEvent('beforeProjectSave', data);
         const projectJson = JSON.stringify(data.projectData);
         // Put everything in a zip file
         zip.file('project.json', projectJson);
@@ -527,7 +527,7 @@ class VirtualMachine extends EventEmitter {
             
             // In some cases, the extension category ID of project will different from extension's.
             // So it's better to let extensions to deal with before getting the extension loading order.
-            this.ccExtensionManager.emitEvent('onProjectLoad', targets, extensions);
+            this.ccExtensionManager.emitEvent('beforeProjectLoad', targets, extensions);
 
             const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(extensions.extensionIDs);
             this.ccExtensionManager.loadExtensionsWithMode(loadOrder, this.extensionManager.loadExtensionURL);

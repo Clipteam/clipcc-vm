@@ -524,11 +524,13 @@ class VirtualMachine extends EventEmitter {
                 }
                 this.ccExtensionManager.setLoadStatus(extensionId, true);
             }*/
+            
+            // In some cases, the extension category ID of project will different from extension's.
+            // So it's better to let extensions to deal with before getting the extension loading order.
+            this.ccExtensionManager.emitEvent('onProjectLoad', targets);
+
             const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(extensions.extensionIDs);
             this.ccExtensionManager.loadExtensionsWithMode(loadOrder, this.extensionManager.loadExtensionURL);
-
-            // ProjectLoad
-            this.ccExtensionManager.emitEvent('onProjectLoad', targets);
 
             return this.installTargets(targets, extensions, true)
         });

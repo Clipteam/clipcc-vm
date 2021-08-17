@@ -388,31 +388,28 @@ class VirtualMachine extends EventEmitter {
      */
     saveProjectSb3 () {
         const sb3 = require('./serialization/sb3');
-        const soundDescs = serializeSounds(this.runtime);
-        const costumeDescs = serializeCostumes(this.runtime);
-        const projectJson = this.toJSON();
+        const data = {
+            soundDescs: serializeSounds(this.runtime),
+            costumeDescs: serializeCostumes(this.runtime),
+            projectData: sb3.serialize(this.runtime)
+        };
 
         // TODO want to eventually move zip creation out of here, and perhaps
         // into scratch-storage
         const zip = new JSZip();
 
-        const data = {
-            soundDescs,
-            costumeDescs,
-            projectData: sb3.serialize(this.runtime)
-        };
         this.ccExtensionManager.emitEvent('onProjectSave', data);
-
+        const projectJson = JSON.stringify(data.projectData);
         // Put everything in a zip file
         zip.file('project.json', projectJson);
-        this._addFileDescsToZip(soundDescs.concat(costumeDescs), zip);
+        this._addFileDescsToZip(data.soundDescs.concat(data.costumeDescs), zip);
 
         return zip.generateAsync({
             type: 'blob',
             mimeType: 'application/x.scratch.sb3',
             compression: 'DEFLATE',
             compressionOptions: {
-                level: 6 // Tradeoff between best speed (1) and best compression (9)
+                level: 9 // Tradeoff between best speed (1) and best compression (9)
             }
         });
     }

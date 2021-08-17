@@ -395,6 +395,8 @@ class VirtualMachine extends EventEmitter {
         // into scratch-storage
         const zip = new JSZip();
 
+        this.ccExtensionManager.emitEvent('onProjectSave', {soundDescs, costumeDescs, projectJson});
+
         // Put everything in a zip file
         zip.file('project.json', projectJson);
         this._addFileDescsToZip(soundDescs.concat(costumeDescs), zip);
@@ -522,8 +524,8 @@ class VirtualMachine extends EventEmitter {
             const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(extensions.extensionIDs);
             this.ccExtensionManager.loadExtensionsWithMode(loadOrder, this.extensionManager.loadExtensionURL);
 
-            // Migration
-            this.ccExtensionManager.emitEvent('onMigration', targets);
+            // ProjectLoad
+            this.ccExtensionManager.emitEvent('onProjectLoad', targets);
 
             return this.installTargets(targets, extensions, true)
         });

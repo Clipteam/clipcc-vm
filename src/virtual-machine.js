@@ -387,6 +387,7 @@ class VirtualMachine extends EventEmitter {
      * @returns {string} Project in a Scratch 3.0 JSON representation.
      */
     saveProjectSb3 () {
+        const sb3 = require('./serialization/sb3');
         const soundDescs = serializeSounds(this.runtime);
         const costumeDescs = serializeCostumes(this.runtime);
         const projectJson = this.toJSON();
@@ -395,7 +396,12 @@ class VirtualMachine extends EventEmitter {
         // into scratch-storage
         const zip = new JSZip();
 
-        this.ccExtensionManager.emitEvent('onProjectSave', {soundDescs, costumeDescs, projectJson});
+        const data = {
+            soundDescs,
+            costumeDescs,
+            projectData: sb3.serialize(this.runtime)
+        };
+        this.ccExtensionManager.emitEvent('onProjectSave', data);
 
         // Put everything in a zip file
         zip.file('project.json', projectJson);

@@ -530,7 +530,7 @@ class VirtualMachine extends EventEmitter {
             this.ccExtensionManager.emitEvent('beforeProjectLoad', targets, extensions);
 
             const loadOrder = this.ccExtensionManager.getExtensionLoadOrder([...extensions.extensionIDs]);
-            this.ccExtensionManager.loadExtensionsWithMode(loadOrder, this.extensionManager.loadExtensionURL);
+            this.ccExtensionManager.loadExtensionsWithMode(loadOrder, extensions => this.extensionManager.loadExtensionURL);
 
             return this.installTargets(targets, extensions, true)
         });

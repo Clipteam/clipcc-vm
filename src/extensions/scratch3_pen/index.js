@@ -727,7 +727,7 @@ class Scratch3PenBlocks {
             ctx.strokeStyle = this.printTextAttribute.color;
             ctx.fillStyle = ctx.strokeStyle;
     
-            ctx.fillText(args.TEXT, args.X, args.Y);
+            ctx.fillText(args.TEXT, args.X, -args.Y);
             ctx.restore();
     
             const printSkin = util.target.runtime.renderer._allSkins[this.bitmapSkinID];

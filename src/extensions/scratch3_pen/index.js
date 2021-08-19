@@ -720,8 +720,8 @@ class Scratch3PenBlocks {
             ctx.save();
             ctx.translate(width / 2, height / 2);
             let resultFont = "";
-            resultFont += this.printTextAttribute.size + "px ";
-            resultFont += this.printTextAttribute.font;
+            resultFont += this.printTextAttribute.size + "px " | "24px ";
+            resultFont += this.printTextAttribute.font | "Arial";
             ctx.font = resultFont;
     
             ctx.strokeStyle = this.printTextAttribute.color;

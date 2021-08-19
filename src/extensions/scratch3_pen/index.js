@@ -344,6 +344,7 @@ class Scratch3PenBlocks {
                         description: 'erase all pen trails and stamps'
                     })
                 },
+                /*
                 {
                     opcode: 'setPrintFontUnderline',
                     blockType: BlockType.COMMAND,
@@ -360,7 +361,6 @@ class Scratch3PenBlocks {
                         }
                     }
                 },
-                /*
                 {
                     opcode: 'setPrintFontBold',
                     blockType: BlockType.COMMAND,

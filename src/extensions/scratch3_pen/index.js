@@ -715,7 +715,7 @@ class Scratch3PenBlocks {
     
             let width = util.target.runtime.constructor.STAGE_WIDTH;
             let height = util.target.runtime.constructor.STAGE_HEIGHT;
-            var ctx = this.bitmapCanvas.getContext("2d");
+            let ctx = this.bitmapCanvas.getContext("2d");
             ctx.clearRect(0, 0, width, height);
             ctx.save();
             ctx.translate(width / 2, height / 2);
@@ -731,7 +731,7 @@ class Scratch3PenBlocks {
             ctx.restore();
     
             const printSkin = util.target.runtime.renderer._allSkins[this.bitmapSkinID];
-            var imageData = ctx.getImageData(0, 0, width, height);
+            let imageData = ctx.getImageData(0, 0, width, height);
             printSkin._setTexture(imageData);
             this.runtime.renderer.penStamp(penSkinId, this.bitmapDrawableID);
     
@@ -743,7 +743,7 @@ class Scratch3PenBlocks {
     
             let width = util.target.runtime.constructor.STAGE_WIDTH;
             let height = util.target.runtime.constructor.STAGE_HEIGHT;
-            var ctx = this.bitmapCanvas.getContext("2d");
+            let ctx = this.bitmapCanvas.getContext("2d");
             ctx.clearRect(0, 0, width, height);
             ctx.save();
             ctx.translate(width / 2, height / 2);
@@ -756,7 +756,7 @@ class Scratch3PenBlocks {
             ctx.restore();
 
             const printSkin = util.target.runtime.renderer._allSkins[this.bitmapSkinID];
-            var imageData = ctx.getImageData(0, 0, width, height);
+            let imageData = ctx.getImageData(0, 0, width, height);
             printSkin._setTexture(imageData);
             this.runtime.renderer.penStamp(penSkinId, this.bitmapDrawableID);
     

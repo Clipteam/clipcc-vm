@@ -74,7 +74,7 @@ class Scratch3PenBlocks {
             bold: false,
             underline: false,
             italic: false,
-            size: "24px",
+            size: "28px",
             font: "Arial",
             color: "#000000"
         }
@@ -720,8 +720,8 @@ class Scratch3PenBlocks {
             ctx.save();
             ctx.translate(width / 2, height / 2);
             let resultFont = "";
-            resultFont += this.printTextAttribute.size + "px " | "24px ";
-            resultFont += this.printTextAttribute.font | "Arial";
+            resultFont += this.printTextAttribute.size + "px ";
+            resultFont += this.printTextAttribute.font;
             ctx.font = resultFont;
     
             ctx.strokeStyle = this.printTextAttribute.color;
@@ -738,7 +738,30 @@ class Scratch3PenBlocks {
             this.runtime.requestRedraw();
         }
 
-        drawRect () {return }
+        drawRect (args, util) {
+            const penSkinId = this._getPenLayerID();  // 获取画笔图层ID
+    
+            let width = util.target.runtime.constructor.STAGE_WIDTH;
+            let height = util.target.runtime.constructor.STAGE_HEIGHT;
+            var ctx = this.bitmapCanvas.getContext("2d");
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+            
+            const rgb = Cast.toRgbColorObject(args.COLOR);
+            const hex = Color.rgbToHex(rgb);
+            ctx.fillStyle = hex;
+            ctx.strokeStyle = ctx.fillStyle;
+            ctx.fillRect(args.X,args.Y,args.WIDTH,args.HEIGHT);
+            ctx.restore();
+
+            const printSkin = util.target.runtime.renderer._allSkins[this.bitmapSkinID];
+            var imageData = ctx.getImageData(0, 0, width, height);
+            printSkin._setTexture(imageData);
+            this.runtime.renderer.penStamp(penSkinId, this.bitmapDrawableID);
+    
+            this.runtime.requestRedraw();
+        }
 
     /**
      * The pen "clear" block clears the pen layer's contents.

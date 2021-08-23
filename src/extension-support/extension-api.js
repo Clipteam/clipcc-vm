@@ -43,12 +43,12 @@ class ExtensionAPI {
     }
 
     _generateBlockInfo (block) {
-        const argumentsInfo = {};
-        for (const name in block.argument) {
-            argumentsInfo[name] = {
-                type: argumentType[block.argument[name].type],
-                defaultValue: block.argument[name].default || '',
-                shadow: block.argument[name].shadow,
+        const paramInfo = {};
+        for (const name in block.param) {
+            paramInfo[name] = {
+                type: argumentType[block.param[name].type],
+                defaultValue: block.param[name].default || '',
+                shadow: block.param[name].shadow,
             };
         }
         return {
@@ -60,7 +60,7 @@ class ExtensionAPI {
                 id: block.messageId,
                 default: block.messageId
             }),
-            arguments: argumentsInfo
+            arguments: paramInfo
         };
     }
 

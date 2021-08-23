@@ -132,8 +132,10 @@ class SharedDispatch {
             }
 
             if (transfer) {
+                // console.log({service, method, responseId, args}, transfer); //DEBUG
                 provider.postMessage({service, method, responseId, args}, transfer);
             } else {
+                // console.log({service, method, responseId, args}, transfer);//DEBUG
                 provider.postMessage({service, method, responseId, args});
             }
         });

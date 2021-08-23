@@ -1637,7 +1637,352 @@ const specMap = {
     'call': {
         opcode: 'procedures_call',
         argMap: []
-    }
+    },
+    //Clip Blocks
+    'createVar': {
+        opcode: 'clipblocks_createVariable',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'NAME'
+            }
+        ]
+    },
+    'deleteVar': {
+        opcode: 'clipblocks_deleteVariable',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'NAME'
+            }
+        ]
+    },
+    'lookup': {
+        opcode: 'clipblocks_isVariableExist',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'NAME'
+            }
+        ]
+    },
+    'getVariableValue': {
+        opcode: 'clipblocks_valueOfVariable',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'NAME'
+            }
+        ]
+    },
+    //it's broken
+    'setAllSpriteVisible': {
+        opcode: 'clipblocks_setVisibility',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: /*'clipblocks_menu_booleanParam'*/'text',
+                inputName: 'BOOLEANMENU'
+            }
+        ]
+    },
+    'showtip': {
+        opcode: 'clipblocks_showDialog',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'TITLE'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'CONTENT'
+            },
+            {
+                type: 'input',
+                inputOp: /*'clipblocks_menu_booleanParam'*/'text',
+                inputName: 'BOOLEANMENU'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'BUTTONTEXT'
+            }
+        ]
+    },
+    'dFromX1:Y1:toX2:Y2:': {
+        opcode: 'sensing_distancebetweenposition',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'X1'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'Y1'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'X2'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'Y2'
+            }
+        ]
+    },
+    'dirFromX1:Y1:toX2:Y2:': {
+        opcode: 'sensing_directionbetweenposition',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'X1'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'Y1'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'X2'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'Y2'
+            }
+        ]
+    },
+    'getColorOn': {
+        opcode: 'clipblocks_colorInPosition',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'X'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'Y'
+            }
+        ]
+    },
+    'setResolution': {
+        opcode: 'clipblocks_setStageSize',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'WIDTH'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'HEIGHT'
+            }
+        ]
+    },
+    'setRate': {
+        opcode: 'clipblocks_setRate',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'RATE'
+            }
+        ]
+    },
+    'JSONparse': {
+        opcode: 'ccjson_getValueByKey',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'JSON'
+            },
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'KEY'
+            }
+        ]
+    },
+    'EXsetGraphicEffect:to:': {
+        opcode: 'clipblocks_setFlashGraphicEffect',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: /*'clipblocks_menu_falshGraphicParam'*/'text',
+                inputName: 'FLASHEFFECT'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'VALUE1'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'VALUE2'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'VALUE3'
+            }
+        ]
+    },
+    'EXfilterReset': {
+        opcode: 'clipblocks_clearFlashGraphicEffect',
+        argMap: []
+    },
+    'setFontUnderline': {
+        opcode: 'pen_setPrintFontUnderline',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputName: 'BOOLEANMENU'
+            }
+        ]
+    },
+    'setFontBold': {
+        opcode: 'pen_setPrintFontBold',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputName: 'BOOLEANMENU'
+            }
+        ]
+    },
+    'setFontItalic': {
+        opcode: 'pen_setPrintFontItalic',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputName: 'BOOLEANMENU'
+            }
+        ]
+    },
+    'setFont': {
+        opcode: 'pen_setPrintFont',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'FONT'
+            }
+        ]
+    },
+    'setFontSize': {
+        opcode: 'pen_setPrintFontSize',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'SIZE'
+            }
+        ]
+    },
+    'setFontColor': {
+        opcode: 'pen_setPrintFontColor',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'colour_picker',
+                inputName: 'SIZE'
+            }
+        ]
+    },
+    'printText': {
+        opcode: 'pen_printText',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'TEXT'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'Y'
+            },
+            {
+                type: 'input',
+                inputOp: 'math_number',
+                inputName: 'X'
+            }
+        ]
+    },
+    'setClipboradData': {
+        opcode: 'clipblocks_setClipboard',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'TEXT'
+            }
+        ]
+    },
+    'getClipboardData': {
+        opcode: 'clipblocks_getClipboard',
+        argMap: []
+    },
+    'turboOn': {
+        opcode: 'sensing_turnonturbomode',
+        argMap: []
+    },
+    'turboOff': {
+        opcode: 'sensing_turnoffturbomode',
+        argMap: []
+    },
+    'turbo': {
+        opcode: 'sensing_isturbomode',
+        argMap: []
+    },
+    'Sys': {
+        opcode: 'sensing_operatingsystem',
+        argMap: []
+    },
+    'playSoundFromNetwork': {
+        opcode: 'clipblocks_playSoundFromInternet',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'URL'
+            }
+        ]
+    },
+    'stopSoundFromNetwork': {
+        opcode: 'clipblocks_stopSoundFromInternet',
+        argMap: []
+    },
+    'goto\tWeb': {
+        opcode: 'clipblocks_gotoWebsite',
+        argMap: [
+            {
+                type: 'input',
+                inputOp: 'text',
+                inputName: 'URL'
+            }
+        ]
+    },
 };
 
 /**

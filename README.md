@@ -1,8 +1,6 @@
 <div align="center">
-<img src="https://clipsrc.blestudio.com/clip-logo-with-text.png"/>
 
 # clipcc-vm
-![](https://img.shields.io/travis/clipteam/clipcc-vm.svg?style=flat-square)
 
 </div>
 

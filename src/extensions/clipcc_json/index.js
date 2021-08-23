@@ -13,7 +13,7 @@ class ClipCCJSONBlocks {
 
     getInfo() {
         return {
-            id: 'clipcc.json',
+            id: 'ccjson',
             name: 'JSON',
             color1: '#FFB11B',
             //menuIconURI: menuIconURI,
@@ -22,7 +22,7 @@ class ClipCCJSONBlocks {
                 {
                     opcode: 'getValueByKey',
                     text: formatMessage({
-                        id: 'clipcc.json.getValueByKey',
+                        id: 'ccjson.getValueByKey',
                         default: 'get [KEY] in [JSON]',
                         description: 'get value in json object by key'
                     }),
@@ -39,9 +39,28 @@ class ClipCCJSONBlocks {
                     }
                 },
                 {
+                    opcode: 'getValueByArray',
+                    text: formatMessage({
+                        id: 'ccjson.getValueByArray',
+                        default: 'get value ([POS] of [ARRAY])',
+                        description: 'export array to list'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        ARRAY: {
+                            type: ArgumentType.STRING,
+                            defaultValue: '["clipcc","is","good"]'
+                        },
+                        POS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        }
+                    }
+                },
+                {
                     opcode: 'setValueByKey',
                     text: formatMessage({
-                        id: 'clipcc.json.setValueByKey',
+                        id: 'ccjson.setValueByKey',
                         default: 'set [KEY] to [VALUE] in [JSON]',
                         description: 'set value in json object by key'
                     }),
@@ -66,13 +85,35 @@ class ClipCCJSONBlocks {
     }
 
     getValueByKey(args, util) {
-        return Cast.toString(JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)]);
+        try {
+            let decodedText = JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)];
+            //console.log(decodedText);
+            if (typeof decodedText == "object") return JSON.stringify(decodedText);
+            return Cast.toString(decodedText);
+        } catch (e) {
+            return "[ERROR] " + e;
+        }
+    }
+
+    getValueByArray(args, util) {
+        try {
+            let array = JSON.parse(args.ARRAY);
+            if (typeof array[args.POS] == "object") return JSON.stringify(array[args.POS]);
+            return Cast.toString(array[args.POS]);
+        } catch (e) {
+            return "[ERROR]" + e;
+        }
     }
 
     setValueByKey(args, util) {
-        let obj = JSON.parse(Cast.toString(args.JSON));
-        obj[Cast.toString(args.KEY)] = Cast.toString(args.VALUE);
-        return JSON.stringify(obj);
+        let obj = {};
+        try {
+            if (args.JSON != "") obj = JSON.parse(Cast.toString(args.JSON));
+            obj[Cast.toString(args.KEY)] = Cast.toString(args.VALUE);
+            return JSON.stringify(obj);
+        } catch (e) {
+            return "[ERROR] " + e;
+        }
     }
 }
 

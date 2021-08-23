@@ -283,7 +283,7 @@ const getExtensionIdForOpcode = function (opcode) {
     // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
     const index = opcode.indexOf('_');
     const forbiddenSymbols = /[^\w-\.]/g;
-    const prefix = opcode.substring(0, index).replace(forbiddenSymbols, '-');
+    const prefix = opcode.substring(0, index);
     if (CORE_EXTENSIONS.indexOf(prefix) === -1) {
         if (prefix !== '') return prefix;
     }
@@ -562,6 +562,9 @@ const serialize = function (runtime, targetId) {
     const meta = Object.create(null);
     meta.semver = '3.0.0';
     meta.vm = vmPackage.version;
+    if (runtime.origin) {
+        meta.origin = runtime.origin;
+    }
 
     // Attach full user agent string to metadata if available
     meta.agent = 'none';
@@ -1235,6 +1238,13 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         extensionIDs: new Set(json.extensions),
         extensionURLs: new Map()
     };
+
+    // Store the origin field (e.g. project originated at CSFirst) so that we can save it again.
+    if (json.meta && json.meta.origin) {
+        runtime.origin = json.meta.origin;
+    } else {
+        runtime.origin = null;
+    }
 
     // First keep track of the current target order in the json,
     // then sort by the layer order property before parsing the targets

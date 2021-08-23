@@ -303,6 +303,18 @@ class Runtime extends EventEmitter {
         this.compatibilityMode = false;
 
         /**
+         * FPS 
+         * @type {number}
+         */
+        this.fps = parseInt(window.localStorage.getItem("fps")) | 60;
+
+        /**
+         * Compatibility FPS
+         * @type {number}
+         */
+         this.comFps = parseInt(window.localStorage.getItem("fps")) / 2 | 30;
+
+        /**
          * A reference to the current runtime stepping interval, set
          * by a `setInterval`.
          * @type {!number}
@@ -397,6 +409,13 @@ class Runtime extends EventEmitter {
          * @type {function}
          */
         this.removeCloudVariable = this._initializeRemoveCloudVariable(newCloudDataManager);
+
+        /**
+         * A string representing the origin of the current project from outside of the
+         * Scratch community, such as CSFirst.
+         * @type {?string}
+         */
+        this.origin = null;
     }
 
     /**
@@ -2570,9 +2589,9 @@ class Runtime extends EventEmitter {
         // Do not start if we are already running
         if (this._steppingInterval) return;
 
-        let interval = Runtime.THREAD_STEP_INTERVAL;
+        let interval = 1000 / this.fps;
         if (this.compatibilityMode) {
-            interval = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
+            interval = 1000 / this.comFps;
         }
         this.currentStepTime = interval;
         this._steppingInterval = setInterval(() => {

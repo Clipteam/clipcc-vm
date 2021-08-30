@@ -1,7 +1,7 @@
-const version = "3.0.1";
+const version = '3.0.2';
 
 class Version {
-    static getVersion() {
+    static getVersion () {
         return version;
     }
 }

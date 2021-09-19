@@ -529,8 +529,8 @@ class VirtualMachine extends EventEmitter {
             // So it's better to let extensions to deal with before getting the extension loading order.
             this.ccExtensionManager.emitEvent('beforeProjectLoad', targets, extensions);
 
-            const loadOrder = this.ccExtensionManager.getExtensionLoadOrder([...extensions.extensionIDs]);
-            this.ccExtensionManager.loadExtensionsWithMode(loadOrder, extensions => this.extensionManager.loadExtensionURL);
+            const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(Array.from(extensions.extensionIDs));
+            this.ccExtensionManager.loadExtensionsWithMode(loadOrder, extension => this.extensionManager.loadExtensionURL(extension));
 
             return this.installTargets(targets, extensions, true)
         });

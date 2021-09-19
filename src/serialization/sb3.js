@@ -555,8 +555,8 @@ const serialize = function (runtime, targetId) {
     obj.monitors = serializeMonitors(runtime.getMonitorState());
 
     // Assemble extension list
-    //obj.extensions = Array.from(extensions);
-    obj.extensions = Array.from(runtime.extensions); // Test: use cc extension
+    // obj.extensions = Array.from(extensions);
+    obj.extensions = Array.from(runtime.extensions);
 
     // Assemble metadata
     const meta = Object.create(null);
@@ -1235,7 +1235,7 @@ const replaceUnsafeCharsInVariableIds = function (targets) {
  */
 const deserialize = function (json, runtime, zip, isSingleSprite) {
     const extensions = {
-        extensionIDs: new Set(json.extensions),
+        extensionIDs: new Set(json.extension || []),
         extensionURLs: new Map()
     };
 

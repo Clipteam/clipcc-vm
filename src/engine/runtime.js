@@ -303,18 +303,6 @@ class Runtime extends EventEmitter {
         this.compatibilityMode = false;
 
         /**
-         * FPS 
-         * @type {number}
-         */
-        this.fps = 60;
-
-        /**
-         * Compatibility FPS
-         * @type {number}
-         */
-         this.comFps = 30;
-
-        /**
          * A reference to the current runtime stepping interval, set
          * by a `setInterval`.
          * @type {!number}
@@ -2579,9 +2567,9 @@ class Runtime extends EventEmitter {
         // Do not start if we are already running
         if (this._steppingInterval) return;
 
-        let interval = 1000 / this.fps;
+        let interval = Runtime.THREAD_STEP_INTERVAL;
         if (this.compatibilityMode) {
-            interval = 1000 / this.comFps;
+            interval = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
         }
         this.currentStepTime = interval;
         this._steppingInterval = setInterval(() => {

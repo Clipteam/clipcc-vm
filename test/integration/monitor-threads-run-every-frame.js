@@ -27,7 +27,7 @@ test('monitor thread runs every frame', t => {
     // Start VM, load project, and run
     t.doesNotThrow(() => {
         // Note: don't run vm.start(), we handle calling _step() manually in this test
-        vm.runtime.currentStepTime = vm.runtime.fps;
+        vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
         vm.clear();
         vm.setCompatibilityMode(false);
         vm.setTurboMode(false);

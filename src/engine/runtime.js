@@ -306,13 +306,13 @@ class Runtime extends EventEmitter {
          * FPS 
          * @type {number}
          */
-        this.fps = parseInt(window.localStorage.getItem("fps")) | 60;
+        this.fps = 60;
 
         /**
          * Compatibility FPS
          * @type {number}
          */
-         this.comFps = parseInt(window.localStorage.getItem("fps")) / 2 | 30;
+         this.comFps = 30;
 
         /**
          * A reference to the current runtime stepping interval, set

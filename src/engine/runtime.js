@@ -296,6 +296,10 @@ class Runtime extends EventEmitter {
          */
         this.turboMode = false;
 
+        // the framerate of clipcc-vm
+        // 60 to match default of compatibility mode off
+        this.frameRate = 60;
+
         /**
          * Whether the project is in "compatibility mode" (30 TPS).
          * @type {Boolean}
@@ -2137,7 +2141,20 @@ class Runtime extends EventEmitter {
      * @param {boolean} compatibilityModeOn True iff in compatibility mode.
      */
     setCompatibilityMode (compatibilityModeOn) {
+        /*
         this.compatibilityMode = compatibilityModeOn;
+        if (this._steppingInterval) {
+            clearInterval(this._steppingInterval);
+            this._steppingInterval = null;
+            this.start();
+        }
+        */
+        if (compatibilityModeOn) this.setFramerate(30);
+        else this.setFramerate(60);
+    }
+
+    setFramerate (framerate) {
+        this.framerate = framerate;
         if (this._steppingInterval) {
             clearInterval(this._steppingInterval);
             this._steppingInterval = null;
@@ -2567,10 +2584,7 @@ class Runtime extends EventEmitter {
         // Do not start if we are already running
         if (this._steppingInterval) return;
 
-        let interval = Runtime.THREAD_STEP_INTERVAL;
-        if (this.compatibilityMode) {
-            interval = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
-        }
+        let interval = 1000 / this.framerate;
         this.currentStepTime = interval;
         this._steppingInterval = setInterval(() => {
             this._step();

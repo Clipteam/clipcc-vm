@@ -2154,7 +2154,7 @@ class Runtime extends EventEmitter {
     }
 
     setFramerate (framerate) {
-        this.framerate = framerate;
+        this.frameRate = framerate;
         if (this._steppingInterval) {
             clearInterval(this._steppingInterval);
             this._steppingInterval = null;
@@ -2584,7 +2584,7 @@ class Runtime extends EventEmitter {
         // Do not start if we are already running
         if (this._steppingInterval) return;
 
-        let interval = 1000 / this.framerate;
+        let interval = 1000 / this.frameRate;
         this.currentStepTime = interval;
         this._steppingInterval = setInterval(() => {
             this._step();

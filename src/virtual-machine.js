@@ -44,7 +44,7 @@ const CORE_EXTENSIONS = [
  * @constructor
  */
 class VirtualMachine extends EventEmitter {
-    constructor () {
+    constructor (version) {
         super();
 
         /**
@@ -55,6 +55,8 @@ class VirtualMachine extends EventEmitter {
         centralDispatch.setService('runtime', this.runtime).catch(e => {
             log.error(`Failed to register runtime service: ${JSON.stringify(e)}`);
         });
+        
+        this.runtime.version = version;
 
         /**
          * The "currently editing"/selected target ID for the VM.
@@ -195,11 +197,8 @@ class VirtualMachine extends EventEmitter {
      */
     setTurboMode (turboModeOn) {
         this.runtime.turboMode = !!turboModeOn;
-        if (this.runtime.turboMode) {
-            this.emit(Runtime.TURBO_MODE_ON);
-        } else {
-            this.emit(Runtime.TURBO_MODE_OFF);
-        }
+        if (this.runtime.turboMode) this.emit(Runtime.TURBO_MODE_ON);
+        else this.emit(Runtime.TURBO_MODE_OFF);
     }
 
     /**

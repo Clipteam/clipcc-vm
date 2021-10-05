@@ -189,6 +189,13 @@ class Runtime extends EventEmitter {
          * @type {Array.<!Target>}
          */
         this.executableTargets = [];
+        
+        /**
+         * The version of ClipCC.
+         * It should be set by clipcc-gui.
+         * @type {String}
+         */
+        this.version = "unknown";
 
         /**
          * A list of threads that are currently running in the VM.

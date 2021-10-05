@@ -53,7 +53,7 @@ class VirtualMachine extends EventEmitter {
          * VM runtime, to store blocks, I/O devices, sprites/targets, etc.
          * @type {!Runtime}
          */
-        this.runtime = new Runtime();
+        this.runtime = new Runtime(this);
         centralDispatch.setService('runtime', this.runtime).catch(e => {
             log.error(`Failed to register runtime service: ${JSON.stringify(e)}`);
         });
@@ -409,10 +409,42 @@ class VirtualMachine extends EventEmitter {
             mimeType: 'application/x.scratch.sb3',
             compression: 'DEFLATE',
             compressionOptions: {
+                level: 6 // Tradeoff between best speed (1) and best compression (9)
+            }
+        });
+    }
+
+    /**
+     * @returns {string} Project in a Scratch 3.0 JSON representation.
+     */
+    saveProjectCc3 () {
+        const sb3 = require('./serialization/cc3');
+        const data = {
+            soundDescs: serializeSounds(this.runtime),
+            costumeDescs: serializeCostumes(this.runtime),
+            projectData: sb3.serialize(this.runtime)
+        };
+
+        // TODO want to eventually move zip creation out of here, and perhaps
+        // into scratch-storage
+        const zip = new JSZip();
+
+        this.ccExtensionManager.emitEvent('beforeProjectSave', data);
+        const projectJson = JSON.stringify(data.projectData);
+        // Put everything in a zip file
+        zip.file('project.json', projectJson);
+        this._addFileDescsToZip(data.soundDescs.concat(data.costumeDescs), zip);
+
+        return zip.generateAsync({
+            type: 'blob',
+            mimeType: 'application/x.clipcc.cc3',
+            compression: 'DEFLATE',
+            compressionOptions: {
                 level: 9 // Tradeoff between best speed (1) and best compression (9)
             }
         });
     }
+    
 
     /*
      * @type {Array<object>} Array of all costumes and sounds currently in the runtime
@@ -498,6 +530,10 @@ class VirtualMachine extends EventEmitter {
 
         const runtime = this.runtime;
         const deserializePromise = function () {
+            if (projectJSON.meta && projectJSON.meta.editor === 'clipcc') {
+                const cc3 = require('./serialization/cc3');
+                return cc3.deserialize(projectJSON, runtime, zip);
+            }
             const projectVersion = projectJSON.projectVersion;
             if (projectVersion === 2) {
                 const sb2 = require('./serialization/sb2');
@@ -669,6 +705,20 @@ class VirtualMachine extends EventEmitter {
         // Validate & parse
         const sb3 = require('./serialization/sb3');
         return sb3
+            .deserialize(sprite, this.runtime, zip, true)
+            .then(({targets, extensions}) => this.installTargets(targets, extensions, false));
+    }
+
+    /**
+     * Add a single cc3 sprite.
+     * @param {object} sprite Object rperesenting 3.0 sprite to be added.
+     * @param {?ArrayBuffer} zip Optional zip of assets being referenced by target json
+     * @returns {Promise} Promise that resolves after the sprite is added
+     */
+    _addSpriteCc3 (sprite, zip) {
+        // Validate & parse
+        const cc3 = require('./serialization/cc3');
+        return cc3
             .deserialize(sprite, this.runtime, zip, true)
             .then(({targets, extensions}) => this.installTargets(targets, extensions, false));
     }

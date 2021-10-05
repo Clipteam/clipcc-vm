@@ -555,8 +555,7 @@ const serialize = function (runtime, targetId) {
     obj.monitors = serializeMonitors(runtime.getMonitorState());
 
     // Assemble extension list
-    // obj.extensions = Array.from(extensions);
-    obj.extensions = Array.from(runtime.extensions);
+    obj.extensions = Array.from(extensions);
 
     // Assemble metadata
     const meta = Object.create(null);
@@ -1235,7 +1234,7 @@ const replaceUnsafeCharsInVariableIds = function (targets) {
  */
 const deserialize = function (json, runtime, zip, isSingleSprite) {
     const extensions = {
-        extensionIDs: new Set(json.extension || []),
+        extensionIDs: new Set(),
         extensionURLs: new Map()
     };
 
@@ -1297,5 +1296,12 @@ module.exports = {
     deserialize: deserialize,
     deserializeBlocks: deserializeBlocks,
     serializeBlocks: serializeBlocks,
-    getExtensionIdForOpcode: getExtensionIdForOpcode
+    getExtensionIdForOpcode: getExtensionIdForOpcode,
+    getSimplifiedLayerOrdering,
+    serializeTarget,
+    serializeMonitors,
+    parseScratchAssets,
+    parseScratchObject,
+    replaceUnsafeCharsInVariableIds,
+    deserializeMonitor
 };

@@ -2161,7 +2161,7 @@ class Runtime extends EventEmitter {
     }
 
     setFramerate (framerate) {
-        this.frameRate = framerate;
+        if(framerate<=250 && framerate>=0) this.frameRate = framerate; //帧率合法性判断
         if (this._steppingInterval) {
             clearInterval(this._steppingInterval);
             this._steppingInterval = null;

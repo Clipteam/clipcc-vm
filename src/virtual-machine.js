@@ -174,6 +174,8 @@ class VirtualMachine extends EventEmitter {
         this.flyoutBlockListener = this.flyoutBlockListener.bind(this);
         this.monitorBlockListener = this.monitorBlockListener.bind(this);
         this.variableListener = this.variableListener.bind(this);
+        
+        this.compressionLevel = 6;
     }
 
     /**
@@ -208,6 +210,15 @@ class VirtualMachine extends EventEmitter {
      */
     setCompatibilityMode (compatibilityModeOn) {
         this.runtime.setCompatibilityMode(!!compatibilityModeOn);
+    }
+    
+    /**
+     * Set the compression level of sb3 file.
+     * It's exposed to clipcc-gui.
+     * @param {number} the compression level.
+     */
+    setCompressionLevel (level) {
+    	if (level<=9 && level>=1) this.compressionLevel = level;
     }
 
     /**
@@ -396,7 +407,7 @@ class VirtualMachine extends EventEmitter {
             mimeType: 'application/x.scratch.sb3',
             compression: 'DEFLATE',
             compressionOptions: {
-                level: 6 // Tradeoff between best speed (1) and best compression (9)
+                level: this.compressionLevel // Tradeoff between best speed (1) and best compression (9)
             }
         });
     }

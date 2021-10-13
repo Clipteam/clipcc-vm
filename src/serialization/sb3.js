@@ -7,6 +7,7 @@
 const vmPackage = require('../../package.json');
 const Blocks = require('../engine/blocks');
 const Sprite = require('../sprites/sprite');
+const {isExtensionExists} = require('../extension-support/extension-list')
 const Variable = require('../engine/variable');
 const Comment = require('../engine/comment');
 const MonitorRecord = require('../engine/monitor-record');
@@ -947,13 +948,19 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
         for (const blockId in object.blocks) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
             const blockJSON = object.blocks[blockId];
-            blocks.createBlock(blockJSON);
 
             // If the block is from an extension, record it.
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
-                extensions.extensionIDs.add(extensionID);
+                if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
+                else {
+                    console.log("扩展" + extensionID + "不存在！尝试删除该模块...", blockJSON);
+                    let originalOpcode = blockJSON.opcode;
+                    blockJSON.opcode = "procedures_call";
+                }
             }
+
+            blocks.createBlock(blockJSON);
         }
     }
     // Costumes from JSON.

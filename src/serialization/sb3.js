@@ -948,15 +948,21 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
         for (const blockId in object.blocks) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
             const blockJSON = object.blocks[blockId];
+            console.log(blockJSON); //debug
 
             // If the block is from an extension, record it.
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
                 if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
                 else {
-                    console.log("扩展" + extensionID + "不存在！尝试删除该模块...", blockJSON);
+                    console.log("扩展" + extensionID + "不存在！尝试删除该模块...", blockJSON.id);
                     let originalOpcode = blockJSON.opcode;
                     blockJSON.opcode = "procedures_call";
+                    if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
+                    blockJSON.mutation.proccode = "$UnknownExt[" + extensionID.trim() + "] " + originalOpcode;
+                    blockJSON.mutation.children = [];
+                    blockJSON.mutation.tagName = "mutation";
+                    console.log("替换后：", blockJSON);
                 }
             }
 

@@ -959,9 +959,14 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
                     let originalOpcode = blockJSON.opcode;
                     blockJSON.opcode = "procedures_call";
                     if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
-                    blockJSON.mutation.proccode = "$UnknownExt[" + extensionID.trim() + "] " + originalOpcode;
+                    blockJSON.mutation.proccode = "[" + extensionID.trim() + "] " + originalOpcode;
                     blockJSON.mutation.children = [];
                     blockJSON.mutation.tagName = "mutation";
+                    blockJSON.extra = {
+                        isUnknownBlocks: true,
+                        originalInput: blockJSON.inputs
+                    }
+                    delete blockJSON.inputs;
                     console.log("替换后：", blockJSON);
                 }
             }

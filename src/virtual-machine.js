@@ -546,29 +546,24 @@ class VirtualMachine extends EventEmitter {
             return Promise.reject('Unable to verify Scratch Project version.');
         };
         return deserializePromise().then(({targets, extensions}) => {
-            // Load required extension
-            /*console.log(this.ccExtensionManager);
-            for (const extensionId of extensions.extensionIDs) {
-                if (this.ccExtensionManager.getLoadStatus(extensionId)) {
-                    continue;
+            if (Array.isArray(extensions)) {
+                const temp = {};
+                for (const extension of extensions) {
+                    temp[extension] = '1.0.0';
                 }
-                if (this.ccExtensionManager.getInfo(extensionId).api) {
-                    this.ccExtensionManager.getInstance(extensionId).onInit();
-                }
-                else {
-                    this.extensionManager.loadExtensionURL(extensionId);
-                }
-                this.ccExtensionManager.setLoadStatus(extensionId, true);
-            }*/
-            
+                extensions = temp;
+            }
+
+            this.ccExtensionManager.emitEventToAll('beforeProjectLoadExtension', targets, extensions);
+
+            const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(Object.keys(extensions));
+            this.ccExtensionManager.loadExtensionsWithMode(loadOrder, extension => this.extensionManager.loadExtensionURL(extension));
+
             // In some cases, the extension category ID of project will different from extension's.
             // So it's better to let extensions to deal with before getting the extension loading order.
             this.ccExtensionManager.emitEvent('beforeProjectLoad', targets, extensions);
 
-            const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(Array.from(extensions.extensionIDs));
-            this.ccExtensionManager.loadExtensionsWithMode(loadOrder, extension => this.extensionManager.loadExtensionURL(extension));
-
-            return this.installTargets(targets, extensions, true)
+            return this.installTargets(targets, null, true)
         });
     }
 

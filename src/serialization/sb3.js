@@ -1287,7 +1287,7 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         })
         .then(targets => ({
             targets,
-            extensions
+            extensions: Array.from(extensions.extensionIDs)
         }));
 };
 

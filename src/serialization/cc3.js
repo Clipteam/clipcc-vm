@@ -46,8 +46,7 @@ const serialize = function (runtime, targetId) {
     obj.monitors = sb3.serializeMonitors(runtime.getMonitorState());
 
     // Assemble extension list
-    obj.extensions = Array.from(runtime.vm.ccExtensionManager.getLoadedExtensions());
-    console.log(obj.extensions);
+    obj.extensions = runtime.vm.ccExtensionManager.getLoadedExtensions();
 
     // Assemble metadata
     const meta = Object.create(null);
@@ -130,10 +129,7 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         })
         .then(targets => ({
             targets,
-            extensions: {
-                extensionIDs: new Set(json.extensions || []),
-                extensionURLs: new Map()
-            }
+            extensions: json.extensions
         }));
 };
 

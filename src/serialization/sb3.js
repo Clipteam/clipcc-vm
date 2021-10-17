@@ -916,6 +916,11 @@ const parseScratchAssets = function (object, runtime, zip) {
     return assets;
 };
 
+/**
+ * Get the reporter blocks to replace them.
+ * @param {object} blocks - A deserialized blocks object.
+ * @return {set} A set contain the id of reporter blocks
+ */
 const getReporters = function (blocks) {
 	let reporters = new Set();
 	console.log("开始获取Reporter", blocks);
@@ -945,11 +950,9 @@ const getReporters = function (blocks) {
  * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
  */
 const parseScratchObject = function (object, runtime, extensions, zip, assets) {
-    if (!object.hasOwnProperty('name')) {
-        // Watcher/monitor - skip this object until those are implemented in VM.
-        // @todo
-        return Promise.resolve(null);
-    }
+	// Watcher/monitor - skip this object until those are implemented in VM.
+	// @todo
+    if (!object.hasOwnProperty('name')) return Promise.resolve(null);
     // Blocks container for this object.
     const blocks = new Blocks(runtime);
     
@@ -960,9 +963,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     const sprite = new Sprite(blocks, runtime);
 
     // Sprite/stage name from JSON.
-    if (object.hasOwnProperty('name')) {
-        sprite.name = object.name;
-    }
+    if (object.hasOwnProperty('name')) sprite.name = object.name;
     if (object.hasOwnProperty('blocks')) {
         deserializeBlocks(object.blocks);
         if (!reporters) {
@@ -986,7 +987,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
                         isUnknownBlocks: true,
                         originalInputs: blockJSON.inputs
                     }
-                    if (!reporters.has(blockJSON.id)) {
+                    if (!reporters.has(blockJSON.id)) { // 检测是否需要转换为reporter
                     	blockJSON.opcode = "procedures_call";
                     	if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
                     	blockJSON.mutation.proccode = "[" + extensionID.trim() + "] " + originalOpcode;
@@ -994,7 +995,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
                     	blockJSON.mutation.tagName = "mutation";
                     } else {
                     	// 暂时没想到区分boolean/string的方法，于是暂用Boolean替代
-                    	// 关于为什么是Boolean，因为在判断语句下使用string可能会导致Blockly解析异常。
+                    	// 关于为什么是Boolean，因为在判断语句下使用Reporter可能会导致Blockly解析异常。
                     	blockJSON.opcode = "argument_reporter_boolean";
                     	if(!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
                     	blockJSON.fields.VALUE = {
@@ -1016,21 +1017,11 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     // Create the first clone, and load its run-state from JSON.
     const target = sprite.createClone(object.isStage ? StageLayering.BACKGROUND_LAYER : StageLayering.SPRITE_LAYER);
     // Load target properties from JSON.
-    if (object.hasOwnProperty('tempo')) {
-        target.tempo = object.tempo;
-    }
-    if (object.hasOwnProperty('volume')) {
-        target.volume = object.volume;
-    }
-    if (object.hasOwnProperty('videoTransparency')) {
-        target.videoTransparency = object.videoTransparency;
-    }
-    if (object.hasOwnProperty('videoState')) {
-        target.videoState = object.videoState;
-    }
-    if (object.hasOwnProperty('textToSpeechLanguage')) {
-        target.textToSpeechLanguage = object.textToSpeechLanguage;
-    }
+    if (object.hasOwnProperty('tempo')) target.tempo = object.tempo;
+    if (object.hasOwnProperty('volume')) target.volume = object.volume;
+    if (object.hasOwnProperty('videoTransparency')) target.videoTransparency = object.videoTransparency;
+    if (object.hasOwnProperty('videoState')) target.videoState = object.videoState;
+    if (object.hasOwnProperty('textToSpeechLanguage')) target.textToSpeechLanguage = object.textToSpeechLanguage;
     if (object.hasOwnProperty('variables')) {
         for (const varId in object.variables) {
             const variable = object.variables[varId];
@@ -1090,45 +1081,25 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
                 comment.height,
                 comment.minimized
             );
-            if (comment.blockId) {
-                newComment.blockId = comment.blockId;
-            }
+            if (comment.blockId) newComment.blockId = comment.blockId;
             target.comments[newComment.id] = newComment;
         }
     }
-    if (object.hasOwnProperty('x')) {
-        target.x = object.x;
-    }
-    if (object.hasOwnProperty('y')) {
-        target.y = object.y;
-    }
-    if (object.hasOwnProperty('direction')) {
-        target.direction = object.direction;
-    }
-    if (object.hasOwnProperty('size')) {
-        target.size = object.size;
-    }
-    if (object.hasOwnProperty('visible')) {
-        target.visible = object.visible;
-    }
-    if (object.hasOwnProperty('currentCostume')) {
-        target.currentCostume = MathUtil.clamp(object.currentCostume, 0, object.costumes.length - 1);
-    }
-    if (object.hasOwnProperty('rotationStyle')) {
-        target.rotationStyle = object.rotationStyle;
-    }
-    if (object.hasOwnProperty('isStage')) {
-        target.isStage = object.isStage;
-    }
+    if (object.hasOwnProperty('x')) target.x = object.x;
+    if (object.hasOwnProperty('y')) target.y = object.y;
+    if (object.hasOwnProperty('direction')) target.direction = object.direction;
+    if (object.hasOwnProperty('size')) target.size = object.size;
+    if (object.hasOwnProperty('visible')) target.visible = object.visible;
+    if (object.hasOwnProperty('currentCostume')) target.currentCostume = MathUtil.clamp(object.currentCostume, 0, object.costumes.length - 1);
+    if (object.hasOwnProperty('rotationStyle')) target.rotationStyle = object.rotationStyle;
+    if (object.hasOwnProperty('isStage')) target.isStage = object.isStage;
     if (object.hasOwnProperty('targetPaneOrder')) {
         // Temporarily store the 'targetPaneOrder' property
         // so that we can correctly order sprites in the target pane.
         // This will be deleted after we are done parsing and ordering the targets list.
         target.targetPaneOrder = object.targetPaneOrder;
     }
-    if (object.hasOwnProperty('draggable')) {
-        target.draggable = object.draggable;
-    }
+    if (object.hasOwnProperty('draggable')) target.draggable = object.draggable;
     Promise.all(costumePromises).then(costumes => {
         sprite.costumes = costumes;
     });

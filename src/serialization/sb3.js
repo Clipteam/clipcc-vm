@@ -916,6 +916,24 @@ const parseScratchAssets = function (object, runtime, zip) {
     return assets;
 };
 
+const getReporters = function (blocks) {
+	let reporters = new Set();
+	console.log("开始获取Reporter", blocks);
+	for (const blockId in blocks) {
+		const block = blocks[blockId];
+		console.log("开始遍历block", block);
+		for (const inputId in block.inputs) {
+			const input = block.inputs[inputId];
+			console.log("遍历input", input);
+			if(input.block && input.block != input.shadow) {
+				reporters.add(input.block);
+				console.log("检测到REPORTER", input.block);
+			}
+		}
+	}
+	return reporters;
+}
+
 /**
  * Parse a single "Scratch object" and create all its in-memory VM objects.
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
@@ -934,6 +952,9 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     }
     // Blocks container for this object.
     const blocks = new Blocks(runtime);
+    
+    // The list of reporters, It's used for replace the unknown blocks.
+    let reporters;
 
     // @todo: For now, load all Scratch objects (stage/sprites) as a Sprite.
     const sprite = new Sprite(blocks, runtime);
@@ -944,33 +965,47 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     }
     if (object.hasOwnProperty('blocks')) {
         deserializeBlocks(object.blocks);
+        if (!reporters) {
+        	reporters = getReporters(object.blocks);
+        	console.log(reporters); //DEBUG
+        }
         // Take a second pass to create objects and add extensions
         for (const blockId in object.blocks) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
             const blockJSON = object.blocks[blockId];
-            console.log(blockJSON); //debug
+            console.log("JSON:", blockJSON); //debug
 
             // If the block is from an extension, record it.
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
                 if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
                 else {
-                    console.log("扩展" + extensionID + "不存在！尝试删除该模块...", blockJSON.id);
+                    console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
                     let originalOpcode = blockJSON.opcode;
-                    blockJSON.opcode = "procedures_call";
-                    if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
-                    blockJSON.mutation.proccode = "[" + extensionID.trim() + "] " + originalOpcode;
-                    blockJSON.mutation.children = [];
-                    blockJSON.mutation.tagName = "mutation";
                     blockJSON.extra = {
                         isUnknownBlocks: true,
-                        originalInput: blockJSON.inputs
+                        originalInputs: blockJSON.inputs
+                    }
+                    if (!reporters.has(blockJSON.id)) {
+                    	blockJSON.opcode = "procedures_call";
+                    	if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
+                    	blockJSON.mutation.proccode = "[" + extensionID.trim() + "] " + originalOpcode;
+                    	blockJSON.mutation.children = [];
+                    	blockJSON.mutation.tagName = "mutation";
+                    } else {
+                    	// 暂时没想到区分boolean/string的方法，于是暂用Boolean替代
+                    	// 关于为什么是Boolean，因为在判断语句下使用string可能会导致Blockly解析异常。
+                    	blockJSON.opcode = "argument_reporter_boolean";
+                    	if(!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
+                    	blockJSON.fields.VALUE = {
+                    		name: "VALUE",
+                    		value: "[" + extensionID.trim() + "] " + originalOpcode
+                    	};
                     }
                     delete blockJSON.inputs;
                     console.log("替换后：", blockJSON);
                 }
             }
-
             blocks.createBlock(blockJSON);
         }
     }

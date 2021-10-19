@@ -923,14 +923,14 @@ const parseScratchAssets = function (object, runtime, zip) {
  */
 const getReporters = function (blocks) {
 	let reporters = new Set();
-	console.log("开始获取Reporter", blocks);
+	//console.log("开始获取Reporter", blocks);
 	for (const blockId in blocks) {
 		const block = blocks[blockId];
-		console.log("开始遍历block", block);
+		//console.log("开始遍历block", block);
 		for (const inputId in block.inputs) {
 			const input = block.inputs[inputId];
-			console.log("遍历input", input);
-			if(input.block && input.block != input.shadow) {
+			//console.log("遍历input", input);
+			if(input.block && input.block != input.shadow && input.name != "SUBSTACK") {
 				reporters.add(input.block);
 				console.log("检测到REPORTER", input.block);
 			}
@@ -1212,7 +1212,7 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         // If the block is from an extension, record it.
         const extensionID = getExtensionIdForOpcode(monitorBlock.opcode);
         if (extensionID) {
-            extensions.extensionIDs.add(extensionID);
+            if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
         }
     }
     

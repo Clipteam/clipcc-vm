@@ -930,15 +930,51 @@ const getReporters = function (blocks) {
 		for (const inputId in block.inputs) {
 			const input = block.inputs[inputId];
 			//console.log("遍历input", input);
-			if(input.block && input.block != input.shadow && input.name != "SUBSTACK") {
-				reporters.add(input.block);
-				console.log("检测到REPORTER", input.block);
+			if(input.block && input.block != input.shadow) {
+                if (input.name == "SUBSTACK") console.log("检测到SUBSTACK", input.block);
+				else {
+                    reporters.add(input.block);
+				    console.log("检测到REPORTER", input.block);
+                }
 			}
 		}
 	}
 	return reporters;
 }
 
+const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod) {
+	switch (handleMethod) {
+		case 'replace': {
+			console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
+			let originalOpcode = blockJSON.opcode;
+			blockJSON.extra = {
+				isUnknownBlocks: true,
+				originalInputs: blockJSON.inputs
+            }
+            if (!reporters.has(blockJSON.id)) { // 检测是否需要转换为reporter
+                blockJSON.opcode = "procedures_call";
+                if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
+                blockJSON.mutation.proccode = "[" + extensionID.trim() + "] " + originalOpcode;
+                blockJSON.mutation.children = [];
+                blockJSON.mutation.tagName = "mutation";
+            } else {
+            	// 暂时没想到区分boolean/string的方法，于是暂用Boolean替代
+            	// 关于为什么是Boolean，因为在判断语句下使用Reporter可能会导致Blockly解析异常。
+            	blockJSON.opcode = "argument_reporter_boolean";
+            	if(!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
+            	blockJSON.fields.VALUE = {
+            		name: "VALUE",
+            		value: "[" + extensionID.trim() + "] " + originalOpcode
+        	    };
+	        }
+	        delete blockJSON.inputs;
+	        console.log("替换后：", blockJSON);
+	    }
+	    case 'delete': {
+	    	//@todo
+	    }
+	}
+}
 /**
  * Parse a single "Scratch object" and create all its in-memory VM objects.
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
@@ -980,32 +1016,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
                 if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
-                else {
-                    console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
-                    let originalOpcode = blockJSON.opcode;
-                    blockJSON.extra = {
-                        isUnknownBlocks: true,
-                        originalInputs: blockJSON.inputs
-                    }
-                    if (!reporters.has(blockJSON.id)) { // 检测是否需要转换为reporter
-                    	blockJSON.opcode = "procedures_call";
-                    	if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
-                    	blockJSON.mutation.proccode = "[" + extensionID.trim() + "] " + originalOpcode;
-                    	blockJSON.mutation.children = [];
-                    	blockJSON.mutation.tagName = "mutation";
-                    } else {
-                    	// 暂时没想到区分boolean/string的方法，于是暂用Boolean替代
-                    	// 关于为什么是Boolean，因为在判断语句下使用Reporter可能会导致Blockly解析异常。
-                    	blockJSON.opcode = "argument_reporter_boolean";
-                    	if(!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
-                    	blockJSON.fields.VALUE = {
-                    		name: "VALUE",
-                    		value: "[" + extensionID.trim() + "] " + originalOpcode
-                    	};
-                    }
-                    delete blockJSON.inputs;
-                    console.log("替换后：", blockJSON);
-                }
+                else handleUnknownBlocks(blockJSON, extensionID, "replace");
             }
             blocks.createBlock(blockJSON);
         }

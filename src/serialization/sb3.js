@@ -1006,7 +1006,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
         if (!reporters && option != 'donotload') {
         	reporters = getReporters(object.blocks);
         	console.log(reporters); //DEBUG
-        } else return Promise.resolve(null);
+        }
         // Take a second pass to create objects and add extensions
         for (const blockId in object.blocks) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
@@ -1017,6 +1017,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
                 if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
+                else if (option == 'donotload') return Promise.resolve(null);
                 else handleUnknownBlocks(blockJSON, extensionID, option, reporters);
             }
             blocks.createBlock(blockJSON);

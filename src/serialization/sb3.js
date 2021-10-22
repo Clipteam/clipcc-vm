@@ -1016,7 +1016,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
                 if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
-                else handleUnknownBlocks(blockJSON, extensionID, "replace");
+                else handleUnknownBlocks(blockJSON, extensionID, runtime.deserializeOption);
             }
             blocks.createBlock(blockJSON);
         }

@@ -176,6 +176,7 @@ class VirtualMachine extends EventEmitter {
         this.variableListener = this.variableListener.bind(this);
         
         this.compressionLevel = 6;
+        this.runtime.deserializeOption = 'donotload';
     }
 
     /**
@@ -219,6 +220,10 @@ class VirtualMachine extends EventEmitter {
      */
     setCompressionLevel (level) {
     	if (level<=9 && level>=1) this.compressionLevel = level;
+    }
+    
+    setDeserializeOption (option) {
+    	this.runtime.deserializeOption = option;
     }
 
     /**

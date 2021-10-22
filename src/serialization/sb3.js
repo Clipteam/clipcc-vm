@@ -931,7 +931,7 @@ const getReporters = function (blocks) {
 			const input = block.inputs[inputId];
 			//console.log("遍历input", input);
 			if(input.block && input.block != input.shadow) {
-                if (input.name == "SUBSTACK") console.log("检测到SUBSTACK", input.block);
+                if (input.name == "SUBSTACK" || input.name == "SUBSTACK2") console.log("检测到SUBSTACK", input.block);
 				else {
                     reporters.add(input.block);
 				    console.log("检测到REPORTER", input.block);
@@ -942,7 +942,7 @@ const getReporters = function (blocks) {
 	return reporters;
 }
 
-const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod) {
+const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod, reporters) {
 	switch (handleMethod) {
 		case 'replace': {
 			console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
@@ -991,6 +991,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     if (!object.hasOwnProperty('name')) return Promise.resolve(null);
     // Blocks container for this object.
     const blocks = new Blocks(runtime);
+    const option = runtime.deserializeOption;
     
     // The list of reporters, It's used for replace the unknown blocks.
     let reporters;
@@ -1002,10 +1003,10 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     if (object.hasOwnProperty('name')) sprite.name = object.name;
     if (object.hasOwnProperty('blocks')) {
         deserializeBlocks(object.blocks);
-        if (!reporters) {
+        if (!reporters && option != 'donotload') {
         	reporters = getReporters(object.blocks);
         	console.log(reporters); //DEBUG
-        }
+        } else return Promise.resolve(null);
         // Take a second pass to create objects and add extensions
         for (const blockId in object.blocks) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
@@ -1016,7 +1017,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
                 if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
-                else handleUnknownBlocks(blockJSON, extensionID, runtime.deserializeOption);
+                else handleUnknownBlocks(blockJSON, extensionID, option, reporters);
             }
             blocks.createBlock(blockJSON);
         }

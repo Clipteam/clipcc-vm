@@ -500,7 +500,7 @@ const serializeMonitors = function (monitors) {
             opcode: monitorData.opcode,
             params: monitorData.params,
             spriteName: monitorData.spriteName,
-            value: monitorData.value,
+            //value: monitorData.value,
             width: monitorData.width,
             height: monitorData.height,
             x: monitorData.x,
@@ -561,6 +561,9 @@ const serialize = function (runtime, targetId) {
     const meta = Object.create(null);
     meta.semver = '3.0.0';
     meta.vm = vmPackage.version;
+    if (runtime.origin) {
+        meta.origin = runtime.origin;
+    }
 
     // Attach full user agent string to metadata if available
     meta.agent = 'none';
@@ -1188,6 +1191,11 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
             extensions.extensionIDs.add(extensionID);
         }
     }
+    
+    // Don't load potentially stale monitor data
+    // e.g. loudness, answer, timer, and other blocks which depend on global or external state,
+    // as well as values which were updated whilst the monitor was hidden
+    monitorData.value = null;
 
     runtime.requestAddMonitor(MonitorRecord(monitorData));
 };
@@ -1234,6 +1242,13 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         extensionIDs: new Set(),
         extensionURLs: new Map()
     };
+
+    // Store the origin field (e.g. project originated at CSFirst) so that we can save it again.
+    if (json.meta && json.meta.origin) {
+        runtime.origin = json.meta.origin;
+    } else {
+        runtime.origin = null;
+    }
 
     // First keep track of the current target order in the json,
     // then sort by the layer order property before parsing the targets

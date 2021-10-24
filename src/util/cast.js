@@ -71,7 +71,7 @@ class Cast {
      * @return {string} The Scratch-casted string value.
      */
     static toString (value) {
-        return String(value);
+        return typeof value === 'string' ? value : String(value);
     }
 
     /**
@@ -160,8 +160,9 @@ class Cast {
             if (isNaN(val)) { // NaN is considered an integer.
                 return true;
             }
-            // True if it's "round" (e.g., 2.0 and 2).
-            return val === parseInt(val, 10);
+            // Integers modulo 1 is always 0.
+            // Invert to make it return true for 0.
+            return !(val % 1);
         } else if (typeof val === 'boolean') {
             // `True` and `false` always represent integer after Scratch cast.
             return true;

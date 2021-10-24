@@ -32,9 +32,7 @@ class Scratch3ProcedureBlocks {
             // If null, procedure could not be found, which can happen if custom
             // block is dragged between sprites without the definition.
             // Match Scratch 2.0 behavior and noop.
-            if (paramNamesIdsAndDefaults === null) {
-                return;
-            }
+            if (paramNamesIdsAndDefaults === null) return;
 
             const [paramNames, paramIds, paramDefaults] = paramNamesIdsAndDefaults;
 

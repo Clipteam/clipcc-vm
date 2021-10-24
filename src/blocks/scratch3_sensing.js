@@ -2,7 +2,6 @@ const Cast = require('../util/cast');
 const MathUtil = require('../util/math-util.js');
 const Timer = require('../util/timer');
 const getMonitorIdForBlockWithArgs = require('../util/get-monitor-id');
-const Version = require('../util/version');
 
 class Scratch3SensingBlocks {
     constructor (runtime) {
@@ -80,7 +79,7 @@ class Scratch3SensingBlocks {
             sensing_clipcc_version: this.getVersion,
             sensing_turnonturbomode: (args, util) => { this.setTurboMode(true); },
             sensing_turnoffturbomode: (args, util) => { this.setTurboMode(false); },
-            sensing_isturbomode: (args, util) => { return this.runtime.turboMode; },
+            sensing_isturbomode: (args, util) => this.runtime.turboMode,
             sensing_distancebetweenposition: this.distanceBetweenPosition,
             sensing_directionbetweenposition: this.directionBetweenPosition
         };
@@ -399,7 +398,7 @@ class Scratch3SensingBlocks {
     }
 
     getVersion() {
-        return Version.getVersion();
+        return this.runtime.version;
     }
 }
 

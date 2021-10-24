@@ -7,6 +7,7 @@
 const vmPackage = require('../../package.json');
 const Blocks = require('../engine/blocks');
 const Sprite = require('../sprites/sprite');
+const {isExtensionExists} = require('../extension-support/extension-list')
 const Variable = require('../engine/variable');
 const Comment = require('../engine/comment');
 const MonitorRecord = require('../engine/monitor-record');
@@ -916,6 +917,65 @@ const parseScratchAssets = function (object, runtime, zip) {
 };
 
 /**
+ * Get the reporter blocks to replace them.
+ * @param {object} blocks - A deserialized blocks object.
+ * @return {set} A set contain the id of reporter blocks
+ */
+const getReporters = function (blocks) {
+	let reporters = new Set();
+	//console.log("开始获取Reporter", blocks);
+	for (const blockId in blocks) {
+		const block = blocks[blockId];
+		//console.log("开始遍历block", block);
+		for (const inputId in block.inputs) {
+			const input = block.inputs[inputId];
+			//console.log("遍历input", input);
+			if(input.block && input.block != input.shadow) {
+                if (input.name == "SUBSTACK" || input.name == "SUBSTACK2") console.log("检测到SUBSTACK", input.block);
+				else {
+                    reporters.add(input.block);
+				    console.log("检测到REPORTER", input.block);
+                }
+			}
+		}
+	}
+	return reporters;
+}
+
+const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod, reporters) {
+	switch (handleMethod) {
+		case 'replace': {
+			console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
+			let originalOpcode = blockJSON.opcode;
+			blockJSON.extra = {
+				isUnknownBlocks: true,
+				originalInputs: blockJSON.inputs
+            }
+            if (!reporters.has(blockJSON.id)) { // 检测是否需要转换为reporter
+                blockJSON.opcode = "procedures_call";
+                if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
+                blockJSON.mutation.proccode = "[" + extensionID.trim() + "] " + originalOpcode;
+                blockJSON.mutation.children = [];
+                blockJSON.mutation.tagName = "mutation";
+            } else {
+            	// 暂时没想到区分boolean/string的方法，于是暂用Boolean替代
+            	// 关于为什么是Boolean，因为在判断语句下使用Reporter可能会导致Blockly解析异常。
+            	blockJSON.opcode = "argument_reporter_boolean";
+            	if(!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
+            	blockJSON.fields.VALUE = {
+            		name: "VALUE",
+            		value: "[" + extensionID.trim() + "] " + originalOpcode
+        	    };
+	        }
+	        delete blockJSON.inputs;
+	        console.log("替换后：", blockJSON);
+	    }
+	    case 'delete': {
+	    	//@todo
+	    }
+	}
+}
+/**
  * Parse a single "Scratch object" and create all its in-memory VM objects.
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
  * @param {!Runtime} runtime Runtime object to load all structures into.
@@ -926,34 +986,41 @@ const parseScratchAssets = function (object, runtime, zip) {
  * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
  */
 const parseScratchObject = function (object, runtime, extensions, zip, assets) {
-    if (!object.hasOwnProperty('name')) {
-        // Watcher/monitor - skip this object until those are implemented in VM.
-        // @todo
-        return Promise.resolve(null);
-    }
+	// Watcher/monitor - skip this object until those are implemented in VM.
+	// @todo
+    if (!object.hasOwnProperty('name')) return Promise.resolve(null);
     // Blocks container for this object.
     const blocks = new Blocks(runtime);
+    const option = runtime.deserializeOption;
+    
+    // The list of reporters, It's used for replace the unknown blocks.
+    let reporters;
 
     // @todo: For now, load all Scratch objects (stage/sprites) as a Sprite.
     const sprite = new Sprite(blocks, runtime);
 
     // Sprite/stage name from JSON.
-    if (object.hasOwnProperty('name')) {
-        sprite.name = object.name;
-    }
+    if (object.hasOwnProperty('name')) sprite.name = object.name;
     if (object.hasOwnProperty('blocks')) {
         deserializeBlocks(object.blocks);
+        if (!reporters && option != 'donotload') {
+        	reporters = getReporters(object.blocks);
+        	console.log(reporters); //DEBUG
+        }
         // Take a second pass to create objects and add extensions
         for (const blockId in object.blocks) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
             const blockJSON = object.blocks[blockId];
-            blocks.createBlock(blockJSON);
+            console.log("JSON:", blockJSON); //debug
 
             // If the block is from an extension, record it.
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
-                extensions.extensionIDs.add(extensionID);
+                if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
+                else if (option == 'donotload') return Promise.resolve(null);
+                else handleUnknownBlocks(blockJSON, extensionID, option, reporters);
             }
+            blocks.createBlock(blockJSON);
         }
     }
     // Costumes from JSON.
@@ -963,21 +1030,11 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     // Create the first clone, and load its run-state from JSON.
     const target = sprite.createClone(object.isStage ? StageLayering.BACKGROUND_LAYER : StageLayering.SPRITE_LAYER);
     // Load target properties from JSON.
-    if (object.hasOwnProperty('tempo')) {
-        target.tempo = object.tempo;
-    }
-    if (object.hasOwnProperty('volume')) {
-        target.volume = object.volume;
-    }
-    if (object.hasOwnProperty('videoTransparency')) {
-        target.videoTransparency = object.videoTransparency;
-    }
-    if (object.hasOwnProperty('videoState')) {
-        target.videoState = object.videoState;
-    }
-    if (object.hasOwnProperty('textToSpeechLanguage')) {
-        target.textToSpeechLanguage = object.textToSpeechLanguage;
-    }
+    if (object.hasOwnProperty('tempo')) target.tempo = object.tempo;
+    if (object.hasOwnProperty('volume')) target.volume = object.volume;
+    if (object.hasOwnProperty('videoTransparency')) target.videoTransparency = object.videoTransparency;
+    if (object.hasOwnProperty('videoState')) target.videoState = object.videoState;
+    if (object.hasOwnProperty('textToSpeechLanguage')) target.textToSpeechLanguage = object.textToSpeechLanguage;
     if (object.hasOwnProperty('variables')) {
         for (const varId in object.variables) {
             const variable = object.variables[varId];
@@ -1037,45 +1094,25 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
                 comment.height,
                 comment.minimized
             );
-            if (comment.blockId) {
-                newComment.blockId = comment.blockId;
-            }
+            if (comment.blockId) newComment.blockId = comment.blockId;
             target.comments[newComment.id] = newComment;
         }
     }
-    if (object.hasOwnProperty('x')) {
-        target.x = object.x;
-    }
-    if (object.hasOwnProperty('y')) {
-        target.y = object.y;
-    }
-    if (object.hasOwnProperty('direction')) {
-        target.direction = object.direction;
-    }
-    if (object.hasOwnProperty('size')) {
-        target.size = object.size;
-    }
-    if (object.hasOwnProperty('visible')) {
-        target.visible = object.visible;
-    }
-    if (object.hasOwnProperty('currentCostume')) {
-        target.currentCostume = MathUtil.clamp(object.currentCostume, 0, object.costumes.length - 1);
-    }
-    if (object.hasOwnProperty('rotationStyle')) {
-        target.rotationStyle = object.rotationStyle;
-    }
-    if (object.hasOwnProperty('isStage')) {
-        target.isStage = object.isStage;
-    }
+    if (object.hasOwnProperty('x')) target.x = object.x;
+    if (object.hasOwnProperty('y')) target.y = object.y;
+    if (object.hasOwnProperty('direction')) target.direction = object.direction;
+    if (object.hasOwnProperty('size')) target.size = object.size;
+    if (object.hasOwnProperty('visible')) target.visible = object.visible;
+    if (object.hasOwnProperty('currentCostume')) target.currentCostume = MathUtil.clamp(object.currentCostume, 0, object.costumes.length - 1);
+    if (object.hasOwnProperty('rotationStyle')) target.rotationStyle = object.rotationStyle;
+    if (object.hasOwnProperty('isStage')) target.isStage = object.isStage;
     if (object.hasOwnProperty('targetPaneOrder')) {
         // Temporarily store the 'targetPaneOrder' property
         // so that we can correctly order sprites in the target pane.
         // This will be deleted after we are done parsing and ordering the targets list.
         target.targetPaneOrder = object.targetPaneOrder;
     }
-    if (object.hasOwnProperty('draggable')) {
-        target.draggable = object.draggable;
-    }
+    if (object.hasOwnProperty('draggable')) target.draggable = object.draggable;
     Promise.all(costumePromises).then(costumes => {
         sprite.costumes = costumes;
     });
@@ -1188,7 +1225,7 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         // If the block is from an extension, record it.
         const extensionID = getExtensionIdForOpcode(monitorBlock.opcode);
         if (extensionID) {
-            extensions.extensionIDs.add(extensionID);
+            if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
         }
     }
     

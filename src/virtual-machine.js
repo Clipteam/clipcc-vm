@@ -44,7 +44,7 @@ const CORE_EXTENSIONS = [
  * @constructor
  */
 class VirtualMachine extends EventEmitter {
-    constructor () {
+    constructor (version) {
         super();
 
         /**
@@ -55,6 +55,8 @@ class VirtualMachine extends EventEmitter {
         centralDispatch.setService('runtime', this.runtime).catch(e => {
             log.error(`Failed to register runtime service: ${JSON.stringify(e)}`);
         });
+        
+        this.runtime.version = version;
 
         /**
          * The "currently editing"/selected target ID for the VM.
@@ -172,6 +174,9 @@ class VirtualMachine extends EventEmitter {
         this.flyoutBlockListener = this.flyoutBlockListener.bind(this);
         this.monitorBlockListener = this.monitorBlockListener.bind(this);
         this.variableListener = this.variableListener.bind(this);
+        
+        this.compressionLevel = 6;
+        this.runtime.deserializeOption = 'donotload';
     }
 
     /**
@@ -195,11 +200,8 @@ class VirtualMachine extends EventEmitter {
      */
     setTurboMode (turboModeOn) {
         this.runtime.turboMode = !!turboModeOn;
-        if (this.runtime.turboMode) {
-            this.emit(Runtime.TURBO_MODE_ON);
-        } else {
-            this.emit(Runtime.TURBO_MODE_OFF);
-        }
+        if (this.runtime.turboMode) this.emit(Runtime.TURBO_MODE_ON);
+        else this.emit(Runtime.TURBO_MODE_OFF);
     }
 
     /**
@@ -209,6 +211,19 @@ class VirtualMachine extends EventEmitter {
      */
     setCompatibilityMode (compatibilityModeOn) {
         this.runtime.setCompatibilityMode(!!compatibilityModeOn);
+    }
+    
+    /**
+     * Set the compression level of sb3 file.
+     * It's exposed to clipcc-gui.
+     * @param {number} the compression level.
+     */
+    setCompressionLevel (level) {
+    	if (level<=9 && level>=1) this.compressionLevel = level;
+    }
+    
+    setDeserializeOption (option) {
+    	this.runtime.deserializeOption = option;
     }
 
     /**
@@ -397,7 +412,7 @@ class VirtualMachine extends EventEmitter {
             mimeType: 'application/x.scratch.sb3',
             compression: 'DEFLATE',
             compressionOptions: {
-                level: 6 // Tradeoff between best speed (1) and best compression (9)
+                level: this.compressionLevel // Tradeoff between best speed (1) and best compression (9)
             }
         });
     }

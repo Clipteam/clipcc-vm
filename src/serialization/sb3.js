@@ -931,11 +931,8 @@ const getReporters = function (blocks) {
 			const input = block.inputs[inputId];
 			//console.log("遍历input", input);
 			if(input.block && input.block != input.shadow) {
-                if (input.name == "SUBSTACK" || input.name == "SUBSTACK2") console.log("检测到SUBSTACK", input.block);
-				else {
-                    reporters.add(input.block);
-				    console.log("检测到REPORTER", input.block);
-                }
+                if (input.name == "SUBSTACK" || input.name == "SUBSTACK2") continue;
+				else reporters.add(input.block);
 			}
 		}
 	}
@@ -945,7 +942,7 @@ const getReporters = function (blocks) {
 const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod, reporters) {
 	switch (handleMethod) {
 		case 'replace': {
-			console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
+			//console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
 			let originalOpcode = blockJSON.opcode;
 			blockJSON.extra = {
 				isUnknownBlocks: true,
@@ -968,7 +965,7 @@ const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod, repo
         	    };
 	        }
 	        delete blockJSON.inputs;
-	        console.log("替换后：", blockJSON);
+	        //console.log("替换后：", blockJSON);
 	    }
 	    case 'delete': {
 	    	//@todo
@@ -1005,13 +1002,13 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
         deserializeBlocks(object.blocks);
         if (!reporters && option != 'donotload') {
         	reporters = getReporters(object.blocks);
-        	console.log(reporters); //DEBUG
+        	//console.log(reporters); //DEBUG
         }
         // Take a second pass to create objects and add extensions
         for (const blockId in object.blocks) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
             const blockJSON = object.blocks[blockId];
-            console.log("JSON:", blockJSON); //debug
+            //console.log("JSON:", blockJSON); //debug
 
             // If the block is from an extension, record it.
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);

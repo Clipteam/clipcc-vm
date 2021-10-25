@@ -8,7 +8,7 @@ const Timer = require('../util/timer');
  */
 
 class BlockUtility {
-    constructor (sequencer = null, thread = null, version = null) {
+    constructor (sequencer = null, thread = null) {
         /**
          * A sequencer block primitives use to branch or start procedures with
          * @type {?Sequencer}
@@ -21,8 +21,6 @@ class BlockUtility {
          * @type {?Thread}
          */
         this.thread = thread;
-        
-        this.version = version;
 
         this._nowObj = {
             now: () => this.sequencer.runtime.currentMSecs

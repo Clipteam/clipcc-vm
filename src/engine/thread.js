@@ -4,6 +4,7 @@
  */
 const _stackFrameFreeList = [];
 
+const Generator = require('../compiler/generator.js');
 /**
  * A frame used for each level of the stack. A general purpose
  * place to store a bunch of execution context and parameters
@@ -232,6 +233,11 @@ class Thread {
      */
     static get STATUS_DONE () {
         return 4;
+    }
+    
+    compile () {
+        const generator = new Generator(this);
+        this.code = generator.generate();
     }
 
     /**

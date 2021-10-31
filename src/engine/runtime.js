@@ -1850,7 +1850,7 @@ class Runtime extends EventEmitter {
         // For compatibility with Scratch 2, edge triggered hats need to be processed before
         // threads are stepped. See ScratchRuntime.as for original implementation
         newThreads.forEach(thread => {
-            execute(this.sequencer, thread);
+            // execute(this.sequencer, thread);
             thread.goToNextBlock();
         });
         return newThreads;

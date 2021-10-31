@@ -50,7 +50,7 @@ class _StackFrame {
          * @type {string}
          */
         this.waitingReporter = null;
-
+        
         /**
          * Procedure parameters.
          * @type {Object}
@@ -155,6 +155,8 @@ class Thread {
          * @type {boolean}
          */
         this.isKilled = false;
+        
+        this.isCompiled = false;
 
         /**
          * Target of this thread.
@@ -238,6 +240,7 @@ class Thread {
     compile () {
         const generator = new Generator(this);
         this.code = generator.generate();
+        this.isCompiled = true;
     }
 
     /**

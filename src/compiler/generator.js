@@ -1,6 +1,6 @@
 const Motion = require('./blocks/motion.js');
 
-const execute = require('./execute.js'); //@todo move it to engine/execute.js
+const executeScript = require('./execute.js'); //@todo move it to engine/execute.js
 
 class Generator {
     constructor (thread) {
@@ -21,7 +21,6 @@ class Generator {
         
         //debug
         console.log(script);
-        execute(script);
         
         return script;
     }

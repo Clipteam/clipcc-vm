@@ -12,11 +12,7 @@
                 const dy = steps * Math.sin(radians);
                 util.target.setXY(util.target.x + dx, util.target.y + dy);
             `,
-            motion_gotoxy: `
-                const x = Number(#[X]#);
-                const y = Number(#[Y]#);
-                util.target.setXY(x, y);
-            `,
+            motion_gotoxy: `util.target.setXY(#[X]#, #[Y]#);`,
             motion_goto: `
                 const getTargetXY = function (targetName, util) {
                     let targetX = 0;
@@ -43,14 +39,8 @@
                     util.target.setXY(targetXY[0], targetXY[1]);
                 }
             `,
-            motion_turnright: `
-                const degrees = Number(#[DEGREES]#);
-                util.target.setDirection(util.target.direction + degrees);
-            `,
-            motion_turnleft: `
-                const degrees = Number(#[DEGREES]#);
-                util.target.setDirection(util.target.direction - degrees);
-            `,
+            motion_turnright: `util.target.setDirection(util.target.direction + Number(#[DEGREES]#));`,
+            motion_turnleft: `util.target.setDirection(util.target.direction - Number(#[DEGREES]#));`,
          }
      }
  }

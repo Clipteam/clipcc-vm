@@ -1,10 +1,11 @@
+const Generator = require('../compiler/generator.js');
+
 /**
  * Recycle bin for empty stackFrame objects
  * @type Array<_StackFrame>
  */
 const _stackFrameFreeList = [];
 
-const Generator = require('../compiler/generator.js');
 /**
  * A frame used for each level of the stack. A general purpose
  * place to store a bunch of execution context and parameters

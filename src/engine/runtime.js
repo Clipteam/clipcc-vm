@@ -198,6 +198,12 @@ class Runtime extends EventEmitter {
         this.version = "unknown";
 
         /**
+        * Whether to use a compiler to run the project.
+        * @type {Boolean}
+        */
+        this.useCompiler = true;
+
+        /**
          * A list of threads that are currently running in the VM.
          * Threads are added when execution starts and pruned when execution ends.
          * @type {Array.<Thread>}
@@ -1624,7 +1630,7 @@ class Runtime extends EventEmitter {
 
         thread.pushStack(id);
         this.threads.push(thread);
-        thread.compile();
+        if (this.useCompiler) thread.compile();
         return thread;
     }
 
@@ -1850,7 +1856,7 @@ class Runtime extends EventEmitter {
         // For compatibility with Scratch 2, edge triggered hats need to be processed before
         // threads are stepped. See ScratchRuntime.as for original implementation
         newThreads.forEach(thread => {
-            // execute(this.sequencer, thread);
+            execute(this.sequencer, thread);
             thread.goToNextBlock();
         });
         return newThreads;

@@ -1,6 +1,5 @@
 const Motion = require('./blocks/motion.js');
-
-const executeScript = require('./execute.js'); //@todo move it to engine/execute.js
+const Looks = require('./blocks/looks.js');
 
 class Generator {
     constructor (thread) {
@@ -9,6 +8,7 @@ class Generator {
         
         // 写入所有可编译的代码
         this.blocksCode = Object.assign(this.blocksCode, Motion.getCode());
+        this.blocksCode = Object.assign(this.blocksCode, Looks.getCode());
     }
     
     generate () {

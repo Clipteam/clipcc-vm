@@ -240,8 +240,12 @@ class Thread {
     
     compile () {
         const generator = new Generator(this);
-        this.code = generator.generate();
-        this.isCompiled = true;
+        try {
+            this.code = generator.generate();
+            this.isCompiled = true;
+        } catch (e) {
+            console.error("Compile failed:" + e);
+        }
     }
 
     /**

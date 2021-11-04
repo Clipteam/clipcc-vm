@@ -181,6 +181,7 @@ class Sequencer {
         console.log(thread.isCompiled);
         if (this.runtime.useCompiler && thread.isCompiled) {
             executeScript(this, thread, thread.code);
+            thread.status = Thread.STATUS_DONE;
             console.log("已执行!");
             return;
         }

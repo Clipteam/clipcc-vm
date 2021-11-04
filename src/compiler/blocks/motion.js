@@ -3,15 +3,14 @@
  */
  
  class Motion {
-     static getCode () {
-         return {
-             motion_movesteps: `
+    static getCode () {
+        return {
+            motion_movesteps: `
                 const steps = Number(#[STEPS]#);
                 const radians = MathUtil.degToRad(90 - util.target.direction);
                 const dx = steps * Math.cos(radians);
                 const dy = steps * Math.sin(radians);
-                util.target.setXY(util.target.x + dx, util.target.y + dy);
-            `,
+                util.target.setXY(util.target.x + dx, util.target.y + dy);`,
             motion_gotoxy: `util.target.setXY(#[X]#, #[Y]#);`,
             motion_goto: `
                 const getTargetXY = function (targetName, util) {
@@ -37,12 +36,11 @@
                 const targetXY = getTargetXY(#[TO]#, util);
                 if (targetXY) {
                     util.target.setXY(targetXY[0], targetXY[1]);
-                }
-            `,
+                }`,
             motion_turnright: `util.target.setDirection(util.target.direction + Number(#[DEGREES]#));`,
             motion_turnleft: `util.target.setDirection(util.target.direction - Number(#[DEGREES]#));`,
-         }
-     }
- }
+        }
+    }
+}
  
 module.exports = Motion;

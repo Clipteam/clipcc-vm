@@ -6,10 +6,9 @@
     static getCode () {
         return {
             motion_movesteps: `
-                const steps = Number(#[STEPS]#);
                 const radians = MathUtil.degToRad(90 - util.target.direction);
-                const dx = steps * Math.cos(radians);
-                const dy = steps * Math.sin(radians);
+                const dx = Number(#[STEPS]#) * Math.cos(radians);
+                const dy = Number(#[STEPS]#) * Math.sin(radians);
                 util.target.setXY(util.target.x + dx, util.target.y + dy);`,
             motion_gotoxy: `util.target.setXY(#[X]#, #[Y]#);`,
             motion_goto: `

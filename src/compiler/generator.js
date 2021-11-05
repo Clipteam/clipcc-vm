@@ -38,10 +38,7 @@ class Generator {
                 if (opcode == block.opcode) {
                     let fragment = this.blocksCode[opcode] + '\n';
                     console.log(blocks);
-                    for (const input in block.inputs) {
-                        const value = blocks[block.inputs[input].block].fields.NUM.value;
-                        fragment = fragment.replace("#[" + input + "]#", value);
-                    }
+                    fragment = this.deserializeInputs(fragment, blocks, block);
                     code += fragment;
                     existFlag = true;
                     break;
@@ -51,6 +48,44 @@ class Generator {
             else throw new Error('opcode is undefined');
         }
         return code;
+    }
+    
+    deserializeInputs (frag, blocks, block) {
+        let fragment = frag;
+        let value;
+        for (const inputId in block.inputs) { // 逐个替换Inputs
+            const input = block.inputs[inputId]; // 获取该input的值
+            if (input.block == input.shadow) { //非嵌套reporter模块，开始获取值
+                const targetBlock = blocks[input.block]; // 指向的模块
+                switch (targetBlock.opcode) {
+                    case "text": {
+                        value = targetBlock.fields.TEXT.value;
+                        break;
+                    }
+                    case "math_number": {
+                        value = targetBlock.fields.NUM.value;
+                        break;
+                    }
+                    case "math_positive_number": {
+                        value = targetBlock.fields.NUM.value;
+                        break;
+                    }
+                    case "math_integer": {
+                        value = targetBlock.fields.NUM.value;
+                        break;
+                    }
+                    case "math_angle": {
+                        value = targetBlock.fields.NUM.value;
+                        break;
+                    }
+                    default: {
+                        console.error("Unknown field type:" + targetBlock.opcode);
+                    }
+                }
+            }
+            fragment = fragment.replace("#[" + inputId + "]#", value);
+        }
+        return fragment;
     }
 }
 

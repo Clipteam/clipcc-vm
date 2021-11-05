@@ -5,39 +5,14 @@
  class Motion {
     static getCode () {
         return {
-            motion_movesteps: `
-                const radians = MathUtil.degToRad(90 - util.target.direction);
-                const dx = Number(#[STEPS]#) * Math.cos(radians);
-                const dy = Number(#[STEPS]#) * Math.sin(radians);
-                util.target.setXY(util.target.x + dx, util.target.y + dy);`,
-            motion_gotoxy: `util.target.setXY(#[X]#, #[Y]#);`,
-            motion_goto: `
-                const getTargetXY = function (targetName, util) {
-                    let targetX = 0;
-                    let targetY = 0;
-                    if (targetName === '_mouse_') {
-                        targetX = util.ioQuery('mouse', 'getScratchX');
-                        targetY = util.ioQuery('mouse', 'getScratchY');
-                    } else if (targetName === '_random_') {
-                        const stageWidth = this.runtime.constructor.STAGE_WIDTH;
-                        const stageHeight = this.runtime.constructor.STAGE_HEIGHT;
-                        targetX = Math.round(stageWidth * (Math.random() - 0.5));
-                        targetY = Math.round(stageHeight * (Math.random() - 0.5));
-                   } else {
-                        targetName = Cast.toString(targetName);
-                        const goToTarget = this.runtime.getSpriteTargetByName(targetName);
-                        if (!goToTarget) return;
-                        targetX = goToTarget.x;
-                        targetY = goToTarget.y;
-                    }
-                    return [targetX, targetY];
-                }
-                const targetXY = getTargetXY(#[TO]#, util);
-                if (targetXY) {
-                    util.target.setXY(targetXY[0], targetXY[1]);
-                }`,
-            motion_turnright: `util.target.setDirection(util.target.direction + Number(#[DEGREES]#));`,
-            motion_turnleft: `util.target.setDirection(util.target.direction - Number(#[DEGREES]#));`,
+            motion_movesteps: 
+                "const radians = MathUtil.degToRad(90 - util.target.direction);\n" +
+                "const dx = Number(#[STEPS]#) * Math.cos(radians);\n" +
+                "const dy = Number(#[STEPS]#) * Math.sin(radians);\n" +
+                "util.target.setXY(util.target.x + dx, util.target.y + dy);",
+            motion_gotoxy: "util.target.setXY(#[X]#, #[Y]#);",
+            motion_turnright: "util.target.setDirection(util.target.direction + Number(#[DEGREES]#));",
+            motion_turnleft: "util.target.setDirection(util.target.direction - Number(#[DEGREES]#));",
         }
     }
 }

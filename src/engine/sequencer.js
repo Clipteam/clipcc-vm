@@ -180,9 +180,15 @@ class Sequencer {
     stepThread (thread) {
         console.log(thread.isCompiled);
         if (this.runtime.useCompiler && thread.isCompiled) {
-            executeScript(this, thread, thread.code);
-            thread.status = Thread.STATUS_DONE;
-            console.log("已执行!");
+            thread.status = Thread.STATUS_RUNNING;
+            try {
+                executeScript(this, thread);
+                thread.status = Thread.STATUS_DONE;
+                console.log("已执行!");
+            } catch (e) {
+                console.error("执行时发生错误:", e);
+                thread.status = Thread.STATUS_DONE;
+            }
             return;
         }
         let currentBlockId = thread.peekStack();

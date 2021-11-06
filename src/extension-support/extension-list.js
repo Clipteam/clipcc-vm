@@ -20,24 +20,29 @@ const builtinExtensions = {
     'clipblocks': () => require('../extensions/clipblocks')
 }
 
-const getExtensionList = function () {
-    let extensionList = [];
-    Object.keys(builtinExtensions).forEach(function(extension){
-        extensionList.push(extension);
-   });
-   return extensionList;
-};
-
-const isExtensionExists = function (extensionID) {
-    let list = getExtensionList();
-    for (let extension of list) {
-        if (extensionID == extension) return true;
+class ExtensionList {
+    constructor () {
+        
     }
-    return false;
+    
+    getExtensionList () {
+        let extensionList = [];
+        Object.keys(builtinExtensions).forEach(function(extension){
+            extensionList.push(extension);
+        });
+        return extensionList;
+    }
+
+    isExtensionExists (extensionID) {
+        if (!this.listCache) this.listCache = this.getExtensionList();
+        for (let extension of this.listCache) {
+            if (extensionID == extension) return true;
+        }
+        return false;
+    }
 }
 
 module.exports = {
     builtinExtensions,
-    getExtensionList,
-    isExtensionExists
+    ExtensionList
 }

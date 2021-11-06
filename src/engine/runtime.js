@@ -201,7 +201,7 @@ class Runtime extends EventEmitter {
         * Whether to use a compiler to run the project.
         * @type {Boolean}
         */
-        this.useCompiler = true;
+        this.useCompiler = false;
 
         /**
          * A list of threads that are currently running in the VM.
@@ -1523,6 +1523,9 @@ class Runtime extends EventEmitter {
         }
     }
 
+    setCompiler (options) {
+        this.useCompiler = options;
+    }
     /**
      * Returns whether the extension has a currently connected peripheral.
      * @param {string} extensionId - the id of the extension.

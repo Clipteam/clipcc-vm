@@ -8,7 +8,7 @@ const BlockType = require('./block-type');
 // TODO: move these out into a separate repository?
 // TODO: change extension spec so that library info, including extension ID, can be collected through static methods
 
-const {builtinExtensions} = require('./extension-list');
+const builtinExtensions = require('./extension-list');
 
 /**
  * @typedef {object} ArgumentInfo - Information about an extension block argument

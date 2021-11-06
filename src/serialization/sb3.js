@@ -17,13 +17,12 @@ const MathUtil = require('../util/math-util');
 const StringUtil = require('../util/string-util');
 const VariableUtil = require('../util/variable-util');
 
-const {ExtensionList} = require('../extension-support/extension-list');
+const builtinExtensions = require('../extension-support/extension-list');
 const {loadCostume} = require('../import/load-costume.js');
 const {loadSound} = require('../import/load-sound.js');
 const {deserializeCostume, deserializeSound} = require('./deserialize-assets.js');
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
-const extensionList = new ExtensionList();
 /**
  * @typedef {object} ImportedProject
  * @property {Array.<Target>} targets - the imported Scratch 3.0 target objects.
@@ -1013,7 +1012,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
             // If the block is from an extension, record it.
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
-                if (extensionList.isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
+                if (builtinExtensions.hasOwnProperty(extensionID)) extensions.extensionIDs.add(extensionID);
                 else if (option == 'donotload') return Promise.resolve(null);
                 else handleUnknownBlocks(blockJSON, extensionID, option, reporters);
             }
@@ -1222,7 +1221,7 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         // If the block is from an extension, record it.
         const extensionID = getExtensionIdForOpcode(monitorBlock.opcode);
         if (extensionID) {
-            if (extensionList.isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
+            if (builtinExtensions.hasOwnProperty(extensionID)) extensions.extensionIDs.add(extensionID);
         }
     }
     

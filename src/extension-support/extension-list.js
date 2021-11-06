@@ -20,29 +20,4 @@ const builtinExtensions = {
     'clipblocks': () => require('../extensions/clipblocks')
 }
 
-class ExtensionList {
-    constructor () {
-        
-    }
-    
-    getExtensionList () {
-        let extensionList = [];
-        Object.keys(builtinExtensions).forEach(function(extension){
-            extensionList.push(extension);
-        });
-        return extensionList;
-    }
-
-    isExtensionExists (extensionID) {
-        if (!this.listCache) this.listCache = this.getExtensionList();
-        for (let extension of this.listCache) {
-            if (extensionID == extension) return true;
-        }
-        return false;
-    }
-}
-
-module.exports = {
-    builtinExtensions,
-    ExtensionList
-}
+module.exports = builtinExtensions;

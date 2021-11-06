@@ -70,6 +70,26 @@ class Generator {
                         value = targetBlock.fields.NUM.value;
                         break;
                     }
+                    case "math_whole_number": {
+                        value = targetBlock.fields.NUM.value;
+                        break;
+                    }
+                    case "colour_picker": {
+                        value = targetBlock.fields.COLOUR.value;
+                        break;
+                    }
+                    case "data_variable": {
+                        value = targetBlock.fields.VARIABLE.value;
+                        break;
+                    }
+                    case "event_broadcast_menu": {
+                        value = targetBlock.fields.BROADCAST.value;
+                        break;
+                    }
+                    case "data_listcontents": {
+                        value = targetBlock.fields.LIST.value;
+                        break;
+                    }
                     case "math_integer": {
                         value = targetBlock.fields.NUM.value;
                         break;

@@ -6,7 +6,7 @@
     static getCode () {
         return {
             control_repeat: 
-                'for(var i = 0; i<#[TIMES]#; i++){\n' +
+                'for(var i = 0; i<#<TIMES>#; i++){\n' +
                 '#<SUBSTACK>#\n' +
                 '}',
             control_forever:

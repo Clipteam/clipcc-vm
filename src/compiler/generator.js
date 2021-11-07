@@ -1,16 +1,19 @@
-const Motion = require('./blocks/motion.js');
-const Looks = require('./blocks/looks.js');
-const Control = require('./blocks/control.js');
+const coreBlocks = {
+    motion: require('./blocks/motion.js'),
+    looks: require('./blocks/looks.js'),
+    control: require('./blocks/control.js')
+}
 
 class Generator {
     constructor (thread) {
         this.thread = thread;
         this.blocksCode = {};
+        this.prefixFlag = {};
         
         // 写入所有可编译的代码
-        this.blocksCode = Object.assign(this.blocksCode, Motion.getCode());
-        this.blocksCode = Object.assign(this.blocksCode, Looks.getCode());
-        this.blocksCode = Object.assign(this.blocksCode, Control.getCode());
+        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.motion.getCode());
+        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.looks.getCode());
+        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.control.getCode());
     }
     
     generate () {
@@ -41,6 +44,12 @@ class Generator {
             let existFlag = false;
             for(const opcode in this.blocksCode) {
                 if (opcode == block.opcode) {
+                    const categoryId = opcode.split('_')[0];
+                    if(!this.prefixFlag[categoryId]) {
+                        // 获取执行必须的前置函数
+                        code += coreBlocks[categoryId].getPrefix() + '\n';
+                        this.prefixFlag[categoryId] = true;
+                    }
                     let fragment = this.blocksCode[opcode] + '\n';
                     console.log(blocks);
                     fragment = this.deserializeInputs(fragment, blocks, block);

@@ -9,7 +9,7 @@ const executeScript = (sequencer, thread) => {
     blockUtility.thread = thread;
     
     console.log(blockUtility);
-    const func = new Function("util", "MathUtil", thread.code);
+    const func = new Function('util', 'MathUtil', thread.code);
     try {
         func(blockUtility, MathUtil);
     } catch (e) {

@@ -1,5 +1,6 @@
 const Motion = require('./blocks/motion.js');
 const Looks = require('./blocks/looks.js');
+const Control = require('./blocks/control.js');
 
 class Generator {
     constructor (thread) {
@@ -9,6 +10,7 @@ class Generator {
         // 写入所有可编译的代码
         this.blocksCode = Object.assign(this.blocksCode, Motion.getCode());
         this.blocksCode = Object.assign(this.blocksCode, Looks.getCode());
+        this.blocksCode = Object.assign(this.blocksCode, Control.getCode());
     }
     
     generate () {
@@ -16,9 +18,12 @@ class Generator {
         const target = this.thread.target;
         if (!target) throw new Error('target is undefined');
 
-        const topBlock = this.thread.target.blocks.getBlock(this.thread.topBlock);
-        const script = this.generateStack(this.thread.topBlock/*topBlock.next*/);
-        
+        let topBlockId= this.thread.topBlock;
+        if (this.thread.blockContainer.runtime.getIsHat(this.thread.target.blocks.getBlock(topBlockId).opcode)) {
+            // hat block should not be compiled
+            topBlockId = this.thread.target.blocks.getBlock(topBlockId).next;
+        }
+        const script = this.generateStack(topBlockId/*topBlock.next*/);
         //debug
         console.log(script);
         
@@ -58,52 +63,58 @@ class Generator {
             if (input.block == input.shadow) { //非嵌套reporter模块，开始获取值
                 const targetBlock = blocks[input.block]; // 指向的模块
                 switch (targetBlock.opcode) {
-                    case "text": {
+                    case 'text': {
                         value = targetBlock.fields.TEXT.value;
                         break;
                     }
-                    case "math_number": {
+                    case 'math_number': {
                         value = targetBlock.fields.NUM.value;
                         break;
                     }
-                    case "math_positive_number": {
+                    case 'math_positive_number': {
                         value = targetBlock.fields.NUM.value;
                         break;
                     }
-                    case "math_whole_number": {
+                    case 'math_whole_number': {
                         value = targetBlock.fields.NUM.value;
                         break;
                     }
-                    case "colour_picker": {
+                    case 'colour_picker': {
                         value = targetBlock.fields.COLOUR.value;
                         break;
                     }
-                    case "data_variable": {
+                    case 'data_variable': {
                         value = targetBlock.fields.VARIABLE.value;
                         break;
                     }
-                    case "event_broadcast_menu": {
+                    case 'event_broadcast_menu': {
                         value = targetBlock.fields.BROADCAST.value;
                         break;
                     }
-                    case "data_listcontents": {
+                    case 'data_listcontents': {
                         value = targetBlock.fields.LIST.value;
                         break;
                     }
-                    case "math_integer": {
+                    case 'math_integer': {
                         value = targetBlock.fields.NUM.value;
                         break;
                     }
-                    case "math_angle": {
+                    case 'math_angle': {
                         value = targetBlock.fields.NUM.value;
                         break;
                     }
                     default: {
-                        console.error("Unknown field type:" + targetBlock.opcode);
+                        console.error('Unknown field type:' + targetBlock.opcode);
                     }
                 }
+            } else {
+                if (inputId == 'SUBSTACK' || inputId == 'SUBSTACK2') {
+                    if (!input.block) value = '';
+                    else value = this.generateStack(input.block);
+                }
             }
-            fragment = fragment.replace("#[" + inputId + "]#", value);
+            const reg = new RegExp('#<' + inputId + '>#', 'g');
+            fragment = fragment.replace(reg, value);
         }
         return fragment;
     }

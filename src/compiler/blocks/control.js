@@ -5,7 +5,14 @@
  class Control {
     static getCode () {
         return {
-            //@TODO
+            control_repeat: 
+                'for(var i = 0; i<#[TIMES]#; i++){\n' +
+                '#<SUBSTACK>#\n' +
+                '}',
+            control_forever:
+                'while(true) {\n' +
+                '#<SUBSTACK>#\n' +
+                '}',
         }
     }
 }

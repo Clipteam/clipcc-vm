@@ -116,14 +116,18 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
         if (lastOperation) {
             let stackFrame;
             let nextBlockId;
+            let target;
             do {
                 // In the case that the promise is the last block in the current thread stack
                 // We need to pop out repeatedly until we find the next block.
-                const popped = thread.popStack();
-                if (popped === null) {
+                const top = thread.peekStack(); // Peak first, or the target may lost
+                if (top === null) {
+                    thread.popStack();
                     return;
                 }
-                nextBlockId = thread.target.blocks.getNextBlock(popped);
+                nextBlockId = thread.target.blocks.getNextBlock(top);
+                target = thread.target;
+                thread.popStack(); // Pop here
                 if (nextBlockId !== null) {
                     // A next block exists so break out this loop
                     break;
@@ -133,7 +137,7 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
                 stackFrame = thread.peekStackFrame();
             } while (stackFrame !== null && !stackFrame.isLoop);
 
-            thread.pushStack(nextBlockId);
+            thread.pushStack(nextBlockId, target);
         }
     }, rejectionReason => {
         // Promise rejected: the primitive had some error.

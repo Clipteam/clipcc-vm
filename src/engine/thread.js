@@ -250,7 +250,7 @@ class Thread {
      */
     pushStack (blockId, target) {
         this.stack.push(blockId);
-        if (target) {
+        if (target && this.target !== target) {
             this.pushTarget(target);
             this.targetChange.push(true);
         } else {
@@ -345,6 +345,14 @@ class Thread {
     }
 
     /**
+     * Get top stack target.
+     * @return {?object} Last target.
+     */
+    peekTarget () {
+        return this.targetStack.length > 1 ? this.targetStack[this.targetStack.length - 1] : null;
+    }
+
+    /**
      * Push a reported value to the parent of the current stack frame.
      * @param {*} value Reported value to push.
      */
@@ -422,12 +430,18 @@ class Thread {
         const sp = this.stack.length - 1;
         for (let i = sp - 1; i >= 0; i--) {
             let block = this.target.blocks.getBlock(this.stack[i]);
-            if (typeof(block) == "undefined") {
-                block = this.runtime.getProcedureDefinition(procedureCode);
+            if (!block) { // This block is not in current sprite.
+                // todo: optimize iff the stack only be pushed when a procedure is called.
+                for (const target of this.runtime.targets) {
+                    block = target.blocks.getBlock(this.stack[i]);
+                    if (block) break;
+                }
             }
-            if (block.opcode === 'procedures_call' &&
-                block.mutation.proccode === procedureCode) {
-                    return true;
+            if (!block) {
+                return false;
+            }
+            if (block.opcode === 'procedures_call' && block.mutation.proccode === procedureCode) {
+                return true;
             }
             if (--callCount < 0) {
                 return false;

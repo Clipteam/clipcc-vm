@@ -2,7 +2,9 @@ const GenerateFunction = Object.getPrototypeOf(function*(){}).constructor;
 const coreBlocks = {
     motion: require('./blocks/motion.js'),
     looks: require('./blocks/looks.js'),
-    control: require('./blocks/control.js')
+    control: require('./blocks/control.js'),
+    sensing: require('./blocks/sensing.js'),
+    sound: require('./blocks/sound.js')
 }
 
 class Generator {
@@ -15,6 +17,7 @@ class Generator {
         this.blocksCode = Object.assign(this.blocksCode, coreBlocks.motion.getCode());
         this.blocksCode = Object.assign(this.blocksCode, coreBlocks.looks.getCode());
         this.blocksCode = Object.assign(this.blocksCode, coreBlocks.control.getCode());
+        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.sound.getCode());
     }
     
     generate () {
@@ -118,6 +121,7 @@ class Generator {
                     }
                 }
             } else {
+                //@todo REPORTER转换
                 if (inputId == 'SUBSTACK' || inputId == 'SUBSTACK2') {
                     if (!input.block) value = '';
                     else value = this.generateStack(input.block);

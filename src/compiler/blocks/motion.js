@@ -25,6 +25,7 @@
             return [targetX, targetY];
             }`;
     }
+    
     static getCode () {
         return {
             motion_movesteps: 'util.target.setXY(util.target.x + Number(#<STEPS>#) * Math.cos(MathUtil.degToRad(90 - util.target.direction)), util.target.y + Number(#<STEPS>#) * Math.sin(MathUtil.degToRad(90 - util.target.direction)));',

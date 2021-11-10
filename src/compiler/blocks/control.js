@@ -3,9 +3,10 @@
  */
  
  class Control {
-     static getPrefix() {
-         return '';
-     }
+    static getPrefix() {
+        return '';
+    }
+     
     static getCode () {
         return {
             control_repeat: 

@@ -3,6 +3,10 @@
  */
  
  class Looks {
+ 	static getPrefix() {
+        return '';
+    }
+     
     static getCode () {
         return {
             looks_show: 

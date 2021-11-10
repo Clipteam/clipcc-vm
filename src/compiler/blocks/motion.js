@@ -27,11 +27,7 @@
     }
     static getCode () {
         return {
-            motion_movesteps: 
-                'const radians = MathUtil.degToRad(90 - util.target.direction);\n' +
-                'const dx = Number(#<STEPS>#) * Math.cos(radians);\n' +
-                'const dy = Number(#<STEPS>#) * Math.sin(radians);\n' +
-                'util.target.setXY(util.target.x + dx, util.target.y + dy);',
+            motion_movesteps: 'util.target.setXY(util.target.x + Number(#<STEPS>#) * Math.cos(MathUtil.degToRad(90 - util.target.direction)), util.target.y + Number(#<STEPS>#) * Math.sin(MathUtil.degToRad(90 - util.target.direction)));',
             motion_gotoxy: 'util.target.setXY(#<X>#, #<Y>#);',
             motion_goto: 'if (getTargetXY(#[TO]#, util)) util.target.setXY(getTargetXY(#[TO]#, util)[0], getTargetXY(#[TO]#, util)[1]);',
             motion_turnright: 'util.target.setDirection(util.target.direction + Number(#<DEGREES>#));',

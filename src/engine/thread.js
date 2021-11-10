@@ -241,7 +241,7 @@ class Thread {
     compile () {
         const generator = new Generator(this);
         try {
-            this.code = generator.generate();
+            generator.generate();
             this.isCompiled = true;
         } catch (e) {
             console.error("Compile failed:" + e);

@@ -1,3 +1,4 @@
+const GenerateFunction = Object.getPrototypeOf(function*(){}).constructor;
 const coreBlocks = {
     motion: require('./blocks/motion.js'),
     looks: require('./blocks/looks.js'),
@@ -27,10 +28,10 @@ class Generator {
             topBlockId = this.thread.target.blocks.getBlock(topBlockId).next;
         }
         const script = this.generateStack(topBlockId/*topBlock.next*/);
+        this.thread.jitFunc = new GenerateFunction('util', 'MathUtil', script);//使用构建函数来处理流程
+        this.thread.isActivated = false;
         //debug
-        console.log(script);
-        
-        return script;
+        console.log("生成代码：", script);
     }
     
     generateStack (beginId) {

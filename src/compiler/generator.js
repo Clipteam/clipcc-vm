@@ -8,7 +8,8 @@ const coreBlocks = {
     looks: require('./blocks/looks.js'),
     control: require('./blocks/control.js'),
     sensing: require('./blocks/sensing.js'),
-    sound: require('./blocks/sound.js')
+    sound: require('./blocks/sound.js'),
+    operator: require('./blocks/operators.js')
 }
 
 class Generator {
@@ -23,6 +24,8 @@ class Generator {
         this.blocksCode = Object.assign(this.blocksCode, coreBlocks.looks.getCode());
         this.blocksCode = Object.assign(this.blocksCode, coreBlocks.control.getCode());
         this.blocksCode = Object.assign(this.blocksCode, coreBlocks.sound.getCode());
+        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.sensing.getCode());
+        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.operator.getCode());
     }
     
     generate () {
@@ -36,7 +39,7 @@ class Generator {
             topBlockId = this.thread.target.blocks.getBlock(topBlockId).next;
         }
         this.script += this.generateStack(topBlockId/*topBlock.next*/);
-        this.thread.jitFunc = new GenerateFunction('util', 'MathUtil', this.script);//使用构建函数来处理流程
+        this.thread.jitFunc = new GenerateFunction('util', 'MathUtil', 'Cast', this.script);//使用构建函数来处理流程
         this.thread.isActivated = false;
         //debug
         console.log('生成代码：\n', this.script);
@@ -68,7 +71,6 @@ class Generator {
                 if(!this.prefixFlag[categoryId]) {
                     // 获取执行必须的前置函数
                     fragment += coreBlocks[categoryId].getPrefix() + '\n';
-                    console.log(this.script);
                     this.prefixFlag[categoryId] = true;
                 }
                 fragment += this.blocksCode[opcode] + '\n';
@@ -132,26 +134,17 @@ class Generator {
                     }
                 }
             } else {
-                //@todo REPORTER转换
                 if (inputId == 'SUBSTACK' || inputId == 'SUBSTACK2') {
                     if (!input.block) value = '';
                     else value = this.generateStack(input.block);
+                } else {
+                    value = this.generateBlock(this.thread.target.blocks.getBlock(input.block), blocks);
                 }
             }
-            value = this.safe(value);
             const reg = new RegExp('#<' + inputId + '>#', 'g');
             fragment = fragment.replace(reg, value);
         }
         return fragment;
-    }
-    
-    safe(string) {
-        return string
-            .replace(/\\/g, '\\\\')
-            .replace(/'/g, '\\\'')
-            .replace(/"/g, '\\"')
-            .replace(/\n/g, '\\n')
-            .replace(/\r/g, '\\r');
     }
 }
 

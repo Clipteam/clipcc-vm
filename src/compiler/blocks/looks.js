@@ -16,7 +16,7 @@
                 'util.target.setVisible(false);\n' ,
                 //'this._renderBubble(util.target);',
             looks_cleargraphiceffects: 'util.target.clearEffects();',
-            looks_changesizeby: 'util.target.setSize(util.target.size + Number(#<CHANGE>#));',
+            looks_changesizeby: 'util.target.setSize(util.target.size + Cast.toNumber(#<CHANGE>#));',
             looks_setsizeto:'util.target.setSize(Number(#<SIZE>#));',
             looks_gotofrontback: 
                 'if (util.isStage) return;' +
@@ -24,7 +24,7 @@
                 'else util.target.goToBack();',
             looks_goforwardbackwardlayers: 
                 'if (util.isStage) return;' +
-                'if (#<FORWARD_BACKWARD># === \'forward\') util.target.goForwardLayers(Number(#<NUM>#));' +
+                'if (#<FORWARD_BACKWARD># === \'forward\') util.target.goForwardLayers(Cast.toNumber(#<NUM>#));' +
                 'else util.target.goBackwardLayers(Cast.toNumber(#<NUM>#));',
         }
     }

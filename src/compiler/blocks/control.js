@@ -19,6 +19,16 @@
                 '#<SUBSTACK>#\n' +
                 'yield;\n' +
                 '}',
+            control_if:
+                'if (#<CONDITION>#) {\n' +
+                '#<SUBSTACK>#\n' +
+                '}',
+            control_if_else:
+                'if (#<CONDITION>#) {\n' +
+                '#<SUBSTACK>#\n' +
+                '} else {\n' +
+                '#<SUBSTACK2>#\n' +
+                '}'
         }
     }
 }

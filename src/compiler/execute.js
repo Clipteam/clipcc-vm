@@ -1,6 +1,7 @@
 const Thread = require('../engine/thread.js');
 const MathUtil = require('../util/math-util.js');
 const BlockUtility = require('../engine/block-utility.js');
+const Cast = require('../util/cast.js');
 const blockUtility = new BlockUtility();
 
 const executeScript = (sequencer, thread) => {
@@ -12,7 +13,7 @@ const executeScript = (sequencer, thread) => {
     console.log("blockUtility", blockUtility);
     try {
         if (!thread.isActivated) {
-            thread.jitFunc = thread.jitFunc(blockUtility, MathUtil);
+            thread.jitFunc = thread.jitFunc(blockUtility, MathUtil, Cast);
             thread.isActivated = true;
         }
         result = thread.jitFunc.next();

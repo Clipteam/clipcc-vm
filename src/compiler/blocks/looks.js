@@ -10,28 +10,22 @@
     static getCode () {
         return {
             looks_show: 
-                'util.target.setVisible(true);\n' +
-                'this._renderBubble(util.target);',
+                'util.target.setVisible(true);\n' ,
+                //'this._renderBubble(util.target);',
             looks_hide: 
-                'util.target.setVisible(false);\n' +
-                'this._renderBubble(util.target);',
-            /*
-            looks_changeeffectby: '
-                const effect = String(#<EFFECT>#).toLowerCase();
-                const change = Number(#<CHANGE>#);
-                if (!util.target.effects.hasOwnProperty(effect)) return;
-                let newValue = change + util.target.effects[effect];
-                newValue = this.clampEffect(effect, newValue);
-                util.target.setEffect(effect, newValue);',
-            looks_seteffectto: '
-                const effect = String(#<EFFECT>#).toLowerCase();
-                let value = Number(#<VALUE>#);
-                value = this.clampEffect(effect, value);
-                util.target.setEffect(effect, value);',
-            */
+                'util.target.setVisible(false);\n' ,
+                //'this._renderBubble(util.target);',
             looks_cleargraphiceffects: 'util.target.clearEffects();',
             looks_changesizeby: 'util.target.setSize(util.target.size + Number(#<CHANGE>#));',
             looks_setsizeto:'util.target.setSize(Number(#<SIZE>#));',
+            looks_gotofrontback: 
+                'if (util.isStage) return;' +
+                'if (#<FRONT_BACK># === \'front\') util.target.goToFront();' +
+                'else util.target.goToBack();',
+            looks_goforwardbackwardlayers: 
+                'if (util.isStage) return;' +
+                'if (#<FORWARD_BACKWARD># === \'forward\') util.target.goForwardLayers(Number(#<NUM>#));' +
+                'else util.target.goBackwardLayers(Cast.toNumber(#<NUM>#));',
         }
     }
 }

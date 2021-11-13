@@ -1638,7 +1638,7 @@ const specMap = {
         opcode: 'procedures_call',
         argMap: []
     },
-    //Clip Blocks
+    // Clip Blocks
     'createVar': {
         opcode: 'clipblocks_createVariable',
         argMap: [
@@ -1679,13 +1679,13 @@ const specMap = {
             }
         ]
     },
-    //it's broken
+    // it's broken
     'setAllSpriteVisible': {
         opcode: 'clipblocks_setVisibility',
         argMap: [
             {
                 type: 'input',
-                inputOp: /*'clipblocks_menu_booleanParam'*/'text',
+                inputOp: /* 'clipblocks_menu_booleanParam'*/'text',
                 inputName: 'BOOLEANMENU'
             }
         ]
@@ -1705,7 +1705,7 @@ const specMap = {
             },
             {
                 type: 'input',
-                inputOp: /*'clipblocks_menu_booleanParam'*/'text',
+                inputOp: /* 'clipblocks_menu_booleanParam'*/'text',
                 inputName: 'BOOLEANMENU'
             },
             {
@@ -1825,7 +1825,7 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: /*'clipblocks_menu_falshGraphicParam'*/'text',
+                inputOp: /* 'clipblocks_menu_falshGraphicParam'*/'text',
                 inputName: 'FLASHEFFECT'
             },
             {
@@ -1854,7 +1854,7 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputOp: /* 'pen_menu_booleanParam'*/'text',
                 inputName: 'BOOLEANMENU'
             }
         ]
@@ -1864,7 +1864,7 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputOp: /* 'pen_menu_booleanParam'*/'text',
                 inputName: 'BOOLEANMENU'
             }
         ]
@@ -1874,7 +1874,7 @@ const specMap = {
         argMap: [
             {
                 type: 'input',
-                inputOp: /*'pen_menu_booleanParam'*/'text',
+                inputOp: /* 'pen_menu_booleanParam'*/'text',
                 inputName: 'BOOLEANMENU'
             }
         ]
@@ -1982,7 +1982,7 @@ const specMap = {
                 inputName: 'URL'
             }
         ]
-    },
+    }
 };
 
 /**

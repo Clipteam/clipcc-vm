@@ -219,7 +219,7 @@ class VirtualMachine extends EventEmitter {
      * @param {number} the compression level.
      */
     setCompressionLevel (level) {
-    	if (level<=9 && level>=1) this.compressionLevel = level;
+    	if (level <= 9 && level >= 1) this.compressionLevel = level;
     }
     
     setDeserializeOption (option) {

@@ -10,21 +10,21 @@ const executeScript = (sequencer, thread) => {
     blockUtility.sequencer = sequencer;
     blockUtility.thread = thread;
     
-    console.log("blockUtility", blockUtility);
+    console.log('blockUtility', blockUtility);
     try {
         if (!thread.isActivated) {
             thread.jitFunc = thread.jitFunc(blockUtility, MathUtil, Cast);
             thread.isActivated = true;
         }
         result = thread.jitFunc.next();
-        console.log("运行状态：", result);
+        console.log('运行状态：', result);
         if (result.done) {
-            sequencer.retireThread(thread); //销毁已完成的进程
+            sequencer.retireThread(thread); // 销毁已完成的进程
             thread.status = Thread.STATUS_DONE;
         }
     } catch (e) {
         throw new Error(e);
     }
-}
+};
 
 module.exports = executeScript;

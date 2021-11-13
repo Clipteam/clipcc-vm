@@ -4,20 +4,20 @@
  * 述其工作原理。
  */
  
- class CoreExample/*类名*/ {
+class CoreExample/* 类名*/ {
     /**
      * 本函数用于获取该类模块对应的运行脚本。
      * 每个 opcode 对应唯一的代码, 参数请使用#<InputName>#的方式传入。
      * 需要注意的是，脚本不应出现声明常量等影响整体线程运行的行为，如脚
      * 本需要请尝试直接嵌入或使用前置函数实现。
-     * @return {Object}
+     * @return {object}
      */
     static getCode () {
         return {
             sinangentoo_0523: 'util.target.clearEffects();',
             alexcui_0925: 'util.target.setSize(408);',
-            frank_782:'util.target.setSize(Number(#<SIZE># + 930));',
-        }
+            frank_782: 'util.target.setSize(Number(#<SIZE># + 930));'
+        };
     }
 }
  

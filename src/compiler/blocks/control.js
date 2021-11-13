@@ -2,10 +2,10 @@
  * 此类用于存放需要被生成的模块代码。
  */
  
- class Control {
+class Control {
     static getCode () {
         return {
-            control_repeat: 
+            control_repeat:
                 'for(var i = 0; i<#<TIMES>#; i++){\n' +
                 '#<SUBSTACK>#\n' +
                 'yield;\n' +
@@ -26,7 +26,7 @@
                 '#<SUBSTACK2>#\n' +
                 '}',
             control_wait: ''
-        }
+        };
     }
 }
  

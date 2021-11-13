@@ -178,13 +178,13 @@ class Sequencer {
      * @param {!Thread} thread Thread object to step.
      */
     stepThread (thread) {
-        console.log("线程编译状态：", thread.isCompiled);
+        console.log('线程编译状态：', thread.isCompiled);
         if (this.runtime.useCompiler && thread.isCompiled) {
             try {
                 executeScript(this, thread);
-                console.log("已执行!");
+                console.log('已执行!');
             } catch (e) {
-                console.error("执行时发生错误:", e);
+                console.error('执行时发生错误:', e);
             }
             return;
         }

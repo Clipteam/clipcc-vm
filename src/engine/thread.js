@@ -244,7 +244,7 @@ class Thread {
             generator.generate();
             this.isCompiled = true;
         } catch (e) {
-            console.error("Compile failed:" + e);
+            console.error(`Compile failed:${e}`);
         }
     }
 

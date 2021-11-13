@@ -10,7 +10,7 @@ const coreBlocks = {
     sensing: require('./blocks/sensing.js'),
     sound: require('./blocks/sound.js'),
     operator: require('./blocks/operators.js')
-}
+};
 
 const fieldMap = {
     text: 'TEXT',
@@ -23,7 +23,7 @@ const fieldMap = {
     data_variable: 'VARIABLE',
     event_broadcast_menu: 'BROADCAST',
     data_listcontents: 'LIST'
-}
+};
 
 class Generator {
     constructor (thread) {
@@ -46,15 +46,15 @@ class Generator {
         const target = this.thread.target;
         if (!target) throw new Error('target is undefined');
 
-        let topBlockId= this.thread.topBlock;
+        let topBlockId = this.thread.topBlock;
         if (this.thread.blockContainer.runtime.getIsHat(this.thread.target.blocks.getBlock(topBlockId).opcode)) {
             // hat block should not be compiled
             topBlockId = this.thread.target.blocks.getBlock(topBlockId).next;
         }
-        this.script += this.generateStack(topBlockId/*topBlock.next*/);
-        this.thread.jitFunc = new GenerateFunction('util', 'MathUtil', 'Cast', this.script);//使用构建函数来处理流程
+        this.script += this.generateStack(topBlockId/* topBlock.next*/);
+        this.thread.jitFunc = new GenerateFunction('util', 'MathUtil', 'Cast', this.script);// 使用构建函数来处理流程
         this.thread.isActivated = false;
-        //debug
+        // debug
         console.log('生成代码：\n', this.script);
     }
     
@@ -66,21 +66,20 @@ class Generator {
         while (currentId !== null) {
             const block = this.thread.target.blocks.getBlock(currentId);
             if (!block) throw new Error('block is undefined');
-            let fragment = this.generateBlock(block, blocks);
+            const fragment = this.generateBlock(block, blocks);
             if (fragment != 'opcode is undefined') {
                 stackScript += fragment;
                 currentId = block.next;
-            }
-            else throw new Error('opcode is undefined');
+            } else throw new Error('opcode is undefined');
         }
         return stackScript;
     }
     
     generateBlock (block, blocks) {
-        for(const opcode in this.blocksCode) {
+        for (const opcode in this.blocksCode) {
             if (opcode == block.opcode) {
                 const categoryId = opcode.split('_')[0];
-                let fragment = this.blocksCode[opcode] + '\n';
+                const fragment = `${this.blocksCode[opcode]}\n`;
                 return this.deserializeInputs(fragment, blocks, block);
             }
         }
@@ -92,23 +91,21 @@ class Generator {
         let value;
         for (const inputId in block.inputs) { // 逐个替换Inputs
             const input = block.inputs[inputId]; // 获取该input的值
-            if (input.block == input.shadow) { //非嵌套reporter模块，开始获取值
+            if (input.block == input.shadow) { // 非嵌套reporter模块，开始获取值
                 const targetBlock = blocks[input.block]; // 指向的模块
                 if (targetBlock.opcode) {
                     const fieldId = fieldMap[targetBlock.opcode];
                     value = targetBlock.fields[fieldId].value;
                 } else {
-                    console.error('Unknown field type:' + targetBlock.opcode);
+                    console.error(`Unknown field type:${targetBlock.opcode}`);
                 }
+            } else if (inputId == 'SUBSTACK' || inputId == 'SUBSTACK2') {
+                if (!input.block) value = '';
+                else value = this.generateStack(input.block);
             } else {
-                if (inputId == 'SUBSTACK' || inputId == 'SUBSTACK2') {
-                    if (!input.block) value = '';
-                    else value = this.generateStack(input.block);
-                } else {
-                    value = this.generateBlock(this.thread.target.blocks.getBlock(input.block), blocks);
-                }
+                value = this.generateBlock(this.thread.target.blocks.getBlock(input.block), blocks);
             }
-            const reg = new RegExp('#<' + inputId + '>#', 'g');
+            const reg = new RegExp(`#<${inputId}>#`, 'g');
             fragment = fragment.replace(reg, value);
         }
         return fragment;

@@ -2,8 +2,8 @@
  * 此类用于存放需要被生成的模块代码。
  */
 
- class Motion {
-    static getPrefix() {
+class Motion {
+    static getPrefix () {
         return `const getTargetXY = function (targetName, util) {
             let targetX = 0;
             let targetY = 0;
@@ -32,8 +32,8 @@
             motion_gotoxy: 'util.target.setXY(#<X>#, #<Y>#);',
             motion_goto: 'if (getTargetXY(#[TO]#, util)) util.target.setXY(getTargetXY(#[TO]#, util)[0], getTargetXY(#[TO]#, util)[1]);',
             motion_turnright: 'util.target.setDirection(util.target.direction + Cast.toNumber(#<DEGREES>#));',
-            motion_turnleft: 'util.target.setDirection(util.target.direction - Cast.toNumber(#<DEGREES>#));',
-        }
+            motion_turnleft: 'util.target.setDirection(util.target.direction - Cast.toNumber(#<DEGREES>#));'
+        };
     }
 }
  

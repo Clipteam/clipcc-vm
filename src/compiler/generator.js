@@ -12,6 +12,19 @@ const coreBlocks = {
     operator: require('./blocks/operators.js')
 }
 
+const fieldMap = {
+    text: 'TEXT',
+    math_number: 'NUM',
+    math_positive_number: 'NUM',
+    math_whole_number: 'NUM',
+    math_integer: 'NUM',
+    math_angle: 'NUM',
+    colour_picker: 'COLOUR',
+    data_variable: 'VARIABLE',
+    event_broadcast_menu: 'BROADCAST',
+    data_listcontents: 'LIST'
+}
+
 class Generator {
     constructor (thread) {
         this.thread = thread;
@@ -67,14 +80,7 @@ class Generator {
         for(const opcode in this.blocksCode) {
             if (opcode == block.opcode) {
                 const categoryId = opcode.split('_')[0];
-                let fragment = '';
-                if(!this.prefixFlag[categoryId]) {
-                    // 获取执行必须的前置函数
-                    fragment += coreBlocks[categoryId].getPrefix() + '\n';
-                    this.prefixFlag[categoryId] = true;
-                }
-                fragment += this.blocksCode[opcode] + '\n';
-                console.log(blocks);
+                let fragment = this.blocksCode[opcode] + '\n';
                 return this.deserializeInputs(fragment, blocks, block);
             }
         }
@@ -88,50 +94,11 @@ class Generator {
             const input = block.inputs[inputId]; // 获取该input的值
             if (input.block == input.shadow) { //非嵌套reporter模块，开始获取值
                 const targetBlock = blocks[input.block]; // 指向的模块
-                switch (targetBlock.opcode) {
-                    case 'text': {
-                        value = targetBlock.fields.TEXT.value;
-                        break;
-                    }
-                    case 'math_number': {
-                        value = targetBlock.fields.NUM.value;
-                        break;
-                    }
-                    case 'math_positive_number': {
-                        value = targetBlock.fields.NUM.value;
-                        break;
-                    }
-                    case 'math_whole_number': {
-                        value = targetBlock.fields.NUM.value;
-                        break;
-                    }
-                    case 'colour_picker': {
-                        value = targetBlock.fields.COLOUR.value;
-                        break;
-                    }
-                    case 'data_variable': {
-                        value = targetBlock.fields.VARIABLE.value;
-                        break;
-                    }
-                    case 'event_broadcast_menu': {
-                        value = targetBlock.fields.BROADCAST.value;
-                        break;
-                    }
-                    case 'data_listcontents': {
-                        value = targetBlock.fields.LIST.value;
-                        break;
-                    }
-                    case 'math_integer': {
-                        value = targetBlock.fields.NUM.value;
-                        break;
-                    }
-                    case 'math_angle': {
-                        value = targetBlock.fields.NUM.value;
-                        break;
-                    }
-                    default: {
-                        console.error('Unknown field type:' + targetBlock.opcode);
-                    }
+                if (targetBlock.opcode) {
+                    const fieldId = fieldMap[targetBlock.opcode];
+                    value = targetBlock.fields[fieldId].value;
+                } else {
+                    console.error('Unknown field type:' + targetBlock.opcode);
                 }
             } else {
                 if (inputId == 'SUBSTACK' || inputId == 'SUBSTACK2') {

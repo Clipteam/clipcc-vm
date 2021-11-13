@@ -3,10 +3,6 @@
  */
  
  class Control {
-    static getPrefix() {
-        return '';
-    }
-     
     static getCode () {
         return {
             control_repeat: 
@@ -28,7 +24,8 @@
                 '#<SUBSTACK>#\n' +
                 '} else {\n' +
                 '#<SUBSTACK2>#\n' +
-                '}'
+                '}',
+            control_wait: ''
         }
     }
 }

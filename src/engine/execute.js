@@ -514,7 +514,12 @@ const execute = function (sequencer, thread) {
 
         // Inputs are set during previous steps in the loop.
 
+        blockUtility.currentBlock = opCached;
         const primitiveReportedValue = blockFunction(argValues, blockUtility);
+
+        if (opCached.opcode === 'procedures_return') {
+            break;
+        }
 
         // If it's a promise, wait until promise resolves.
         if (isPromise(primitiveReportedValue)) {
@@ -563,6 +568,28 @@ const execute = function (sequencer, thread) {
                     parentValues[inputName] = primitiveReportedValue;
                 }
             }
+        }
+
+        // Waiting for a procedure call
+        if (opCached.opcode === 'procedures_call_return') {
+            thread.justReported = null;
+            currentStackFrame.reporting = ops[i].id;
+            currentStackFrame.reported = ops.slice(0, i).map(reportedCached => {
+                const inputName = reportedCached._parentKey;
+                const reportedValues = reportedCached._parentValues;
+
+                if (inputName === 'BROADCAST_INPUT') {
+                    return {
+                        opCached: reportedCached.id,
+                        inputValue: reportedValues[inputName].BROADCAST_OPTION.name
+                    };
+                }
+                return {
+                    opCached: reportedCached.id,
+                    inputValue: reportedValues[inputName]
+                };
+            });
+            break;
         }
     }
 

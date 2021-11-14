@@ -230,7 +230,7 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_definition') {
+            if (block.opcode === 'procedures_definition' || block.opcode === 'procedures_definition_return') {
                 const internal = this._getCustomBlockInternal(block);
                 if (internal && (all || internal.mutation.global === 'true')) {
                     this._cache.procedureDefinitions[internal.mutation.proccode] = id; // The outer define block id
@@ -256,7 +256,7 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_definition') {
+            if (block.opcode === 'procedures_definition' || block.opcode === 'procedures_definition_return') {
                 const internal = this._getCustomBlockInternal(block);
                 if (internal && internal.mutation.proccode === name) {
                     this._cache.procedureDefinitions[name] = id; // The outer define block id
@@ -292,7 +292,8 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_prototype' &&
+            if ((block.opcode === 'procedures_prototype' ||
+                block.opcode === 'procedures_prototype_return') &&
                 block.mutation.proccode === name) {
                 const names = JSON.parse(block.mutation.argumentnames);
                 const ids = JSON.parse(block.mutation.argumentids);

@@ -3,10 +3,6 @@
  */
  
 class Sound {
- 	static getPrefix () {
-        return '';
-    }
-    
     static getCode () {
         return {
             // @todo

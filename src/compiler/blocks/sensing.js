@@ -3,10 +3,6 @@
  */
  
 class Sensing {
- 	static getPrefix () {
-        return '';
-    }
-    
     static getCode () {
         return {
             // @todo

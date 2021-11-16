@@ -6,11 +6,11 @@ class Looks {
     static getCode () {
         return {
             looks_show:
-                'util.target.setVisible(true);\n',
-            // 'this._renderBubble(util.target);',
+                'util.target.setVisible(true);',
+                //'blockClass.scratch3_looks._renderBubble(util.target);', // 由于该函数需要使用renderer，暂时搁置
             looks_hide:
-                'util.target.setVisible(false);\n',
-            // 'this._renderBubble(util.target);',
+                'util.target.setVisible(false);',
+                 //'blockClass.scratch3_looks._renderBubble(util.target);', // 由于该函数需要使用renderer，暂时搁置
             looks_cleargraphiceffects: 'util.target.clearEffects();',
             looks_changesizeby: 'util.target.setSize(util.target.size + Cast.toNumber(#<CHANGE>#));',
             looks_setsizeto: 'util.target.setSize(Number(#<SIZE>#));',

@@ -326,6 +326,14 @@ class Scratch3LooksBlocks {
             }
         };
     }
+    
+    getCompilerFunc () {
+        return {
+            _renderBubble: this._renderBubble,
+            _setBackdrop: this._setBackdrop,
+            _setCostume: this._setCostume
+        }
+    }
 
     say (args, util) {
         // @TODO in 2.0 calling say/think resets the right/left bias of the bubble

@@ -13,7 +13,14 @@ const executeScript = (sequencer, thread) => {
     console.log('blockUtility', blockUtility);
     try {
         if (!thread.isActivated) {
-            thread.jitFunc = thread.jitFunc(blockUtility, MathUtil, Cast);
+            const CompilerUtil = {
+                util: blockUtility,
+                MathUtil,
+                Cast,
+                blockClass: blockUtility.runtime.blockClass
+            }
+            console.log('CompilerUtil:', CompilerUtil);
+            thread.jitFunc = thread.jitFunc(CompilerUtil);
             thread.isActivated = true;
         }
         result = thread.jitFunc.next();

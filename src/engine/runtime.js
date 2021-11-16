@@ -202,6 +202,8 @@ class Runtime extends EventEmitter {
         * @type {Boolean}
         */
         this.useCompiler = false;
+        
+        this.blockClass = {};
 
         /**
          * A list of threads that are currently running in the VM.
@@ -801,6 +803,8 @@ class Runtime extends EventEmitter {
                 if (packageObject.getMonitored) {
                     this.monitorBlockInfo = Object.assign({}, this.monitorBlockInfo, packageObject.getMonitored());
                 }
+                // 获取编译模块时必备的函数
+                if (packageObject.getCompilerFunc) this.blockClass[packageName] = packageObject.getCompilerFunc();
             }
         }
     }

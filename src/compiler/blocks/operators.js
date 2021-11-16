@@ -1,9 +1,8 @@
+/**
+ * 此类用于存放需要被生成的模块代码。
+ */
+ 
 class Operators {
- 	static getPrefix () {
-        return `
-        `;
-    }
-    
     static getCode () {
         return {
             operator_add: 'Cast.toNumber(#<NUM1>#) + Cast.toNumber(#<NUM2>#)',

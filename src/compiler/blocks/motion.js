@@ -7,9 +7,12 @@ class Motion {
         return {
             motion_movesteps: 'util.target.setXY(util.target.x + Cast.toNumber(#<STEPS>#) * Math.cos(MathUtil.degToRad(90 - util.target.direction)), util.target.y + Cast.toNumber(#<STEPS>#) * Math.sin(MathUtil.degToRad(90 - util.target.direction)));',
             motion_gotoxy: 'util.target.setXY(#<X>#, #<Y>#);',
-            motion_goto: 'if (blockClass.scratch3_motion.getTargetXY(#[TO]#, util)) util.target.setXY(blockClass.scratch3_motion.getTargetXY(#[TO]#, util)[0], blockClass.scratch3_motion.getTargetXY(#[TO]#, util)[1]);',
+            motion_goto: 'if (blockClass.scratch3_motion.getTargetXY(\'#<TO>#\', util)) util.target.setXY(blockClass.scratch3_motion.getTargetXY(\'#<TO>#\', util)[0], blockClass.scratch3_motion.getTargetXY(\'#<TO>#\', util)[1]);',
             motion_turnright: 'util.target.setDirection(util.target.direction + Cast.toNumber(#<DEGREES>#));',
-            motion_turnleft: 'util.target.setDirection(util.target.direction - Cast.toNumber(#<DEGREES>#));'
+            motion_turnleft: 'util.target.setDirection(util.target.direction - Cast.toNumber(#<DEGREES>#));',
+            motion_pointindirection: 'util.target.setDirection(Cast.toNumber(#<DIRECTION>#));',
+            motion_ifonedgebounce: 'blockClass.scratch3_motion.ifOnEdgeBounce(null, util);'
+            
         };
     }
 }

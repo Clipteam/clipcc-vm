@@ -60,12 +60,6 @@ class Scratch3MotionBlocks {
             }
         };
     }
-    
-    getCompilerFunc () {
-        return {
-            getTargetXY: this.getTargetXY
-        }
-    }
 
     moveSteps (args, util) {
         const steps = Cast.toNumber(args.STEPS);

@@ -804,7 +804,7 @@ class Runtime extends EventEmitter {
                     this.monitorBlockInfo = Object.assign({}, this.monitorBlockInfo, packageObject.getMonitored());
                 }
                 // 获取编译模块时必备的函数
-                if (packageObject.getCompilerFunc) this.blockClass[packageName] = packageObject.getCompilerFunc();
+                this.blockClass[packageName] = packageObject;
             }
         }
     }

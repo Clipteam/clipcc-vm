@@ -10,7 +10,6 @@ const executeScript = (sequencer, thread) => {
     blockUtility.sequencer = sequencer;
     blockUtility.thread = thread;
     
-    console.log('blockUtility', blockUtility);
     try {
         if (!thread.isActivated) {
             const CompilerUtil = {

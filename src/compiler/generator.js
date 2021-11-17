@@ -22,7 +22,8 @@ const fieldMap = {
     colour_picker: 'COLOUR',
     data_variable: 'VARIABLE',
     event_broadcast_menu: 'BROADCAST',
-    data_listcontents: 'LIST'
+    data_listcontents: 'LIST',
+    motion_goto_menu: 'TO'
 };
 
 class Generator {

@@ -81,16 +81,16 @@ class Generator {
             if (opcode == block.opcode) {
                 const categoryId = opcode.split('_')[0];
                 const fragment = `${this.blocksCode[opcode]}\n`;
-                return this.deserializeInputs(fragment, blocks, block);
+                return this.deserializeParameters(fragment, blocks, block);
             }
         }
         return 'opcode is undefined';
     }
     
-    deserializeInputs (frag, blocks, block) {
+    deserializeParameters (frag, blocks, block) {
         let fragment = frag;
-        let value;
         for (const inputId in block.inputs) { // 逐个替换Inputs
+            let value;
             const input = block.inputs[inputId]; // 获取该input的值
             if (input.block == input.shadow) { // 非嵌套reporter模块，开始获取值
                 const targetBlock = blocks[input.block]; // 指向的模块
@@ -108,6 +108,12 @@ class Generator {
             }
             const reg = new RegExp(`#<${inputId}>#`, 'g');
             fragment = fragment.replace(reg, value);
+        }
+        
+        for (const fieldId in block.fields) { // 逐个替换fields
+            const field = block.fields[fieldId]; // 获取该field的值
+            const reg = new RegExp(`#<${field.name}>#`, 'g');
+            fragment = fragment.replace(reg, field.value);
         }
         return fragment;
     }

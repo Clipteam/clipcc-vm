@@ -20,7 +20,12 @@ class Motion {
             motion_sety: 'util.target.setXY(util.target.x, Cast.toNumber(#<Y>#));',
             motion_xposition: 'blockClass.scratch3_motion.limitPrecision(util.target.x)',
             motion_yposition: 'blockClass.scratch3_motion.limitPrecision(util.target.y)',
-            motion_direction: 'util.target.direction'
+            motion_direction: 'util.target.direction',
+            motion_scroll_right: '',
+            motion_scroll_up: '',
+            motion_align_scene: '',
+            motion_xscroll: '',
+            motion_yscroll: ''
             
         };
     }

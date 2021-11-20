@@ -48,10 +48,12 @@ class Generator {
         if (!target) throw new Error('target is undefined');
 
         let topBlockId = this.thread.topBlock;
-        if (this.thread.blockContainer.runtime.getIsHat(this.thread.target.blocks.getBlock(topBlockId).opcode)) {
+        const topBlock = this.thread.target.blocks.getBlock(topBlockId);
+        if (this.thread.blockContainer.runtime.getIsHat(topBlock.opcode)) {
             // hat block should not be compiled
-            topBlockId = this.thread.target.blocks.getBlock(topBlockId).next;
+            topBlockId = topBlock.next;
         }
+        if (topBlock.parent === null && topBlock.next === null) throw new Error('unnessary to generate single block');
         this.script += this.generateStack(topBlockId/* topBlock.next*/);
         this.thread.jitFunc = new GenerateFunction('CompilerUtil', this.script);// 使用构建函数来处理流程
         this.thread.isActivated = false;

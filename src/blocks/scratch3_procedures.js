@@ -81,6 +81,8 @@ class Scratch3ProcedureBlocks {
             }
 
             util.stackFrame.executed = true;
+            // For the reason that the stack top is current command block,
+            // rather than the call block, so we should push the block id.
             util.pushThreadStack(util.currentBlockId);
             util.startProcedure(procedureCode);
         }
@@ -89,6 +91,7 @@ class Scratch3ProcedureBlocks {
     return (args, util) {
         util.pushReportedValue(args.VALUE);
         util.stopThisScript();
+        // For the same reason in callReturn
         util.popThreadStack();
     }
 

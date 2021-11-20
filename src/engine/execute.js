@@ -554,8 +554,7 @@ const execute = function (sequencer, thread) {
             if (lastOperation) {
                 if (opCached.opcode === 'procedures_call_return') {
                     handleReport(thread.justReported, sequencer, thread, opCached, lastOperation);
-                }
-                else {
+                } else {
                     handleReport(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
                 }
             } else {

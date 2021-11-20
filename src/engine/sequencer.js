@@ -233,7 +233,10 @@ class Sequencer {
             }
             // If no control flow has happened, switch to next block.
             if (thread.peekStack() === currentBlockId) {
-                thread.goToNextBlock();
+                // If current block is a return block, skip it.
+                if (thread.target.blocks.getBlock(currentBlockId).opcode !== 'procedures_return') {
+                    thread.goToNextBlock();
+                }
             }
             // If no next block has been found at this point, look on the stack.
             while (!thread.peekStack()) {

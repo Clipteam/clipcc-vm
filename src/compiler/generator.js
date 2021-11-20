@@ -71,7 +71,9 @@ class Generator {
             if (fragment != 'opcode is undefined') {
                 stackScript += fragment;
                 currentId = block.next;
-            } else throw new Error('opcode is undefined');
+            } else {
+                throw new Error('opcode is undefined');
+            }
         }
         return stackScript;
     }

@@ -182,7 +182,6 @@ class Sequencer {
         if (this.runtime.useCompiler && thread.isCompiled) {
             try {
                 executeScript(this, thread);
-                console.log('已执行!');
             } catch (e) {
                 console.error('执行时发生错误:', e);
             }

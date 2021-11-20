@@ -17,13 +17,13 @@ const executeScript = (sequencer, thread) => {
                 MathUtil,
                 Cast,
                 blockClass: blockUtility.runtime.blockClass
-            }
+            };
             console.log('CompilerUtil:', CompilerUtil);
             thread.jitFunc = thread.jitFunc(CompilerUtil);
             thread.isActivated = true;
         }
         result = thread.jitFunc.next();
-        console.log('运行状态：', result);
+        //console.log('运行状态：', result);
         if (result.done) {
             sequencer.retireThread(thread); // 销毁已完成的进程
             thread.status = Thread.STATUS_DONE;

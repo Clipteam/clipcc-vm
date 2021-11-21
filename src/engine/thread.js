@@ -244,7 +244,8 @@ class Thread {
             generator.generate();
             this.isCompiled = true;
         } catch (e) {
-            console.error(`Compile failed:${e}`);
+            if (e.toString() == 'Error: unnessary to generate single block') console.log('unnessary to generate single block');
+            else console.error(`Compile failed:${e}`);
         }
     }
 

@@ -136,6 +136,7 @@ class ExtensionManager {
             const extensionInstance = new extension(this.runtime);
             const serviceName = this._registerInternalExtension(extensionInstance);
             this._loadedExtensions.set(extensionURL, serviceName);
+            this.runtime.blockClass[`extension_${extensionURL}`] = extensionInstance; // used for generator
             return Promise.resolve();
         }
 

@@ -3,14 +3,15 @@
  */
 const GenerateFunction = Object.getPrototypeOf(function*(){}).constructor;
 
-const coreBlocks = {
-    motion: require('./blocks/motion.js'),
-    looks: require('./blocks/looks.js'),
-    control: require('./blocks/control.js'),
-    sensing: require('./blocks/sensing.js'),
-    sound: require('./blocks/sound.js'),
-    operator: require('./blocks/operators.js')
-};
+const generateMapping = [
+    require('./blocks/motion.js'),
+    require('./blocks/looks.js'),
+    require('./blocks/control.js'),
+    require('./blocks/sensing.js'),
+    require('./blocks/sound.js'),
+    require('./blocks/operators.js'),
+    require('./blocks/pen.js')
+];
 
 const fieldMap = {
     text: 'TEXT',
@@ -34,12 +35,10 @@ class Generator {
         this.script = 'const {util, MathUtil, Cast, blockClass} = CompilerUtil;\n';
         
         // 写入所有可编译的代码
-        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.motion.getCode());
-        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.looks.getCode());
-        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.control.getCode());
-        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.sound.getCode());
-        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.sensing.getCode());
-        this.blocksCode = Object.assign(this.blocksCode, coreBlocks.operator.getCode());
+        for (const id in generateMapping) {
+            const compilerCategory = generateMapping[id];
+            Object.assign(this.blocksCode, compilerCategory.getCode());
+        }
     }
     
     generate () {

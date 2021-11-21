@@ -32,13 +32,15 @@ class Generator {
         this.thread = thread;
         this.blocksCode = {};
         this.prefixFlag = {};
-        this.script = 'const {util, MathUtil, Cast, blockClass} = CompilerUtil;\n';
+        this.script = 'const {util, MathUtil, Cast, blockClass, ioQuery} = CompilerUtil;\n';
         
         // 写入所有可编译的代码
         for (const id in generateMapping) {
             const compilerCategory = generateMapping[id];
             Object.assign(this.blocksCode, compilerCategory.getCode());
         }
+        
+        console.log("生成表：", this.blocksCode);
     }
     
     generate () {
@@ -52,7 +54,7 @@ class Generator {
             // hat block should not be compiled
             topBlockId = topBlock.next;
         }
-        if (topBlock.parent === null && topBlock.next === null) throw new Error('unnessary to generate single block');
+        if (topBlock.parent === null && topBlock.next === null) throw new Error('unnecessary to generate single block');
         this.script += this.generateStack(topBlockId/* topBlock.next*/);
         this.thread.jitFunc = new GenerateFunction('CompilerUtil', this.script);// 使用构建函数来处理流程
         this.thread.isActivated = false;
@@ -82,7 +84,6 @@ class Generator {
     generateBlock (block, blocks) {
         for (const opcode in this.blocksCode) {
             if (opcode == block.opcode) {
-                const categoryId = opcode.split('_')[0];
                 const fragment = `${this.blocksCode[opcode]}\n`;
                 return this.deserializeParameters(fragment, blocks, block);
             }

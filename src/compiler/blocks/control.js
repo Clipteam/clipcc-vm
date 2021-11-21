@@ -25,7 +25,10 @@ class Control {
                 '} else {\n' +
                 '#<SUBSTACK2>#\n' +
                 '}',
-            control_wait: ''
+            control_wait: 'if(!timer) var timer;\n' +
+                'timer = new Timer();\n' +
+                'timer.start();\n' +
+                'while (timer.timeElapsed() <= Cast.toNumber(#<DURATION>#) * 1000) yield;'
         };
     }
 }

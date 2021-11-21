@@ -5,6 +5,8 @@
 class Sensing {
     static getCode () {
         return {
+            sensing_mousex: 'ioQuery(util.runtime, "mouse", "getScratchX")',
+            sensing_mousey: 'ioQuery(util.runtime, "mouse", "getScratchY")',
             sensing_operatingsystem: 'blockClass_scratch3_sensing.getOS()',
             sensing_clipcc_version: 'util.runtime.version',
             sensing_turnonturbomode: 'util.runtime.turboMode = true;\n' +

@@ -24,7 +24,10 @@ const fieldMap = {
     data_variable: 'VARIABLE',
     event_broadcast_menu: 'BROADCAST',
     data_listcontents: 'LIST',
-    motion_goto_menu: 'TO'
+    motion_goto_menu: 'TO',
+    pen_menu_colorParam: 'colorParam',
+    music_menu_INSTRUMENT: 'INSTRUMENT',
+    music_menu_DRUM: 'DRUM'
 };
 
 class Generator {

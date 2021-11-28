@@ -1,12 +1,21 @@
 /**
  * 此类用于存放需要被生成的模块代码。
  */
-
+const GeneratorType = require('../generator-type.js');
 class Motion {
     static getCode () {
         return {
-            motion_movesteps: 'util.target.setXY(util.target.x + Cast.toNumber(#<STEPS>#) * Math.cos(MathUtil.degToRad(90 - util.target.direction)), util.target.y + Cast.toNumber(#<STEPS>#) * Math.sin(MathUtil.degToRad(90 - util.target.direction)));',
-            motion_gotoxy: 'util.target.setXY(#<X>#, #<Y>#);',
+            motion_movesteps: (parameters) => {
+                const STEPS = GeneratorType.asNum(parameters.STEPS);
+                return `util.target.setXY(util.target.x + ${STEPS} * Math.cos(MathUtil.degToRad(90 - util.target.direction)), util.target.y + ${STEPS} * Math.sin(MathUtil.degToRad(90 - util.target.direction)));`;
+                
+            },
+            motion_gotoxy: (parameters) => {
+                const X = GeneratorType.asNum(parameters.X);
+                const Y = GeneratorType.asNum(parameters.Y);
+                return `util.target.setXY(${X}, ${Y});`;
+                
+            },
             motion_goto: 'if (blockClass.scratch3_motion.getTargetXY(\'#<TO>#\', util)) util.target.setXY(blockClass.scratch3_motion.getTargetXY(\'#<TO>#\', util)[0], blockClass.scratch3_motion.getTargetXY(\'#<TO>#\', util)[1]);',
             motion_pointtowards: 'blockClass.scratch3_motion.pointTowards({TOWARDS: String(#<TOWARDS>#)}, util)',
             motion_turnright: 'util.target.setDirection(util.target.direction + Cast.toNumber(#<DEGREES>#));',

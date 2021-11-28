@@ -59,21 +59,20 @@ class Generator {
         }
         if (topBlock.parent === null && topBlock.next === null) throw new Error('unnecessary to generate single block');
         this.script += this.generateStack(topBlockId/* topBlock.next*/);
-        this.thread.jitFunc = new GenerateFunction('CompilerUtil', this.script);// 使用构建函数来处理流程
-        this.thread.isActivated = false;
         // debug
         console.log('生成代码：\n', this.script);
+        this.thread.jitFunc = new GenerateFunction('CompilerUtil', this.script);// 使用构建函数来处理流程
+        this.thread.isActivated = false;
     }
     
     generateStack (beginId) {
         let stackScript = '';
         let currentId = beginId;
-        const blocks = this.thread.target.blocks._blocks;
         
         while (currentId !== null) {
             const block = this.thread.target.blocks.getBlock(currentId);
             if (!block) throw new Error('block is undefined');
-            const fragment = this.generateBlock(block, blocks);
+            const fragment = this.generateBlock(block);
             if (fragment != 'opcode is undefined') {
                 stackScript += fragment;
                 currentId = block.next;
@@ -84,45 +83,39 @@ class Generator {
         return stackScript;
     }
     
-    generateBlock (block, blocks) {
-        for (const opcode in this.blocksCode) {
-            if (opcode == block.opcode) {
-                const fragment = `${this.blocksCode[opcode]}\n`;
-                return this.deserializeParameters(fragment, blocks, block);
-            }
+    generateBlock (block) {
+        // 判断该模块是否存在
+        if (!this.blocksCode[block.opcode]) return `opcode ${block.opcode} is undefined`;
+        try {
+            const parameters = this.deserializeParameters(block);
+            console.log(parameters);
+            return this.blocksCode[block.opcode](parameters);
+        } catch (e) {
+            throw new Error(`An error occurred while generating block:\n ${e}`);
         }
-        return 'opcode is undefined';
     }
     
-    deserializeParameters (frag, blocks, block) {
-        let fragment = frag;
-        for (const inputId in block.inputs) { // 逐个替换Inputs
-            let value;
+    deserializeParameters (block) {
+        let parameters = {};
+        for (const inputId in block.inputs) {
             const input = block.inputs[inputId]; // 获取该input的值
             if (input.block == input.shadow) { // 非嵌套reporter模块，开始获取值
-                const targetBlock = blocks[input.block]; // 指向的模块
+                const targetBlock = this.thread.target.blocks.getBlock(input.block); // 指向的模块
                 if (targetBlock.opcode) {
                     const fieldId = fieldMap[targetBlock.opcode];
-                    value = targetBlock.fields[fieldId].value;
+                    parameters[inputId] = targetBlock.fields[fieldId].value;
                 } else {
-                    console.error(`Unknown field type:${targetBlock.opcode}`);
+                    throw new Error(`Unknown field type:${targetBlock.opcode}`);
                 }
             } else if (inputId == 'SUBSTACK' || inputId == 'SUBSTACK2') {
-                if (!input.block) value = '';
-                else value = this.generateStack(input.block);
+                if (!input.block) parameters[inputId] = null;
+                else parameters[inputId] = this.generateStack(input.block);
             } else {
-                value = this.generateBlock(this.thread.target.blocks.getBlock(input.block), blocks);
+                const inputBlock = this.thread.target.blocks.getBlock(input.block);
+                parameters[inputId] = this.generateBlock(inputBlock)
             }
-            const reg = new RegExp(`#<${inputId}>#`, 'g');
-            fragment = fragment.replace(reg, value);
         }
-        
-        for (const fieldId in block.fields) { // 逐个替换fields
-            const field = block.fields[fieldId]; // 获取该field的值
-            const reg = new RegExp(`#<${field.name}>#`, 'g');
-            fragment = fragment.replace(reg, field.value);
-        }
-        return fragment;
+        return parameters;
     }
 }
 

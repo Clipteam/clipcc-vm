@@ -8,7 +8,7 @@ const ioQuery = (runtime, device, func, args) => {
         const devObject = runtime.ioDevices[device];
         return devObject[func].apply(devObject, args);
     }
-}
+};
 
 const executeScript = (sequencer, thread) => {
     // store sequencer and thread so jit code can access them through
@@ -29,7 +29,7 @@ const executeScript = (sequencer, thread) => {
             thread.isActivated = true;
         }
         result = thread.jitFunc.next();
-        //console.log('运行状态：', result);
+        // console.log('运行状态：', result);
         if (result.done) {
             sequencer.retireThread(thread); // 销毁已完成的进程
             thread.status = Thread.STATUS_DONE;

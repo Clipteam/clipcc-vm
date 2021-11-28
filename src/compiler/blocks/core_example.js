@@ -12,7 +12,7 @@ class CoreExample/* 类名*/ {
      * 本需要请尝试直接嵌入或使用前置函数实现。
      * @return {object}
      */
-    static getCode () {
+    static getProcessor () {
         return {
             sinangentoo_0523: 'util.target.clearEffects();',
             alexcui_0925: 'util.target.setSize(408);',

@@ -1,9 +1,10 @@
 /**
  * 此类用于存放需要被生成的模块代码
  */
- 
+const GeneratorType = require('../generator-type.js');
+
 class Sensing {
-    static getCode () {
+    static getProcessor () {
         return {
             sensing_mousex: 'ioQuery(util.runtime, "mouse", "getScratchX")',
             sensing_mousey: 'ioQuery(util.runtime, "mouse", "getScratchY")',

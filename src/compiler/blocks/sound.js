@@ -3,7 +3,7 @@
  */
  
 class Sound {
-    static getCode () {
+    static getProcessor () {
         return {
             // @todo
         };

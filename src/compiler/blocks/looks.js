@@ -1,9 +1,10 @@
 /**
  * 此类用于存放需要被生成的模块代码。
  */
- 
+const GeneratorType = require('../generator-type.js');
+
 class Looks {
-    static getCode () {
+    static getProcessor () {
         return {
             looks_show:
                 'util.target.setVisible(true);' +
@@ -23,7 +24,7 @@ class Looks {
             looks_goforwardbackwardlayers:
                 'if (util.isStage) return;' +
                 'if (#<FORWARD_BACKWARD># === \'forward\') util.target.goForwardLayers(Cast.toNumber(#<NUM>#));' +
-                'else util.target.goBackwardLayers(Cast.toNumber(#<NUM>#));',
+                'else util.target.goBackwardLayers(Cast.toNumber(#<NUM>#));'
         };
     }
 }

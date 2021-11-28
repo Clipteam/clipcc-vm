@@ -1,9 +1,10 @@
 /**
  * 此类用于存放需要被生成的模块代码
  */
- 
+const GeneratorType = require('../generator-type.js');
+
 class Pen {
-    static getCode () {
+    static getProcessor () {
         return {
             pen_clear: 'blockClass.extension_pen.clear();',
             pen_setPrintFont: 'blockClass.extension_pen.setPrintFont({FONT: \'#<FONT>#\'});',

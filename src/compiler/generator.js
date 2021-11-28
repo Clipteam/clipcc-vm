@@ -33,17 +33,17 @@ const fieldMap = {
 class Generator {
     constructor (thread) {
         this.thread = thread;
-        this.blocksCode = {};
+        this.blocksProcessor = {};
         this.prefixFlag = {};
-        this.script = 'const {util, MathUtil, Cast, blockClass, ioQuery} = CompilerUtil;\n';
+        this.script = 'const {util, MathUtil, blockClass, ioQuery} = CompilerUtil;\n';
         
         // 写入所有可编译的代码
         for (const id in generateMapping) {
             const compilerCategory = generateMapping[id];
-            Object.assign(this.blocksCode, compilerCategory.getCode());
+            Object.assign(this.blocksProcessor, compilerCategory.getProcessor());
         }
         
-        console.log("生成表：", this.blocksCode);
+        console.log('生成器：', this.blocksProcessor);
     }
     
     generate () {
@@ -74,7 +74,7 @@ class Generator {
             if (!block) throw new Error('block is undefined');
             const fragment = this.generateBlock(block);
             if (fragment != 'opcode is undefined') {
-                stackScript += fragment;
+                stackScript += fragment + '\n';
                 currentId = block.next;
             } else {
                 throw new Error('opcode is undefined');
@@ -85,18 +85,18 @@ class Generator {
     
     generateBlock (block) {
         // 判断该模块是否存在
-        if (!this.blocksCode[block.opcode]) return `opcode ${block.opcode} is undefined`;
+        if (!this.blocksProcessor[block.opcode]) return `opcode ${block.opcode} is undefined`;
         try {
             const parameters = this.deserializeParameters(block);
             console.log(parameters);
-            return this.blocksCode[block.opcode](parameters);
+            return this.blocksProcessor[block.opcode](parameters);
         } catch (e) {
             throw new Error(`An error occurred while generating block:\n ${e}`);
         }
     }
     
     deserializeParameters (block) {
-        let parameters = {};
+        const parameters = {};
         for (const inputId in block.inputs) {
             const input = block.inputs[inputId]; // 获取该input的值
             if (input.block == input.shadow) { // 非嵌套reporter模块，开始获取值
@@ -112,7 +112,7 @@ class Generator {
                 else parameters[inputId] = this.generateStack(input.block);
             } else {
                 const inputBlock = this.thread.target.blocks.getBlock(input.block);
-                parameters[inputId] = this.generateBlock(inputBlock)
+                parameters[inputId] = this.generateBlock(inputBlock);
             }
         }
         return parameters;

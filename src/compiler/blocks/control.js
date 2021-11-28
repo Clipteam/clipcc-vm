@@ -1,15 +1,16 @@
 /**
  * 此类用于存放需要被生成的模块代码。
  */
- 
+const GeneratorType = require('../generator-type.js');
+
 class Control {
-    static getCode () {
+    static getProcessor () {
         return {
-            control_repeat:
-                'for(var i = 0; i<#<TIMES>#; i++){\n' +
-                '#<SUBSTACK>#\n' +
-                'yield;\n' +
-                '}',
+            control_repeat: (parameters) => {
+                const TIMES = GeneratorType.asNum(parameters.TIMES);
+                const SUBSTACK = parameters.SUBSTACK;
+                return `for(var i = 0; i<${TIMES}; i++){\n${SUBSTACK}\nyield;\n}`;
+            },
             control_forever:
                 'while(true) {\n' +
                 '#<SUBSTACK>#\n' +

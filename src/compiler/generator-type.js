@@ -4,15 +4,15 @@ class GeneratorType {
     }
     
     static asNum (value) {
-        return '(+' + value + ')';
+        return `(+${value})`;
     }
     
     static asBool (value) {
-        return '!!(' + value + ')';
+        return `!!(${value})`;
     }
     
     static asString (value) {
-        return '(""+' + value + ')';
+        return `("${value}")`;
     }
 }
 

@@ -89,7 +89,7 @@ class Generator {
         try {
             const parameters = this.deserializeParameters(block);
             console.log(parameters, this.thread.target.isStage);
-            return this.blocksProcessor[block.opcode](parameters);
+            return this.blocksProcessor[block.opcode](parameters, this.thread.target.isStage);
         } catch (e) {
             throw new Error(`An error occurred while generating block:\n ${e}`);
         }

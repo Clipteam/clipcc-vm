@@ -30,15 +30,15 @@ class Looks {
             looks_gotofrontback: (parameters, isStage) => {
                 if (isStage) return '';
                 const FRONT_BACK = GeneratorType.asString(parameters.FRONT_BACK);
-                if (FRONT_BACK == 'front') return 'util.target.goToFront();';
+                if (parameters.FRONT_BACK == 'front') return 'util.target.goToFront();';
                 else return 'util.target.goToBack();';
             },
             looks_goforwardbackwardlayers: (parameters, isStage) => {
                 if (isStage) return '';
                 const FORWARD_BACKWARD = GeneratorType.asString(parameters.FORWARD_BACKWARD);
                 const NUM = GeneratorType.asNum(parameters.NUM);
-                if (FORWARD_BACKWARD == 'forward') return `util.target.goForwardLayers(${NUM});`;
-                else return `util.target.goBackwardLayers(${NUM})`;
+                if (parameters.FORWARD_BACKWARD == 'forward') return `util.target.goForwardLayers(${NUM});`;
+                else return `util.target.goBackwardLayers(${NUM});`;
             }
         };
     }

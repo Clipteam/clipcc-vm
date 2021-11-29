@@ -6,25 +6,40 @@ const GeneratorType = require('../generator-type.js');
 class Looks {
     static getProcessor () {
         return {
-            looks_show:
-                'util.target.setVisible(true);' +
-                'blockClass.scratch3_looks._renderBubble(util.target);',
-            looks_hide:
-                'util.target.setVisible(false);' +
-                'blockClass.scratch3_looks._renderBubble(util.target);',
-            looks_changeeffectby: 'util.target.setEffect(Cast.toString("#<EFFECT>#").toLowerCase(), util.target.effects[Cast.toString("#<EFFECT>#").toLowerCase()] + #<CHANGE>#)',
-            looks_seteffectto: 'util.target.setEffect(Cast.toString("#<EFFECT>#").toLowerCase(), Cast.toNumber(#<CHANGE>#))',
-            looks_cleargraphiceffects: 'util.target.clearEffects();',
-            looks_changesizeby: 'util.target.setSize(util.target.size + Cast.toNumber(#<CHANGE>#));',
-            looks_setsizeto: 'util.target.setSize(Number(#<SIZE>#));',
-            looks_gotofrontback:
-                'if (util.isStage) return;' +
-                'if (#<FRONT_BACK># === \'front\') util.target.goToFront();' +
-                'else util.target.goToBack();',
-            looks_goforwardbackwardlayers:
-                'if (util.isStage) return;' +
-                'if (#<FORWARD_BACKWARD># === \'forward\') util.target.goForwardLayers(Cast.toNumber(#<NUM>#));' +
-                'else util.target.goBackwardLayers(Cast.toNumber(#<NUM>#));'
+            looks_show: () => 'util.target.setVisible(true);\nblockClass.scratch3_looks._renderBubble(util.target);',
+            looks_hide: () => 'util.target.setVisible(false);\nblockClass.scratch3_looks._renderBubble(util.target);',
+            looks_changeeffectby: (parameters) => {
+                const EFFECT = GeneratorType.asString(parameters.EFFECT).toLowerCase();
+                const CHANGE = GeneratorType.asNum(parameters.CHANGE);
+                return `util.target.setEffect(${EFFECT}, util.target.effects[${EFFECT}] + ${CHANGE})`;
+            },
+            looks_seteffectto: (parameters) => {
+                const EFFECT = GeneratorType.asString(parameters.EFFECT).toLowerCase();
+                const VALUE = GeneratorType.asNum(parameters.VALUE);
+                return `util.target.setEffect(${EFFECT}, ${VALUE})`;
+            },
+            looks_cleargraphiceffects: () => 'util.target.clearEffects();',
+            looks_changesizeby: (parameters) => {
+                const CHANGE = GeneratorType.asNum(parameters.CHANGE);
+                return `util.target.setSize(util.target.size + ${CHANGE});`;
+            },
+            looks_setsizeto: (parameters) => {
+                const SIZE = GeneratorType.asNum(parameters.SIZE);
+                return `util.target.setSize(${SIZE});`;
+            },
+            looks_gotofrontback: (parameters, isStage) => {
+                if (isStage) return '';
+                const FRONT_BACK = GeneratorType.asString(parameters.FRONT_BACK);
+                if (FRONT_BACK == 'front') return 'util.target.goToFront();';
+                else return 'util.target.goToBack();';
+            },
+            looks_goforwardbackwardlayers: (parameters, isStage) => {
+                if (isStage) return '';
+                const FORWARD_BACKWARD = GeneratorType.asString(parameters.FORWARD_BACKWARD);
+                const NUM = GeneratorType.asNum(parameters.NUM);
+                if (FORWARD_BACKWARD == 'forward') return `util.target.goForwardLayers(${NUM});`;
+                else return `util.target.goBackwardLayers(${NUM})`;
+            }
         };
     }
 }

@@ -88,7 +88,7 @@ class Generator {
         if (!this.blocksProcessor[block.opcode]) return `opcode ${block.opcode} is undefined`;
         try {
             const parameters = this.deserializeParameters(block);
-            console.log(parameters);
+            console.log(parameters, this.thread.target.isStage);
             return this.blocksProcessor[block.opcode](parameters);
         } catch (e) {
             throw new Error(`An error occurred while generating block:\n ${e}`);
@@ -115,6 +115,8 @@ class Generator {
                 parameters[inputId] = this.generateBlock(inputBlock);
             }
         }
+        // 逐个获取fields的值
+        for (const fieldId in block.fields) parameters[fieldId] = block.fields[fieldId].value;
         return parameters;
     }
 }

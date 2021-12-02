@@ -1,5 +1,6 @@
 const Thread = require('../engine/thread.js');
 const MathUtil = require('../util/math-util.js');
+const Cast = require('../util/cast.js')
 const BlockUtility = require('../engine/block-utility.js');
 const blockUtility = new BlockUtility();
 
@@ -21,6 +22,7 @@ const executeScript = (sequencer, thread) => {
             const CompilerUtil = {
                 util: blockUtility,
                 MathUtil,
+                Cast,
                 blockClass: blockUtility.runtime.blockClass,
                 ioQuery
             };

@@ -9,12 +9,12 @@ class Looks {
             looks_show: () => 'util.target.setVisible(true);\nblockClass.scratch3_looks._renderBubble(util.target);',
             looks_hide: () => 'util.target.setVisible(false);\nblockClass.scratch3_looks._renderBubble(util.target);',
             looks_changeeffectby: (parameters) => {
-                const EFFECT = GeneratorType.asString(parameters.EFFECT).toLowerCase();
+                const EFFECT = parameters.EFFECT.toLowerCase();
                 const CHANGE = GeneratorType.asNum(parameters.CHANGE);
                 return `util.target.setEffect(${EFFECT}, util.target.effects[${EFFECT}] + ${CHANGE})`;
             },
             looks_seteffectto: (parameters) => {
-                const EFFECT = GeneratorType.asString(parameters.EFFECT).toLowerCase();
+                const EFFECT = parameters.EFFECT.toLowerCase();
                 const VALUE = GeneratorType.asNum(parameters.VALUE);
                 return `util.target.setEffect(${EFFECT}, ${VALUE})`;
             },

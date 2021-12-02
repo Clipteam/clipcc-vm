@@ -35,7 +35,7 @@ class Generator {
         this.thread = thread;
         this.blocksProcessor = {};
         this.prefixFlag = {};
-        this.script = 'const {util, MathUtil, blockClass, ioQuery} = CompilerUtil;\n';
+        this.script = 'const {util, MathUtil, blockClass, Cast, ioQuery} = CompilerUtil;\n';
         
         // 写入所有可编译的代码
         for (const id in generateMapping) {

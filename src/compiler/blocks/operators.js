@@ -26,10 +26,26 @@ class Operators {
                 const NUM2 = parameters.NUM2;
                 return `(${NUM1} / ${NUM2})`;
             },
-            operator_lt: 'Cast.compare(#<OPERAND1>#, #<OPERAND2>#) < 0',
-            operator_equals: 'Cast.compare(#<OPERAND1>#, #<OPERAND2>#) == 0',
-            operator_gt: 'Cast.compare(#<OPERAND1>#, #<OPERAND2>#) > 0',
-            operator_and: '#<OPERAND1># && #<OPERAND2>#',
+            operator_lt: (parameters) => {
+                const OPERAND1 = parameters.OPERAND1;
+                const OPERAND2 = parameters.OPERAND2;
+                return `Cast.compare(${OPERAND1}, ${OPERAND2}) < 0`;
+            },
+            operator_equals: (parameters) => {
+                const OPERAND1 = parameters.OPERAND1;
+                const OPERAND2 = parameters.OPERAND2;
+                return `Cast.compare(${OPERAND1}, ${OPERAND2}) == 0`;
+            },
+            operator_gt: (parameters) => {
+                const OPERAND1 = parameters.OPERAND1;
+                const OPERAND2 = parameters.OPERAND2;
+                return `Cast.compare(${OPERAND1}, ${OPERAND2}) > 0`;
+            },
+            operator_and: (parameters) => {
+                const OPERAND1 = parameters.OPERAND1;
+                const OPERAND2 = parameters.OPERAND2;
+                return `${OPERAND1} && ${OPERAND2}`;
+            },
             operator_or: '#<OPERAND1># || #<OPERAND2>#',
             operator_not: '!#<OPERAND>#',
             operator_join: '#<STRING1># + #<STRING2>#'

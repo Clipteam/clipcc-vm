@@ -173,20 +173,15 @@ class Sequencer {
         return doneThreads;
     }
 
+    isBlockCompiled (thread, currentBlockId) {
+        return this.runtime.useCompiler && thread.isCompiled && !!thread.compiledFragment[currentBlockId];
+    }
+
     /**
      * Step the requested thread for as long as necessary.
      * @param {!Thread} thread Thread object to step.
      */
     stepThread (thread) {
-        console.log('线程编译状态：', thread.isCompiled);
-        if (this.runtime.useCompiler && thread.isCompiled) {
-            try {
-                executeScript(this, thread);
-            } catch (e) {
-                console.error('执行时发生错误:', e);
-            }
-            return;
-        }
         let currentBlockId = thread.peekStack();
         if (!currentBlockId) {
             // A "null block" - empty branch.
@@ -200,7 +195,25 @@ class Sequencer {
         }
         // Save the current block ID to notice if we did control flow.
         while ((currentBlockId = thread.peekStack())) {
+            console.log(thread.peekStack());
             let isWarpMode = thread.peekStackFrame().warpMode;
+            console.log('Thread compilation status:', thread.isCompiled);
+            if (this.isBlockCompiled(thread, currentBlockId)) {
+                try {
+                    executeScript(this, thread, currentBlockId);
+                } catch (e) {
+                    console.error('An error occurred during execution\n' + e.toString());
+                }
+                const nextUncompiledBlockId = thread.compiledFragment[currentBlockId].nextUncompiledBlockId;
+                if (nextUncompiledBlockId != null && nextUncompiledBlockId) {
+                    thread.jumpTo(nextUncompiledBlockId); // 跳转到下一个未编译的积木
+                    continue;
+                } else {
+                    this.retireThread(thread);
+                    thread.status = Thread.STATUS_DONE;
+                    return ;
+                }
+            }
             if (isWarpMode && !thread.warpTimer) {
                 // Initialize warp-mode timer if it hasn't been already.
                 // This will start counting the thread toward `Sequencer.WARP_TIME`.

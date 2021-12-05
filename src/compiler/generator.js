@@ -1,7 +1,7 @@
 /**
  * 用于生成线程执行需要的JIT函数。
  */
-const GenerateFunction = Object.getPrototypeOf(function*(){}).constructor;
+const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 
 const generateMapping = [
     require('./blocks/motion.js'),
@@ -35,7 +35,6 @@ class Generator {
         this.thread = thread;
         this.blocksProcessor = {};
         this.prefixFlag = {};
-        this.script = 'const {util, MathUtil, blockClass, Cast, ioQuery} = CompilerUtil;\n';
         
         // 写入所有可编译的代码
         for (const id in generateMapping) {
@@ -43,26 +42,45 @@ class Generator {
             Object.assign(this.blocksProcessor, compilerCategory.getProcessor());
         }
         
-        console.log('生成器：', this.blocksProcessor);
+        console.log('Block Processors：', this.blocksProcessor);
     }
     
     generate () {
         console.log(this.thread);
         const target = this.thread.target;
+        const prefix = 'const {util, MathUtil, blockClass, Cast, ioQuery} = CompilerUtil;\n';
         if (!target) throw new Error('target is undefined');
 
-        let topBlockId = this.thread.topBlock;
-        const topBlock = this.thread.target.blocks.getBlock(topBlockId);
+        let currentBlockId = this.thread.topBlock;
+        const topBlock = this.thread.target.blocks.getBlock(currentBlockId);
         if (this.thread.blockContainer.runtime.getIsHat(topBlock.opcode)) {
             // hat block should not be compiled
-            topBlockId = topBlock.next;
+            currentBlockId = topBlock.next;
         }
-        if (topBlock.parent === null && topBlock.next === null) throw new Error('unnecessary to generate single block');
-        this.script += this.generateStack(topBlockId/* topBlock.next*/);
-        // debug
-        console.log('生成代码：\n', this.script);
-        this.thread.jitFunc = new GenerateFunction('CompilerUtil', this.script);// 使用构建函数来处理流程
-        this.thread.isActivated = false;
+        // 如果是单个模块的话则跳过编译
+        // 我才不会告诉你是因为我懒得写return做的
+        if (topBlock.parent === null && topBlock.next === null) {
+            throw new Error('unnecessary to generate single block');
+        }
+        
+        while (currentBlockId !== null) {
+            const block = this.thread.target.blocks.getBlock(currentBlockId);
+            if (!!this.blocksProcessor[block.opcode]) {
+                const generatedObj = this.generateStack(currentBlockId);
+                console.log('由' + currentBlockId + '开始的生成代码：\n', generatedObj.script); // DEBUG
+                const generatedFunction = new GeneratorFunction('CompilerUtil', prefix + generatedObj.script);// 使用构建函数来处理流程
+                this.thread.compiledFragment[currentBlockId] = {
+                    func: generatedFunction,
+                    nextUncompiledBlockId: generatedObj.nextUncompiledBlockId
+                };
+                currentBlockId = generatedObj.nextUncompiledBlockId;
+            } else {
+                const block = this.thread.target.blocks.getBlock(currentBlockId);
+                currentBlockId = block.next;
+            }
+        }
+        
+        console.log(this.thread.compiledFragment);
     }
     
     generateStack (beginId) {
@@ -77,18 +95,26 @@ class Generator {
                 stackScript += fragment + '\n';
                 currentId = block.next;
             } else {
-                throw new Error('opcode is undefined');
+                // @TODO 对循环模块的支持
+                console.log('opcode为' + block.opcode + '的积木不存在，结束本段编译...');
+                return {
+                    script: stackScript,
+                    nextUncompiledBlockId: currentId
+                };
             }
         }
-        return stackScript;
+        return {
+            script: stackScript,
+            nextUncompiledBlockId: null // 一次性生成完了属于是
+        };
     }
     
     generateBlock (block) {
         // 判断该模块是否存在
-        if (!this.blocksProcessor[block.opcode]) return `opcode ${block.opcode} is undefined`;
+        if (!this.blocksProcessor[block.opcode]) return `opcode is undefined`;
         try {
             const parameters = this.deserializeParameters(block);
-            console.log(parameters, this.thread.target.isStage);
+            //console.log(parameters, this.thread.target.isStage);
             return this.blocksProcessor[block.opcode](parameters, this.thread.target.isStage);
         } catch (e) {
             throw new Error(`An error occurred while generating block:\n ${e}`);
@@ -109,7 +135,7 @@ class Generator {
                 }
             } else if (inputId == 'SUBSTACK' || inputId == 'SUBSTACK2') {
                 if (!input.block) parameters[inputId] = null;
-                else parameters[inputId] = this.generateStack(input.block);
+                else parameters[inputId] = this.generateStack(input.block).script;
             } else {
                 const inputBlock = this.thread.target.blocks.getBlock(input.block);
                 parameters[inputId] = this.generateBlock(inputBlock);

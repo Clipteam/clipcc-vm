@@ -11,14 +11,14 @@ const ioQuery = (runtime, device, func, args) => {
     }
 };
 
-const executeScript = (sequencer, thread) => {
+const executeScript = (sequencer, thread, blockId) => {
     // store sequencer and thread so jit code can access them through
     // convenience methods.
     blockUtility.sequencer = sequencer;
     blockUtility.thread = thread;
     
     try {
-        if (!thread.isActivated) {
+        if (typeof thread.compiledFragment[blockId] != 'function') {
             const CompilerUtil = {
                 util: blockUtility,
                 MathUtil,
@@ -27,14 +27,13 @@ const executeScript = (sequencer, thread) => {
                 ioQuery
             };
             console.log('CompilerUtil:', CompilerUtil);
-            thread.jitFunc = thread.jitFunc(CompilerUtil);
-            thread.isActivated = true;
+            thread.compiledFragment[blockId].func = thread.compiledFragment[blockId].func(CompilerUtil);
         }
-        result = thread.jitFunc.next();
+        result = thread.compiledFragment[blockId].func.next();
         // console.log('运行状态：', result);
         if (result.done) {
-            sequencer.retireThread(thread); // 销毁已完成的进程
-            thread.status = Thread.STATUS_DONE;
+            //sequencer.retireThread(thread); // 销毁已完成的进程
+            //thread.status = Thread.STATUS_DONE;
         }
     } catch (e) {
         throw new Error(e);

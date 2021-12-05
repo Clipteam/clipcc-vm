@@ -158,6 +158,8 @@ class Thread {
         this.isKilled = false;
         
         this.isCompiled = false;
+        
+        this.compiledFragment = {};
 
         /**
          * Target of this thread.
@@ -271,6 +273,20 @@ class Thread {
     reuseStackForNextBlock (blockId) {
         this.stack[this.stack.length - 1] = blockId;
         this.stackFrames[this.stackFrames.length - 1].reuse();
+    }
+    
+    jumpTo (targetBlockId) {
+        console.log('targetBlockId:', targetBlockId);
+        let blockID = this.peekStack();
+        while (blockID !== targetBlockId) {
+            console.log(blockID);
+            if (this.stack.length === 0) {
+                console.log('The stack has been emptied');
+                break;
+            }
+            this.goToNextBlock();
+            blockID = this.peekStack();
+        }
     }
 
     /**

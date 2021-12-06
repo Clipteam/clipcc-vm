@@ -95,7 +95,6 @@ class Generator {
                 stackScript += fragment + '\n';
                 currentId = block.next;
             } else {
-                // @TODO 对循环模块的支持
                 console.log('opcode为' + block.opcode + '的积木不存在，结束本段编译...');
                 return {
                     script: stackScript,
@@ -114,6 +113,8 @@ class Generator {
         if (!this.blocksProcessor[block.opcode]) return `opcode is undefined`;
         try {
             const parameters = this.deserializeParameters(block);
+            // 防止树状语句造成的漏执行问题
+            if (parameters.SUBSTACK == '' || parameters.SUBSTACK2 == '') return `opcode is undefined`;
             //console.log(parameters, this.thread.target.isStage);
             return this.blocksProcessor[block.opcode](parameters, this.thread.target.isStage);
         } catch (e) {

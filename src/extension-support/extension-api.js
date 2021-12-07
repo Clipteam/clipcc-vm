@@ -3,6 +3,7 @@ const ScratchBlocksConstants = require('../engine/scratch-blocks-constants');
 const xmlEscape = require('../util/xml-escape');
 const maybeFormatMessage = require('../util/maybe-format-message');
 const formatMessage = require('format-message');
+const BlockUtility = require('../engine/block-utility');
 
 const blockType = [
     '', // ERROR: 0
@@ -292,9 +293,9 @@ class ExtensionAPI {
         this.refreshBlocks();
         console.log('Remove a category', categoryId);
     }
-
-    getPlaygroundData () {
-        return this.vm.getPlaygroundData();
+    
+    getBlockUtility () {
+        return new BlockUtility(this.vm.runtime.sequencer, this.vm.runtime.sequencer.activeThread);
     }
 
     loadProject (input) {

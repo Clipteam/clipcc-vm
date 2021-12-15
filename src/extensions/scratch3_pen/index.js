@@ -1,4 +1,3 @@
-const C2S = require('canvas2svg');
 const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const TargetType = require('../../extension-support/target-type');
@@ -75,7 +74,7 @@ class Scratch3PenBlocks {
             bold: false,
             underline: false,
             italic: false,
-            size: '28',
+            size: '28px',
             font: 'Arial',
             color: '#000000'
         };
@@ -151,14 +150,13 @@ class Scratch3PenBlocks {
             this._penDrawableId = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
             this.runtime.renderer.updateDrawableSkinId(this._penDrawableId, this._penSkinId);
 
-            //this.bitmapCanvas = document.createElement('canvas');
-            this.svgData = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="480" height="360"></svg>';
-            //this.bitmapCanvas.width = 480;
-            //this.bitmapCanvas.height = 360;
-            this.vectorSkinID = this.runtime.renderer.createSVGSkin(this.svgData);
-            this.vectorDrawableID = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
-            this.runtime.renderer.updateDrawableSkinId(this.vectorDrawableID, this.vectorSkinID);
-            this.runtime.renderer.updateDrawableVisible(this.vectorDrawableID, false);
+            this.bitmapCanvas = document.createElement('canvas');
+            this.bitmapCanvas.width = 480;
+            this.bitmapCanvas.height = 360;
+            this.bitmapSkinID = this.runtime.renderer.createBitmapSkin(this.bitmapCanvas, 1);
+            this.bitmapDrawableID = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
+            this.runtime.renderer.updateDrawableSkinId(this.bitmapDrawableID, this.bitmapSkinID);
+            this.runtime.renderer.updateDrawableVisible(this.bitmapDrawableID, false);
         }
         return this._penSkinId;
     }
@@ -718,7 +716,7 @@ class Scratch3PenBlocks {
 
         const width = util.target.runtime.constructor.STAGE_WIDTH;
         const height = util.target.runtime.constructor.STAGE_HEIGHT;
-        const ctx = new C2S(width, height);
+        const ctx = this.bitmapCanvas.getContext('2d');
         ctx.clearRect(0, 0, width, height);
         ctx.save();
         ctx.translate(width / 2, height / 2);
@@ -733,11 +731,10 @@ class Scratch3PenBlocks {
         ctx.fillText(args.TEXT, args.X, -args.Y);
         ctx.restore();
 
-        const printSkin = util.target.runtime.renderer._allSkins[this.vectorSkinID];
-        const imageData = ctx.getSerializedSvg();
-        console.log(this.vectorSkinID, printSkin, imageData);
-        printSkin.setSVG(imageData);
-        this.runtime.renderer.penStamp(penSkinId, this.vectorDrawableID);
+        const printSkin = util.target.runtime.renderer._allSkins[this.bitmapSkinID];
+        const imageData = ctx.getImageData(0, 0, width, height);
+        printSkin._setTexture(imageData);
+        this.runtime.renderer.penStamp(penSkinId, this.bitmapDrawableID);
 
         this.runtime.requestRedraw();
     }
@@ -747,7 +744,7 @@ class Scratch3PenBlocks {
 
         const width = util.target.runtime.constructor.STAGE_WIDTH;
         const height = util.target.runtime.constructor.STAGE_HEIGHT;
-        const ctx = new C2S(width, height);
+        const ctx = this.bitmapCanvas.getContext('2d');
         ctx.clearRect(0, 0, width, height);
         ctx.save();
         ctx.translate(width / 2, height / 2);
@@ -759,10 +756,10 @@ class Scratch3PenBlocks {
         ctx.fillRect(args.X, -args.Y, args.WIDTH, args.HEIGHT);
         ctx.restore();
 
-        const printSkin = util.target.runtime.renderer._allSkins[this.vectorSkinID];
-        const imageData = ctx.getSerializedSvg();
-        printSkin.setSVG(imageData);
-        this.runtime.renderer.penStamp(penSkinId, this.vectorDrawableID);
+        const printSkin = util.target.runtime.renderer._allSkins[this.bitmapSkinID];
+        const imageData = ctx.getImageData(0, 0, width, height);
+        printSkin._setTexture(imageData);
+        this.runtime.renderer.penStamp(penSkinId, this.bitmapDrawableID);
 
         this.runtime.requestRedraw();
     }

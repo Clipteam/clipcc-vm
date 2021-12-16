@@ -74,7 +74,7 @@ class Scratch3PenBlocks {
             bold: false,
             underline: false,
             italic: false,
-            size: '28px',
+            size: '28',
             font: 'Arial',
             color: '#000000'
         };

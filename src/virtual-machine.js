@@ -219,7 +219,7 @@ class VirtualMachine extends EventEmitter {
      * @param {number} the compression level.
      */
     setCompressionLevel (level) {
-    	if (level<=9 && level>=1) this.compressionLevel = level;
+    	if (level <= 9 && level >= 1) this.compressionLevel = level;
     }
     
     setDeserializeOption (option) {
@@ -498,10 +498,6 @@ class VirtualMachine extends EventEmitter {
     deserializeProject (projectJSON, zip) {
         // Clear the current runtime
         this.clear();
-        if (typeof performance !== 'undefined') {
-            performance.mark('scratch-vm-deserialize-start');
-        }
-
         if (typeof performance !== 'undefined') {
             performance.mark('scratch-vm-deserialize-start');
         }

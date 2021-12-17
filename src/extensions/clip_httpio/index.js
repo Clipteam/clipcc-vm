@@ -111,7 +111,8 @@ class HttpIO {
             this.client.get(args.URL).then(res => {
                 if (typeof res.data === 'object') resolve(JSON.stringify(res.data));
                 resolve(res.data);
-            }).catch(err => reject(err));
+            })
+                .catch(err => reject(err));
         });
     }
     
@@ -126,7 +127,8 @@ class HttpIO {
             this.client.post(args.URL, postData).then(res => {
                 if (typeof res.data === 'object') resolve(JSON.stringify(res.data));
                 resolve(res.data);
-            }).catch(err => reject(err));
+            })
+                .catch(err => reject(err));
         });
     }
 }

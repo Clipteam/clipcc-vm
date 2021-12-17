@@ -7,17 +7,17 @@ const blockIconURI = 'data:image/svg+xml;base64,PHN2ZyBpZD0i5Zu+5bGCXzEiIGRhdGEt
 const menuIconURI = 'data:image/svg+xml;base64,PHN2ZyBpZD0i5Zu+5bGCXzEiIGRhdGEtbmFtZT0i5Zu+5bGCIDEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDQwIDQwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6bm9uZTt9LmNscy0ye2ZpbGw6IzBmYmQ4Yzt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPlJlZGxpc3QgTE9HT2luU2NyaXB0PC90aXRsZT48cmVjdCBjbGFzcz0iY2xzLTEiIHg9IjcuMDkiIHk9IjE0LjcyIiB3aWR0aD0iMTEuOTUiIGhlaWdodD0iMi4xNyIgcng9IjAuNjkiLz48cmVjdCBjbGFzcz0iY2xzLTEiIHg9IjcuMDkiIHk9IjguMiIgd2lkdGg9IjE3LjM4IiBoZWlnaHQ9IjIuMTciIHJ4PSIwLjY5Ii8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTkuMDUsMTkuMThhLjU1LjU1LDAsMCwwLS4xNi4zOHYyLjc2QTEuMDksMS4wOSwwLDAsMCwyMCwyMy40MWgyLjc2YS41Ny41NywwLDAsMCwuMzktLjE2bDcuNzEtNy43MlY3LjM5WiIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMiIgcG9pbnRzPSIzMC44NCA3LjM4IDMwLjg0IDE1LjUzIDM0Ljk4IDExLjM5IDMwLjkxIDcuMzIgMzAuODQgNy4zOCIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTM3LjM2LDUuOTRsLTEtMWEyLjE3LDIuMTcsMCwwLDAtMy4wNywwTDMyLjA3LDYuMTZsNC4wOCw0LjA3TDM3LjM2LDlBMi4xNywyLjE3LDAsMCwwLDM3LjM2LDUuOTRaIi8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMjIuNzQsMjMuNDFIMjBhMS4wOSwxLjA5LDAsMCwxLTEuMDktMS4wOVYxOS41NmEuNTUuNTUsMCwwLDEsLjE2LS4zOEwzMC44NCw3LjM5VjYuODJhMywzLDAsMCwwLTMtM0g1LjU2YTMsMywwLDAsMC0zLDNWMzNhMywzLDAsMCwwLDMsM0gyNy44OGEzLDMsMCwwLDAsMy0zVjE1LjUzbC03LjcxLDcuNzJBLjU3LjU3LDAsMCwxLDIyLjc0LDIzLjQxWk03LjA5LDguOWEuNjkuNjksMCwwLDEsLjY5LS43aDE2YS42OS42OSwwLDAsMSwuNjkuN3YuNzhhLjY5LjY5LDAsMCwxLS42OS42OWgtMTZhLjY5LjY5LDAsMCwxLS42OS0uNjlaTTE3LjgxLDMyLjNINlYzMUgxNy44MVptMC0yLjYySDEyLjU3VjI4LjNhMy4xNiwzLjE2LDAsMCwwLDEuMDYtLjQxLDMuNTQsMy41NCwwLDAsMCwuODItLjcyLDMuNDksMy40OSwwLDAsMCwuNTQtMSwzLjE3LDMuMTcsMCwwLDAsLjItMS4xMSwzLjIxLDMuMjEsMCwwLDAtLjI2LTEuMjcsMy4yNywzLjI3LDAsMCwwLTEuNzQtMS43NCwzLjM1LDMuMzUsMCwwLDAtMi41NCwwLDMuMjcsMy4yNywwLDAsMC0xLjc0LDEuNzQsMy4yMSwzLjIxLDAsMCwwLS4yNiwxLjI3LDMuMTcsMy4xNywwLDAsMCwuMiwxLjExLDMuNDksMy40OSwwLDAsMCwuNTQsMSwzLjU0LDMuNTQsMCwwLDAsLjgyLjcyLDMuMTksMy4xOSwwLDAsMCwxLC40MXYxLjM4SDZ2LTEuM0g4LjcyYTQuNzUsNC43NSwwLDAsMS0xLTEuNSw0LjU4LDQuNTgsMCwwLDEsMC0zLjU2LDQuNzQsNC43NCwwLDAsMSwyLjQ0LTIuNDQsNC43LDQuNywwLDAsMSwzLjU2LDAsNC43NCw0Ljc0LDAsMCwxLDIuNDQsMi40NCw0LjU4LDQuNTgsMCwwLDEsMCwzLjU2LDQuNzUsNC43NSwwLDAsMS0xLDEuNWgyLjY5Wm0uNTQtMTIuNzlINy43OGEuNjkuNjksMCwwLDEtLjY5LS42OXYtLjc5YS42OS42OSwwLDAsMSwuNjktLjY5SDE4LjM1YS42OS42OSwwLDAsMSwuNjkuNjl2Ljc5QS42OS42OSwwLDAsMSwxOC4zNSwxNi44OVoiLz48L3N2Zz4=';
 
 class ClipCCJSONBlocks {
-    constructor(runtime) {
+    constructor (runtime) {
         this.runtime = runtime;
     }
 
-    getInfo() {
+    getInfo () {
         return {
             id: 'ccjson',
             name: 'JSON',
             color1: '#FFB11B',
-            //menuIconURI: menuIconURI,
-            //blockIconURI: blockIconURI,
+            // menuIconURI: menuIconURI,
+            // blockIconURI: blockIconURI,
             blocks: [
                 {
                     opcode: 'getValueByKey',
@@ -81,38 +81,38 @@ class ClipCCJSONBlocks {
                     }
                 }
             ]
-        }
+        };
     }
 
-    getValueByKey(args, util) {
+    getValueByKey (args, util) {
         try {
-            let decodedText = JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)];
-            //console.log(decodedText);
-            if (typeof decodedText == "object") return JSON.stringify(decodedText);
+            const decodedText = JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)];
+            // console.log(decodedText);
+            if (typeof decodedText === 'object') return JSON.stringify(decodedText);
             return Cast.toString(decodedText);
         } catch (e) {
-            return "[ERROR] " + e;
+            return `[ERROR] ${e}`;
         }
     }
 
-    getValueByArray(args, util) {
+    getValueByArray (args, util) {
         try {
-            let array = JSON.parse(args.ARRAY);
-            if (typeof array[args.POS] == "object") return JSON.stringify(array[args.POS]);
+            const array = JSON.parse(args.ARRAY);
+            if (typeof array[args.POS] === 'object') return JSON.stringify(array[args.POS]);
             return Cast.toString(array[args.POS]);
         } catch (e) {
-            return "[ERROR]" + e;
+            return `[ERROR]${e}`;
         }
     }
 
-    setValueByKey(args, util) {
+    setValueByKey (args, util) {
         let obj = {};
         try {
-            if (args.JSON != "") obj = JSON.parse(Cast.toString(args.JSON));
+            if (args.JSON != '') obj = JSON.parse(Cast.toString(args.JSON));
             obj[Cast.toString(args.KEY)] = Cast.toString(args.VALUE);
             return JSON.stringify(obj);
         } catch (e) {
-            return "[ERROR] " + e;
+            return `[ERROR] ${e}`;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 
-let args = process.argv.slice(2);
+const args = process.argv.slice(2);
 
 if (!args.length) {
     process.stdout.write('You must specify the messages file.\n');
@@ -19,7 +19,7 @@ if (!args.length) {
 const OUTPUT_FILE = args.shift();
 
 const data = JSON.parse(fs.readFileSync(INPUT_FILE, 'utf8'));
-let result = {};
+const result = {};
 
 for (const key in data) {
     result[key] = data[key].message;

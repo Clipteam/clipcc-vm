@@ -502,6 +502,9 @@ class VirtualMachine extends EventEmitter {
             performance.mark('scratch-vm-deserialize-start');
         }
 
+        if (typeof performance !== 'undefined') {
+            performance.mark('scratch-vm-deserialize-start');
+        }
         const runtime = this.runtime;
         const deserializePromise = function () {
             const projectVersion = projectJSON.projectVersion;

@@ -525,9 +525,6 @@ class VirtualMachine extends EventEmitter {
      * @returns {Promise} Promise that resolves after the project has loaded
      */
     deserializeProject (projectJSON, zip) {
-        // Clear the current runtime
-        this.clear();
-
         const runtime = this.runtime;
         const deserializePromise = function () {
             if (projectJSON.meta && projectJSON.meta.editor === 'clipcc') {
@@ -563,6 +560,8 @@ class VirtualMachine extends EventEmitter {
             // So it's better to let extensions to deal with before getting the extension loading order.
             this.ccExtensionManager.emitEvent('beforeProjectLoad', targets, extensions);
 
+            // cc - clear before installing targets, not before loading project data
+            this.clear();
             return this.installTargets(targets, null, true)
         });
     }

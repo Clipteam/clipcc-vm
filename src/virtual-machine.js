@@ -1242,6 +1242,7 @@ class VirtualMachine extends EventEmitter {
         const copiedBlocks = JSON.parse(JSON.stringify(blocks));
         newBlockIds(copiedBlocks);
         const target = this.runtime.getTargetById(targetId);
+        target.deprecatedCache = true;
 
         if (optFromTargetId) {
             // If the blocks are being shared from another target,

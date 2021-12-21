@@ -45,6 +45,10 @@ class Target extends EventEmitter {
          */
         this.blocks = blocks;
         /**
+         * Whether targets's workspace is deprecated.
+         */
+        this.deprecatedCache = false;
+        /**
          * Dictionary of variables and their values for this target.
          * Key is the variable id.
          * @type {Object.<string,*>}

@@ -1395,11 +1395,28 @@ class VirtualMachine extends EventEmitter {
             .map(k => this.editingTarget.comments[k])
             .filter(c => c.blockId === null);
 
+        // Get all mutations of procedures
+        let globalProcedures = [];
+        const localProcedures = this.editingTarget.blocks.getProcedureList(true);
+        for (let i = 0; i < this.runtime.targets.length; i++) {
+            const currTarget = this.runtime.targets[i];
+            if (currTarget === this.editingTarget) {
+                continue;
+            }
+            const currProcedures = currTarget.blocks.getProcedureList();
+            globalProcedures = globalProcedures.concat(currProcedures);
+        }
+
+
         const xmlString = `<xml xmlns="http://www.w3.org/1999/xhtml">
                             <variables>
                                 ${globalVariables.map(v => v.toXML()).join()}
                                 ${localVariables.map(v => v.toXML(true)).join()}
                             </variables>
+                            <procedures>
+                                ${globalProcedures.join()}
+                                ${localProcedures.join()}
+                            </procedures>
                             ${workspaceComments.map(c => c.toXML()).join()}
                             ${this.editingTarget.blocks.toXML(this.editingTarget.comments)}
                         </xml>`;

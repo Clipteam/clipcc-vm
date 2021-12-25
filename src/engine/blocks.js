@@ -220,6 +220,29 @@ class Blocks {
     }
 
     /**
+     * Get all procedure definitions.
+     * @param {?boolean} all Get all definitions (including local and global), default for global only.
+     * @return {?Array.<String>} Mutations of procedures.
+     */
+    getProcedureList (all) {
+        all = all || false;
+        const procedures = [];
+        for (const id in this._blocks) {
+            if (!this._blocks.hasOwnProperty(id)) continue;
+            const block = this._blocks[id];
+            if (block.opcode === 'procedures_definition' || block.opcode === 'procedures_definition_return') {
+                const internal = this._getCustomBlockInternal(block);
+                if (internal && (all || internal.mutation.global === 'true')) {
+                    this._cache.procedureDefinitions[internal.mutation.proccode] = id; // The outer define block id
+                    procedures.push(this.mutationToXML(internal.mutation));
+                }
+            }
+        }
+
+        return procedures;
+    }
+
+    /**
      * Get the procedure definition for a given name.
      * @param {?string} name Name of procedure to query.
      * @return {?string} ID of procedure definition.
@@ -233,7 +256,7 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_definition') {
+            if (block.opcode === 'procedures_definition' || block.opcode === 'procedures_definition_return') {
                 const internal = this._getCustomBlockInternal(block);
                 if (internal && internal.mutation.proccode === name) {
                     this._cache.procedureDefinitions[name] = id; // The outer define block id
@@ -269,7 +292,8 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_prototype' &&
+            if ((block.opcode === 'procedures_prototype' ||
+                block.opcode === 'procedures_prototype_return') &&
                 block.mutation.proccode === name) {
                 const names = JSON.parse(block.mutation.argumentnames);
                 const ids = JSON.parse(block.mutation.argumentids);
@@ -1137,10 +1161,18 @@ class Blocks {
     /**
      * Recursively encode a mutation object to XML.
      * @param {!object} mutation Object representing a mutation.
+     * @param {?object} option Options.
      * @return {string} XML string representing a mutation.
      */
-    mutationToXML (mutation) {
+    mutationToXML (mutation, option) {
         let mutationString = `<${mutation.tagName}`;
+        if (option) {
+            for (const prop in option) {
+                const mutationValue = (typeof option[prop] === 'string') ?
+                    xmlEscape(option[prop]) : option[prop];
+                mutationString += ` ${prop}="${mutationValue}"`;
+            }
+        }
         for (const prop in mutation) {
             if (prop === 'children' || prop === 'tagName') continue;
             let mutationValue = (typeof mutation[prop] === 'string') ?

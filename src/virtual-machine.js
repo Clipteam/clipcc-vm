@@ -219,7 +219,7 @@ class VirtualMachine extends EventEmitter {
      * @param {number} the compression level.
      */
     setCompressionLevel (level) {
-    	if (level<=9 && level>=1) this.compressionLevel = level;
+    	if (level <= 9 && level >= 1) this.compressionLevel = level;
     }
     
     setDeserializeOption (option) {
@@ -498,7 +498,9 @@ class VirtualMachine extends EventEmitter {
     deserializeProject (projectJSON, zip) {
         // Clear the current runtime
         this.clear();
-
+        if (typeof performance !== 'undefined') {
+            performance.mark('scratch-vm-deserialize-start');
+        }
         const runtime = this.runtime;
         const deserializePromise = function () {
             const projectVersion = projectJSON.projectVersion;
@@ -513,8 +515,14 @@ class VirtualMachine extends EventEmitter {
             return Promise.reject('Unable to verify Scratch Project version.');
         };
         return deserializePromise()
-            .then(({targets, extensions}) =>
-                this.installTargets(targets, extensions, true));
+            .then(({targets, extensions}) => {
+                if (typeof performance !== 'undefined') {
+                    performance.mark('scratch-vm-deserialize-end');
+                    performance.measure('scratch-vm-deserialize',
+                        'scratch-vm-deserialize-start', 'scratch-vm-deserialize-end');
+                }
+                return this.installTargets(targets, extensions, true);
+            });
     }
 
     /**
@@ -1234,6 +1242,7 @@ class VirtualMachine extends EventEmitter {
         const copiedBlocks = JSON.parse(JSON.stringify(blocks));
         newBlockIds(copiedBlocks);
         const target = this.runtime.getTargetById(targetId);
+        target.deprecatedCache = true;
 
         if (optFromTargetId) {
             // If the blocks are being shared from another target,

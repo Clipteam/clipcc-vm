@@ -10,102 +10,102 @@ const menuIconURI = 'data:image/svg+xml;base64,PHN2ZyBpZD0i5Zu+5bGCXzEiIGRhdGEtb
 const apiURL = 'https://www.scpo.top:1120/v2';
 
 class Libra {
-    constructor(runtime) {
+    constructor (runtime) {
         this.runtime = runtime;
     }
-    static get STATE_KEY() {
+    static get STATE_KEY () {
         return 'Libra.libra';
     }
-    getInfo() {
+    getInfo () {
         return {
-            id: "libra",
+            id: 'libra',
             name: formatMessage({
-                id: "libra.categoryName",
-                default: "Libra",
-                description: "Libra Redlist Plugin"
+                id: 'libra.categoryName',
+                default: 'Libra',
+                description: 'Libra Redlist Plugin'
             }),
             menuIconURI: menuIconURI,
             blockIconURI: blockIconURI,
             blocks: [
-            {
-                opcode: 'isRedlistAvailable',
-                blockType: BlockType.BOOLEAN,
-                text: formatMessage({
-                    id: 'libra.isRedlistAvailable',
-                    default: 'is redlist available?',
-                    description: 'redlist status'
-                })
-            },
-            {
-                opcode: 'isInList',
-                text: formatMessage({
-                    id: 'libra.isInList',
-                    default: 'is [NAME] in the redlist?',
-                    description: 'redlist check'
-                }),
-                blockType: BlockType.BOOLEAN,
-                arguments: {
-                    NAME: {
-                        type: ArgumentType.STRING,
-                        defaultValue: "Zerdot"
+                {
+                    opcode: 'isRedlistAvailable',
+                    blockType: BlockType.BOOLEAN,
+                    text: formatMessage({
+                        id: 'libra.isRedlistAvailable',
+                        default: 'is redlist available?',
+                        description: 'redlist status'
+                    })
+                },
+                {
+                    opcode: 'isInList',
+                    text: formatMessage({
+                        id: 'libra.isInList',
+                        default: 'is [NAME] in the redlist?',
+                        description: 'redlist check'
+                    }),
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'Zerdot'
+                        }
                     }
-                }
-            },
-            {
-                opcode: 'reason',
-                text: formatMessage({
-                    id: 'libra.inListReason',
-                    default: 'reason of [NAME] being in redlist',
-                    description: 'redlist reason'
-                }),
-                blockType: BlockType.REPORTER,
-                arguments: {
-                    NAME: {
-                        type: ArgumentType.STRING,
-                        defaultValue: "Zerdot"
+                },
+                {
+                    opcode: 'reason',
+                    text: formatMessage({
+                        id: 'libra.inListReason',
+                        default: 'reason of [NAME] being in redlist',
+                        description: 'redlist reason'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        NAME: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'Zerdot'
+                        }
                     }
-                }
-            }]
-        }
+                }]
+        };
     }
     
-    isRedlistAvailable() {
-		const data = {
-			method: 'isInList',
-			value: 'Zerdot',
-			format: 'username',
-			platform: 'aerfaying'
-		};
-        return new Promise(function (resolve, reject) {
-            axios.post(apiURL, data).then(function (res) {
+    isRedlistAvailable () {
+        const data = {
+            method: 'isInList',
+            value: 'Zerdot',
+            format: 'username',
+            platform: 'aerfaying'
+        };
+        return new Promise((resolve, reject) => {
+            axios.post(apiURL, data).then(res => {
                 resolve(res.data.status);
             });
         });
     }
     
-    isInList(args) {
-		const data = {
-			method: 'isInList',
-			value: args.NAME,
-			format: 'username',
-			platform: 'aerfaying'
-		};
-        return new Promise(function (resolve, reject) {
-            axios.post(apiURL, data).then(function (res) {
+    isInList (args) {
+        const data = {
+            method: 'isInList',
+            value: args.NAME,
+            format: 'username',
+            platform: 'aerfaying'
+        };
+        return new Promise((resolve, reject) => {
+            axios.post(apiURL, data).then(res => {
                 resolve(res.data.status);
             });
         });
     }
     
-    reason(args){
-		const data = {
-			method: 'isInList',
-			value: args.NAME,
-			format: 'username',
-			platform: 'aerfaying'
-		};
-        return new Promise(function (resolve, reject) {
-            axios.post(apiURL, data).then(function (res) {
+    reason (args){
+        const data = {
+            method: 'isInList',
+            value: args.NAME,
+            format: 'username',
+            platform: 'aerfaying'
+        };
+        return new Promise((resolve, reject) => {
+            axios.post(apiURL, data).then(res => {
                 resolve(res.data.status ? res.data.reason : 'The user isn\'t in the redlist');
             });
         });

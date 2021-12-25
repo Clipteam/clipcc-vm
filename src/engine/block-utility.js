@@ -21,8 +21,6 @@ class BlockUtility {
          * @type {?Thread}
          */
         this.thread = thread;
-        
-        this.version = version;
 
         this.currentBlock = block;
 

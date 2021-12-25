@@ -7,7 +7,6 @@
 const vmPackage = require('../../package.json');
 const Blocks = require('../engine/blocks');
 const Sprite = require('../sprites/sprite');
-const {isExtensionExists} = require('../extension-support/extension-list')
 const Variable = require('../engine/variable');
 const Comment = require('../engine/comment');
 const MonitorRecord = require('../engine/monitor-record');
@@ -18,12 +17,12 @@ const MathUtil = require('../util/math-util');
 const StringUtil = require('../util/string-util');
 const VariableUtil = require('../util/variable-util');
 
+const builtinExtensions = require('../extension-support/extension-list');
 const {loadCostume} = require('../import/load-costume.js');
 const {loadSound} = require('../import/load-sound.js');
 const {deserializeCostume, deserializeSound} = require('./deserialize-assets.js');
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
-
 /**
  * @typedef {object} ImportedProject
  * @property {Array.<Target>} targets - the imported Scratch 3.0 target objects.
@@ -501,7 +500,7 @@ const serializeMonitors = function (monitors) {
             opcode: monitorData.opcode,
             params: monitorData.params,
             spriteName: monitorData.spriteName,
-            //value: monitorData.value,
+            // value: monitorData.value,
             width: monitorData.width,
             height: monitorData.height,
             x: monitorData.x,
@@ -922,59 +921,56 @@ const parseScratchAssets = function (object, runtime, zip) {
  * @return {set} A set contain the id of reporter blocks
  */
 const getReporters = function (blocks) {
-	let reporters = new Set();
-	//console.log("开始获取Reporter", blocks);
-	for (const blockId in blocks) {
-		const block = blocks[blockId];
-		//console.log("开始遍历block", block);
-		for (const inputId in block.inputs) {
-			const input = block.inputs[inputId];
-			//console.log("遍历input", input);
-			if(input.block && input.block != input.shadow) {
-                if (input.name == "SUBSTACK" || input.name == "SUBSTACK2") console.log("检测到SUBSTACK", input.block);
-				else {
-                    reporters.add(input.block);
-				    console.log("检测到REPORTER", input.block);
-                }
-			}
-		}
-	}
-	return reporters;
-}
+    const reporters = new Set();
+    // console.log("开始获取Reporter", blocks);
+    for (const blockId in blocks) {
+        const block = blocks[blockId];
+        // console.log("开始遍历block", block);
+        for (const inputId in block.inputs) {
+            const input = block.inputs[inputId];
+            // console.log("遍历input", input);
+            if (input.block && input.block != input.shadow) {
+                if (input.name == 'SUBSTACK' || input.name == 'SUBSTACK2') continue;
+                else reporters.add(input.block);
+            }
+        }
+    }
+    return reporters;
+};
 
 const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod, reporters) {
-	switch (handleMethod) {
-		case 'replace': {
-			console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
-			let originalOpcode = blockJSON.opcode;
-			blockJSON.extra = {
-				isUnknownBlocks: true,
-				originalInputs: blockJSON.inputs
-            }
-            if (!reporters.has(blockJSON.id)) { // 检测是否需要转换为reporter
-                blockJSON.opcode = "procedures_call";
-                if(!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
-                blockJSON.mutation.proccode = "[" + extensionID.trim() + "] " + originalOpcode;
-                blockJSON.mutation.children = [];
-                blockJSON.mutation.tagName = "mutation";
-            } else {
+    switch (handleMethod) {
+    case 'replace': {
+        // console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
+        const originalOpcode = blockJSON.opcode;
+        blockJSON.extra = {
+            isUnknownBlocks: true,
+            originalInputs: blockJSON.inputs
+        };
+        if (!reporters.has(blockJSON.id)) { // 检测是否需要转换为reporter
+            blockJSON.opcode = 'procedures_call';
+            if (!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
+            blockJSON.mutation.proccode = `[${extensionID.trim()}] ${originalOpcode}`;
+            blockJSON.mutation.children = [];
+            blockJSON.mutation.tagName = 'mutation';
+        } else {
             	// 暂时没想到区分boolean/string的方法，于是暂用Boolean替代
             	// 关于为什么是Boolean，因为在判断语句下使用Reporter可能会导致Blockly解析异常。
-            	blockJSON.opcode = "argument_reporter_boolean";
-            	if(!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
+            	blockJSON.opcode = 'argument_reporter_boolean';
+            	if (!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
             	blockJSON.fields.VALUE = {
-            		name: "VALUE",
-            		value: "[" + extensionID.trim() + "] " + originalOpcode
+            		name: 'VALUE',
+            		value: `[${extensionID.trim()}] ${originalOpcode}`
         	    };
 	        }
 	        delete blockJSON.inputs;
-	        console.log("替换后：", blockJSON);
+	        // console.log("替换后：", blockJSON);
 	    }
 	    case 'delete': {
-	    	//@todo
+	    	// @todo
 	    }
-	}
-}
+    }
+};
 /**
  * Parse a single "Scratch object" and create all its in-memory VM objects.
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
@@ -986,8 +982,8 @@ const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod, repo
  * @return {!Promise.<Target>} Promise for the target created (stage or sprite), or null for unsupported objects.
  */
 const parseScratchObject = function (object, runtime, extensions, zip, assets) {
-	// Watcher/monitor - skip this object until those are implemented in VM.
-	// @todo
+    // Watcher/monitor - skip this object until those are implemented in VM.
+    // @todo
     if (!object.hasOwnProperty('name')) return Promise.resolve(null);
     // Blocks container for this object.
     const blocks = new Blocks(runtime);
@@ -1005,18 +1001,18 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
         deserializeBlocks(object.blocks);
         if (!reporters && option != 'donotload') {
         	reporters = getReporters(object.blocks);
-        	console.log(reporters); //DEBUG
+        	// console.log(reporters); //DEBUG
         }
         // Take a second pass to create objects and add extensions
         for (const blockId in object.blocks) {
             if (!object.blocks.hasOwnProperty(blockId)) continue;
             const blockJSON = object.blocks[blockId];
-            console.log("JSON:", blockJSON); //debug
+            // console.log("JSON:", blockJSON); //debug
 
             // If the block is from an extension, record it.
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
-                if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
+                if (builtinExtensions.hasOwnProperty(extensionID)) extensions.extensionIDs.add(extensionID);
                 else if (option == 'donotload') return Promise.resolve(null);
                 else handleUnknownBlocks(blockJSON, extensionID, option, reporters);
             }
@@ -1225,7 +1221,7 @@ const deserializeMonitor = function (monitorData, runtime, targets, extensions) 
         // If the block is from an extension, record it.
         const extensionID = getExtensionIdForOpcode(monitorBlock.opcode);
         if (extensionID) {
-            if (isExtensionExists(extensionID)) extensions.extensionIDs.add(extensionID);
+            if (builtinExtensions.hasOwnProperty(extensionID)) extensions.extensionIDs.add(extensionID);
         }
     }
     

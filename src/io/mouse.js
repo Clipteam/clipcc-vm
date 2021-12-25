@@ -4,7 +4,7 @@ class Mouse {
     constructor (runtime) {
         this._x = 0;
         this._y = 0;
-        //this._isDown = false;
+        // this._isDown = false;
         /**
          * Press state for [left, midlle, right]
          */
@@ -150,7 +150,7 @@ class Mouse {
      * @param {number} button Button number.
      * @return {boolean} Is the mouse down?
      */
-    getMousePressed(button) {
+    getMousePressed (button) {
         return this._isDown[button];
     }
 }

@@ -195,7 +195,7 @@ class Runtime extends EventEmitter {
          * It should be set by clipcc-gui.
          * @type {String}
          */
-        this.version = "unknown";
+        this.version = 'unknown';
 
         /**
          * A list of threads that are currently running in the VM.
@@ -2161,7 +2161,7 @@ class Runtime extends EventEmitter {
     }
 
     setFramerate (framerate) {
-        if(framerate<=250 && framerate>=0) this.frameRate = framerate; //帧率合法性判断
+        if (framerate <= 250 && framerate >= 0) this.frameRate = framerate; // 帧率合法性判断
         if (this._steppingInterval) {
             clearInterval(this._steppingInterval);
             this._steppingInterval = null;
@@ -2591,7 +2591,7 @@ class Runtime extends EventEmitter {
         // Do not start if we are already running
         if (this._steppingInterval) return;
 
-        let interval = 1000 / this.frameRate;
+        const interval = 1000 / this.frameRate;
         this.currentStepTime = interval;
         this._steppingInterval = setInterval(() => {
             this._step();

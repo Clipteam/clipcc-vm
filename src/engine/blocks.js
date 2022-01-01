@@ -326,7 +326,7 @@ class Blocks {
         // Validate event
         if (typeof e !== 'object') return;
         if (typeof e.blockId !== 'string' && typeof e.varId !== 'string' &&
-            typeof e.commentId !== 'string') {
+            typeof e.commentId !== 'string' && typeof e.proccode !== 'string') {
             return;
         }
         const stage = this.runtime.getTargetForStage();
@@ -526,6 +526,27 @@ class Blocks {
                 this.emitProjectChanged();
             }
             break;
+        case 'func_modify': {
+            const oldMutation = mutationAdapter(e.oldMutation);
+            const newMutation = mutationAdapter(e.newMutation);
+            const proccode = oldMutation.proccode;
+            if (oldMutation.global === 'true') {
+                // This is a global function originally
+                const targets = this.runtime.targets;
+                for (let i = 0; i < targets.length; i++) {
+                    const currTarget = targets[i];
+                    currTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation);
+                }
+            }
+            else {
+                // This is a local function originally
+                editingTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation);
+            }
+            break;
+        }
+        default:
+            log.error(`Unknown Blockly Event: ${e.type}`);
+            return;
         }
     }
 
@@ -921,6 +942,34 @@ class Blocks {
                 }
             }
         }
+    }
+
+    updateBlocksAfterFuncModify (proccode, newMutation) {
+        const blocks = this._blocks;
+        for (const blockId in blocks) {
+            const block = blocks[blockId];
+            if (block.opcode === 'procedures_prototype' || block.opcode === 'procedures_prototype_return') {
+                if (block.mutation.proccode !== proccode) continue;
+                block.mutation.proccode = newMutation.proccode;
+                block.mutation.argumentids = newMutation.argumentids;
+                block.mutation.argumentnames = newMutation.argumentnames;
+                block.mutation.argumentdefaults = newMutation.argumentdefaults;
+                block.mutation.global = newMutation.global;
+                block.mutation.return = newMutation.return;
+                block.mutation.warp = newMutation.warp;
+            }
+            else if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
+                if (block.mutation.proccode !== proccode) continue;
+                block.mutation.proccode = newMutation.proccode;
+                block.mutation.argumentids = newMutation.argumentids;
+                block.mutation.global = newMutation.global;
+                block.mutation.return = newMutation.return;
+                block.mutation.warp = newMutation.warp;
+            }
+        }
+
+        this.resetCache();
+        this.emitProjectChanged();
     }
 
     /**

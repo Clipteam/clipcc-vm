@@ -9,6 +9,7 @@ const BlocksRuntimeCache = require('./blocks-runtime-cache');
 const log = require('../util/log');
 const Variable = require('./variable');
 const getMonitorIdForBlockWithArgs = require('../util/get-monitor-id');
+const uid = require('../util/uid');
 
 /**
  * @fileoverview
@@ -535,12 +536,12 @@ class Blocks {
                 const targets = this.runtime.targets;
                 for (let i = 0; i < targets.length; i++) {
                     const currTarget = targets[i];
-                    currTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation);
+                    currTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation, currTarget === editingTarget);
                 }
             }
             else {
                 // This is a local function originally
-                editingTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation);
+                editingTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation, true);
             }
             break;
         }
@@ -944,7 +945,7 @@ class Blocks {
         }
     }
 
-    updateBlocksAfterFuncModify (proccode, newMutation) {
+    updateBlocksAfterFuncModify (proccode, newMutation, isEditingTarget) {
         const blocks = this._blocks;
         for (const blockId in blocks) {
             const block = blocks[blockId];
@@ -960,11 +961,50 @@ class Blocks {
             }
             else if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
                 if (block.mutation.proccode !== proccode) continue;
+                const oldArgIds = JSON.parse(block.mutation.argumentids);
                 block.mutation.proccode = newMutation.proccode;
                 block.mutation.argumentids = newMutation.argumentids;
                 block.mutation.global = newMutation.global;
                 block.mutation.return = newMutation.return;
                 block.mutation.warp = newMutation.warp;
+                if (!isEditingTarget) {
+                    // Need update input list
+                    const argIds = JSON.parse(newMutation.argumentids);
+                    const inputs = block.inputs;
+                    for (const inputId in inputs) {
+                        if (!argIds.includes(inputId)) {
+                            delete inputs[inputId];
+                        }
+                    }
+                    for (const argId of argIds) {
+                        if (!oldArgIds.includes(argId)) {
+                            // create input and shadow
+                            const id = uid();
+                            this._blocks[id] = {
+                                id: id,
+                                opcode: 'text',
+                                inputs: {},
+                                fields: {
+                                    TEXT: {
+                                        name: 'TEXT',
+                                        value: ''
+                                    }
+                                },
+                                next: null,
+                                topLevel: false,
+                                parent: block.id,
+                                shadow: true,
+                                x: 0,
+                                y: 0
+                            };
+                            block.inputs[argId] = {
+                                name: argId,
+                                block: id,
+                                shadow: id
+                            };
+                        }
+                    }
+                }
             }
         }
 

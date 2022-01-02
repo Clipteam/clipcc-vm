@@ -951,6 +951,11 @@ class Blocks {
             const block = blocks[blockId];
             if (block.opcode === 'procedures_prototype' || block.opcode === 'procedures_prototype_return') {
                 if (block.mutation.proccode !== proccode) continue;
+                if (block.mutation.return !== newMutation.return) {
+                    const postfix = newMutation.return === 'true' ? '_return' : '';
+                    this._blocks[block.parent].opcode = `procedures_definition${postfix}`;
+                    block.opcode = `procedures_prototype${postfix}`;
+                }
                 block.mutation.proccode = newMutation.proccode;
                 block.mutation.argumentids = newMutation.argumentids;
                 block.mutation.argumentnames = newMutation.argumentnames;
@@ -961,6 +966,9 @@ class Blocks {
             }
             else if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
                 if (block.mutation.proccode !== proccode) continue;
+                if (block.mutation.return !== newMutation.return) {
+                    block.opcode = `procedures_call${newMutation.return === 'true' ? '_return' : ''}`;
+                }
                 const oldArgIds = JSON.parse(block.mutation.argumentids);
                 block.mutation.proccode = newMutation.proccode;
                 block.mutation.argumentids = newMutation.argumentids;

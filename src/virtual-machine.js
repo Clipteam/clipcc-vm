@@ -498,7 +498,9 @@ class VirtualMachine extends EventEmitter {
     deserializeProject (projectJSON, zip) {
         // Clear the current runtime
         this.clear();
-
+        if (typeof performance !== 'undefined') {
+            performance.mark('scratch-vm-deserialize-start');
+        }
         const runtime = this.runtime;
         const deserializePromise = function () {
             const projectVersion = projectJSON.projectVersion;
@@ -513,8 +515,14 @@ class VirtualMachine extends EventEmitter {
             return Promise.reject('Unable to verify Scratch Project version.');
         };
         return deserializePromise()
-            .then(({targets, extensions}) =>
-                this.installTargets(targets, extensions, true));
+            .then(({targets, extensions}) => {
+                if (typeof performance !== 'undefined') {
+                    performance.mark('scratch-vm-deserialize-end');
+                    performance.measure('scratch-vm-deserialize',
+                        'scratch-vm-deserialize-start', 'scratch-vm-deserialize-end');
+                }
+                return this.installTargets(targets, extensions, true);
+            });
     }
 
     /**
@@ -1234,6 +1242,7 @@ class VirtualMachine extends EventEmitter {
         const copiedBlocks = JSON.parse(JSON.stringify(blocks));
         newBlockIds(copiedBlocks);
         const target = this.runtime.getTargetById(targetId);
+        target.deprecatedCache = true;
 
         if (optFromTargetId) {
             // If the blocks are being shared from another target,
@@ -1386,11 +1395,28 @@ class VirtualMachine extends EventEmitter {
             .map(k => this.editingTarget.comments[k])
             .filter(c => c.blockId === null);
 
+        // Get all mutations of procedures
+        let globalProcedures = [];
+        const localProcedures = this.editingTarget.blocks.getProcedureList(true);
+        for (let i = 0; i < this.runtime.targets.length; i++) {
+            const currTarget = this.runtime.targets[i];
+            if (currTarget === this.editingTarget) {
+                continue;
+            }
+            const currProcedures = currTarget.blocks.getProcedureList();
+            globalProcedures = globalProcedures.concat(currProcedures);
+        }
+
+
         const xmlString = `<xml xmlns="http://www.w3.org/1999/xhtml">
                             <variables>
                                 ${globalVariables.map(v => v.toXML()).join()}
                                 ${localVariables.map(v => v.toXML(true)).join()}
                             </variables>
+                            <procedures>
+                                ${globalProcedures.join()}
+                                ${localProcedures.join()}
+                            </procedures>
                             ${workspaceComments.map(c => c.toXML()).join()}
                             ${this.editingTarget.blocks.toXML(this.editingTarget.comments)}
                         </xml>`;

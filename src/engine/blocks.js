@@ -9,6 +9,7 @@ const BlocksRuntimeCache = require('./blocks-runtime-cache');
 const log = require('../util/log');
 const Variable = require('./variable');
 const getMonitorIdForBlockWithArgs = require('../util/get-monitor-id');
+const uid = require('../util/uid');
 
 /**
  * @fileoverview
@@ -220,6 +221,29 @@ class Blocks {
     }
 
     /**
+     * Get all procedure definitions.
+     * @param {?boolean} all Get all definitions (including local and global), default for global only.
+     * @return {?Array.<String>} Mutations of procedures.
+     */
+    getProcedureList (all) {
+        all = all || false;
+        const procedures = [];
+        for (const id in this._blocks) {
+            if (!this._blocks.hasOwnProperty(id)) continue;
+            const block = this._blocks[id];
+            if (block.opcode === 'procedures_definition' || block.opcode === 'procedures_definition_return') {
+                const internal = this._getCustomBlockInternal(block);
+                if (internal && (all || internal.mutation.global === 'true')) {
+                    this._cache.procedureDefinitions[internal.mutation.proccode] = id; // The outer define block id
+                    procedures.push(this.mutationToXML(internal.mutation));
+                }
+            }
+        }
+
+        return procedures;
+    }
+
+    /**
      * Get the procedure definition for a given name.
      * @param {?string} name Name of procedure to query.
      * @return {?string} ID of procedure definition.
@@ -233,7 +257,7 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_definition') {
+            if (block.opcode === 'procedures_definition' || block.opcode === 'procedures_definition_return') {
                 const internal = this._getCustomBlockInternal(block);
                 if (internal && internal.mutation.proccode === name) {
                     this._cache.procedureDefinitions[name] = id; // The outer define block id
@@ -269,7 +293,8 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_prototype' &&
+            if ((block.opcode === 'procedures_prototype' ||
+                block.opcode === 'procedures_prototype_return') &&
                 block.mutation.proccode === name) {
                 const names = JSON.parse(block.mutation.argumentnames);
                 const ids = JSON.parse(block.mutation.argumentids);
@@ -302,7 +327,7 @@ class Blocks {
         // Validate event
         if (typeof e !== 'object') return;
         if (typeof e.blockId !== 'string' && typeof e.varId !== 'string' &&
-            typeof e.commentId !== 'string') {
+            typeof e.commentId !== 'string' && typeof e.proccode !== 'string') {
             return;
         }
         const stage = this.runtime.getTargetForStage();
@@ -502,6 +527,27 @@ class Blocks {
                 this.emitProjectChanged();
             }
             break;
+        case 'func_modify': {
+            const oldMutation = mutationAdapter(e.oldMutation);
+            const newMutation = mutationAdapter(e.newMutation);
+            const proccode = oldMutation.proccode;
+            if (oldMutation.global === 'true') {
+                // This is a global function originally
+                const targets = this.runtime.targets;
+                for (let i = 0; i < targets.length; i++) {
+                    const currTarget = targets[i];
+                    currTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation, currTarget === editingTarget);
+                }
+            }
+            else {
+                // This is a local function originally
+                editingTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation, true);
+            }
+            break;
+        }
+        default:
+            log.error(`Unknown Blockly Event: ${e.type}`);
+            return;
         }
     }
 
@@ -899,6 +945,73 @@ class Blocks {
         }
     }
 
+    updateBlocksAfterFuncModify (proccode, newMutation, isEditingTarget) {
+        const blocks = this._blocks;
+        for (const blockId in blocks) {
+            const block = blocks[blockId];
+            if (block.opcode === 'procedures_prototype' || block.opcode === 'procedures_prototype_return') {
+                if (block.mutation.proccode !== proccode) continue;
+                block.mutation.proccode = newMutation.proccode;
+                block.mutation.argumentids = newMutation.argumentids;
+                block.mutation.argumentnames = newMutation.argumentnames;
+                block.mutation.argumentdefaults = newMutation.argumentdefaults;
+                block.mutation.global = newMutation.global;
+                block.mutation.return = newMutation.return;
+                block.mutation.warp = newMutation.warp;
+            }
+            else if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
+                if (block.mutation.proccode !== proccode) continue;
+                const oldArgIds = JSON.parse(block.mutation.argumentids);
+                block.mutation.proccode = newMutation.proccode;
+                block.mutation.argumentids = newMutation.argumentids;
+                block.mutation.global = newMutation.global;
+                block.mutation.return = newMutation.return;
+                block.mutation.warp = newMutation.warp;
+                if (!isEditingTarget) {
+                    // Need update input list
+                    const argIds = JSON.parse(newMutation.argumentids);
+                    const inputs = block.inputs;
+                    for (const inputId in inputs) {
+                        if (!argIds.includes(inputId)) {
+                            delete inputs[inputId];
+                        }
+                    }
+                    for (const argId of argIds) {
+                        if (!oldArgIds.includes(argId)) {
+                            // create input and shadow
+                            const id = uid();
+                            this._blocks[id] = {
+                                id: id,
+                                opcode: 'text',
+                                inputs: {},
+                                fields: {
+                                    TEXT: {
+                                        name: 'TEXT',
+                                        value: ''
+                                    }
+                                },
+                                next: null,
+                                topLevel: false,
+                                parent: block.id,
+                                shadow: true,
+                                x: 0,
+                                y: 0
+                            };
+                            block.inputs[argId] = {
+                                name: argId,
+                                block: id,
+                                shadow: id
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        this.resetCache();
+        this.emitProjectChanged();
+    }
+
     /**
      * Keep blocks up to date after they are shared between targets.
      * @param {boolean} isStage If the new target is a stage.
@@ -1137,10 +1250,18 @@ class Blocks {
     /**
      * Recursively encode a mutation object to XML.
      * @param {!object} mutation Object representing a mutation.
+     * @param {?object} option Options.
      * @return {string} XML string representing a mutation.
      */
-    mutationToXML (mutation) {
+    mutationToXML (mutation, option) {
         let mutationString = `<${mutation.tagName}`;
+        if (option) {
+            for (const prop in option) {
+                const mutationValue = (typeof option[prop] === 'string') ?
+                    xmlEscape(option[prop]) : option[prop];
+                mutationString += ` ${prop}="${mutationValue}"`;
+            }
+        }
         for (const prop in mutation) {
             if (prop === 'children' || prop === 'tagName') continue;
             let mutationValue = (typeof mutation[prop] === 'string') ?

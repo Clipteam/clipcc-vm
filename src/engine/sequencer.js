@@ -256,7 +256,12 @@ class Sequencer {
             }
             // If no control flow has happened, switch to next block.
             if (thread.peekStack() === currentBlockId) {
-                thread.goToNextBlock();
+                // If current block is a return block, skip it.
+                const block = thread.target.blocks.getBlock(currentBlockId);
+                // Note: if current block is called from a monitor, the block will be undefined.
+                if (!block || block.opcode !== 'procedures_return') {
+                    thread.goToNextBlock();
+                }
             }
             // If no next block has been found at this point, look on the stack.
             while (!thread.peekStack()) {
@@ -328,7 +333,8 @@ class Sequencer {
      * @param {!string} procedureCode Procedure code of procedure to step to.
      */
     stepToProcedure (thread, procedureCode) {
-        const definition = thread.target.blocks.getProcedureDefinition(procedureCode);
+        // const definition = thread.target.blocks.getProcedureDefinition(procedureCode);
+        const [target, definition] = this.runtime.getProcedureDefinition(procedureCode);
         if (!definition) {
             return;
         }
@@ -340,7 +346,11 @@ class Sequencer {
         // and on to the main definition of the procedure.
         // When that set of blocks finishes executing, it will be popped
         // from the stack by the sequencer, returning control to the caller.
-        thread.pushStack(definition);
+        if (target === thread.target) {
+            thread.pushStack(definition);
+        } else {
+            thread.pushStack(definition, target);
+        }
         // In known warp-mode threads, only yield when time is up.
         if (thread.peekStackFrame().warpMode &&
             thread.warpTimer.timeElapsed() > Sequencer.WARP_TIME) {

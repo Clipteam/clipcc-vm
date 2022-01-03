@@ -202,7 +202,7 @@ class Runtime extends EventEmitter {
         * @type {Boolean}
         */
         this.useCompiler = false;
-        
+
         this.blockClass = {};
 
         /**
@@ -1627,7 +1627,7 @@ class Runtime extends EventEmitter {
      * @return {!Thread} The newly created thread.
      */
     _pushThread (id, target, opts) {
-        const thread = new Thread(id);
+        const thread = new Thread(id, this);
         thread.target = target;
         thread.stackClick = Boolean(opts && opts.stackClick);
         thread.updateMonitor = Boolean(opts && opts.updateMonitor);
@@ -1660,7 +1660,7 @@ class Runtime extends EventEmitter {
      * @return {Thread} The restarted thread.
      */
     _restartThread (thread) {
-        const newThread = new Thread(thread.topBlock);
+        const newThread = new Thread(thread.topBlock, this);
         newThread.target = thread.target;
         newThread.stackClick = thread.stackClick;
         newThread.updateMonitor = thread.updateMonitor;
@@ -2638,6 +2638,47 @@ class Runtime extends EventEmitter {
      */
     updateCurrentMSecs () {
         this.currentMSecs = Date.now();
+    }
+
+    /**
+     * Get the procedure definition for a given name.
+     * @param {?string} name Name of procedure to query.
+     * @return {?string} ID of procedure definition.
+     */
+    getProcedureDefinition (name) {
+        for (const target of this.targets) {
+            const definition = target.blocks.getProcedureDefinition(name);
+            if (definition) {
+                // TODO: check if it is global
+                return [target, definition];
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Get names and ids of parameters for the given procedure.
+     * @param {?string} name Name of procedure to query.
+     * @return {?Array.<string>} List of param names for a procedure.
+     */
+    getProcedureParamNamesAndIds (name) {
+        return this.getProcedureParamNamesIdsAndDefaults(name).slice(0, 2);
+    }
+
+    /**
+     * Get names, ids, and defaults of parameters for the given procedure.
+     * @param {?string} name Name of procedure to query.
+     * @return {?Array.<string>} List of param names for a procedure.
+     */
+    getProcedureParamNamesIdsAndDefaults (name) {
+        for (const target of this.targets) {
+            // TODO: check if it is global
+            const definition = target.blocks.getProcedureParamNamesIdsAndDefaults(name);
+            if (definition) {
+                return definition;
+            }
+        }
+        return null;
     }
 }
 

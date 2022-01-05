@@ -200,7 +200,11 @@ class Sequencer {
             console.log('Thread compilation status:', thread.isCompiled);
             if (this.isBlockCompiled(thread, currentBlockId)) {
                 try {
-                    executeScript(this, thread, currentBlockId);
+                    const result = executeScript(this, thread, currentBlockId);
+                    if (!result.done) {
+                        console.log('continue executing compiled script.');
+                        return; // 流程尚未完成，继续完成编译后脚本
+                    } 
                 } catch (e) {
                     console.error('An error occurred during execution\n' + e.toString());
                 }

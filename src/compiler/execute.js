@@ -18,7 +18,8 @@ const executeScript = (sequencer, thread, blockId) => {
     blockUtility.thread = thread;
     
     try {
-        if (typeof thread.compiledFragment[blockId] != 'function') {
+        // 检测 GeneratorFunction 是否需要初始化
+        if (typeof thread.compiledFragment[blockId].func == 'function') {
             const CompilerUtil = {
                 util: blockUtility,
                 MathUtil,
@@ -30,7 +31,7 @@ const executeScript = (sequencer, thread, blockId) => {
             thread.compiledFragment[blockId].func = thread.compiledFragment[blockId].func(CompilerUtil);
         }
         result = thread.compiledFragment[blockId].func.next();
-        // console.log('运行状态：', result);
+        return result;
         if (result.done) {
             //sequencer.retireThread(thread); // 销毁已完成的进程
             //thread.status = Thread.STATUS_DONE;

@@ -195,14 +195,12 @@ class Sequencer {
         }
         // Save the current block ID to notice if we did control flow.
         while ((currentBlockId = thread.peekStack())) {
-            console.log(thread.peekStack());
             let isWarpMode = thread.peekStackFrame().warpMode;
-            console.log('Thread compilation status:', thread.isCompiled);
+            console.log('编译状态:', thread.isCompiled);
             if (this.isBlockCompiled(thread, currentBlockId)) {
                 try {
                     const result = executeScript(this, thread, currentBlockId);
                     if (!result.done) {
-                        console.log('continue executing compiled script.');
                         return; // 流程尚未完成，继续完成编译后脚本
                     } 
                 } catch (e) {

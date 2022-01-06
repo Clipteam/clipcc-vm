@@ -25,6 +25,7 @@ const fieldMap = {
     event_broadcast_menu: 'BROADCAST',
     data_listcontents: 'LIST',
     motion_goto_menu: 'TO',
+    motion_pointtowards_menu: 'TOWARDS',
     pen_menu_colorParam: 'colorParam',
     music_menu_INSTRUMENT: 'INSTRUMENT',
     music_menu_DRUM: 'DRUM'
@@ -67,7 +68,7 @@ class Generator {
             const block = this.thread.target.blocks.getBlock(currentBlockId);
             if (!!this.blocksProcessor[block.opcode]) {
                 const generatedObj = this.generateStack(currentBlockId);
-                console.log('由' + currentBlockId + '开始的生成代码：\n', generatedObj.script); // DEBUG
+                console.log(currentBlockId + '开始的生成代码：\n', generatedObj.script); // DEBUG
                 const generatedFunction = new GeneratorFunction('CompilerUtil', prefix + generatedObj.script);// 使用构建函数来处理流程
                 this.thread.compiledFragment[currentBlockId] = {
                     func: generatedFunction,

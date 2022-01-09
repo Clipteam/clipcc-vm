@@ -200,6 +200,7 @@ class Sequencer {
             if (this.isBlockCompiled(thread, currentBlockId)) {
                 try {
                     const result = executeScript(this, thread, currentBlockId);
+                    console.log(result);
                     if (!result.done) {
                         return; // 流程尚未完成，继续完成编译后脚本
                     } 

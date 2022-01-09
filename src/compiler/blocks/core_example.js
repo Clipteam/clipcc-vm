@@ -14,9 +14,9 @@ class CoreExample/* 类名*/ {
      */
     static getProcessor () {
         return {
-            sinangentoo_0523: 'util.target.clearEffects();',
-            alexcui_0925: 'util.target.setSize(408);',
-            frank_782: 'util.target.setSize(Number(#<SIZE># + 930));'
+            sinangentoo_0523: () => 'util.target.clearEffects();',
+            alexcui_0925: () => 'util.target.setSize(408);',
+            frank_782: () => 'util.target.setSize(Number(#<SIZE># + 930));'
         };
     }
 }

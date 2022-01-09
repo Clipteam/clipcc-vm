@@ -305,8 +305,7 @@ class Thread {
         let blockID = this.peekStack();
         while (blockID !== null) {
             const block = this.target.blocks.getBlock(blockID);
-            if (typeof block !== 'undefined' &&
-                (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return')) {
+            if (typeof block !== 'undefined' && block.opcode === 'procedures_call') {
                 break;
             }
             this.popStack();
@@ -441,8 +440,7 @@ class Thread {
             if (!block) {
                 return false;
             }
-            if ((block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') &&
-                block.mutation.proccode === procedureCode) {
+            if (block.opcode === 'procedures_call' && block.mutation.proccode === procedureCode) {
                 return true;
             }
             if (--callCount < 0) {

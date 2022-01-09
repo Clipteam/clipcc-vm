@@ -16,7 +16,6 @@ class Scratch3ProcedureBlocks {
             procedures_definition: this.definition,
             procedures_definition_return: this.definition,
             procedures_call: this.call,
-            procedures_call_return: this.callReturn,
             procedures_return: this.return,
             argument_reporter_string_number: this.argumentReporterStringNumber,
             argument_reporter_boolean: this.argumentReporterBoolean
@@ -28,6 +27,14 @@ class Scratch3ProcedureBlocks {
     }
 
     call (args, util) {
+        if (args.mutation.return) {
+            this.callReturn(args, util);
+        } else {
+            this.callStatement(args, util);
+        }
+    }
+
+    callStatement (args, util) {
         if (!util.stackFrame.executed) {
             const procedureCode = args.mutation.proccode;
             const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode);

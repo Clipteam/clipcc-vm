@@ -231,7 +231,7 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_definition' || block.opcode === 'procedures_definition_return') {
+            if (block.opcode === 'procedures_definition') {
                 const internal = this._getCustomBlockInternal(block);
                 if (internal && (all || internal.mutation.global === 'true')) {
                     this._cache.procedureDefinitions[internal.mutation.proccode] = id; // The outer define block id
@@ -257,7 +257,7 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if (block.opcode === 'procedures_definition' || block.opcode === 'procedures_definition_return') {
+            if (block.opcode === 'procedures_definition') {
                 const internal = this._getCustomBlockInternal(block);
                 if (internal && internal.mutation.proccode === name) {
                     this._cache.procedureDefinitions[name] = id; // The outer define block id
@@ -293,8 +293,7 @@ class Blocks {
         for (const id in this._blocks) {
             if (!this._blocks.hasOwnProperty(id)) continue;
             const block = this._blocks[id];
-            if ((block.opcode === 'procedures_prototype' ||
-                block.opcode === 'procedures_prototype_return') &&
+            if (block.opcode === 'procedures_prototype' &&
                 block.mutation.proccode === name) {
                 const names = JSON.parse(block.mutation.argumentnames);
                 const ids = JSON.parse(block.mutation.argumentids);
@@ -949,13 +948,8 @@ class Blocks {
         const blocks = this._blocks;
         for (const blockId in blocks) {
             const block = blocks[blockId];
-            if (block.opcode === 'procedures_prototype' || block.opcode === 'procedures_prototype_return') {
+            if (block.opcode === 'procedures_prototype') {
                 if (block.mutation.proccode !== proccode) continue;
-                if (block.mutation.return !== newMutation.return) {
-                    const postfix = newMutation.return === 'true' ? '_return' : '';
-                    this._blocks[block.parent].opcode = `procedures_definition${postfix}`;
-                    block.opcode = `procedures_prototype${postfix}`;
-                }
                 block.mutation.proccode = newMutation.proccode;
                 block.mutation.argumentids = newMutation.argumentids;
                 block.mutation.argumentnames = newMutation.argumentnames;
@@ -964,11 +958,8 @@ class Blocks {
                 block.mutation.return = newMutation.return;
                 block.mutation.warp = newMutation.warp;
             }
-            else if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
+            else if (block.opcode === 'procedures_call') {
                 if (block.mutation.proccode !== proccode) continue;
-                if (block.mutation.return !== newMutation.return) {
-                    block.opcode = `procedures_call${newMutation.return === 'true' ? '_return' : ''}`;
-                }
                 const oldArgIds = JSON.parse(block.mutation.argumentids);
                 block.mutation.proccode = newMutation.proccode;
                 block.mutation.argumentids = newMutation.argumentids;

@@ -552,7 +552,7 @@ const execute = function (sequencer, thread) {
             break;
         } else if (thread.status === Thread.STATUS_RUNNING) {
             if (lastOperation) {
-                if (opCached.opcode === 'procedures_call_return') {
+                if (opCached.opcode === 'procedures_call' && opCached.return) {
                     handleReport(thread.justReported, sequencer, thread, opCached, lastOperation);
                 } else {
                     handleReport(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
@@ -575,7 +575,7 @@ const execute = function (sequencer, thread) {
         }
 
         // Waiting for a procedure call
-        if (opCached.opcode === 'procedures_call_return' && !lastOperation) {
+        if (opCached.opcode === 'procedures_call' && opCached.return && !lastOperation) {
             thread.justReported = null;
             currentStackFrame.reporting = ops[i].id;
             currentStackFrame.reported = ops.slice(0, i).map(reportedCached => {

@@ -163,6 +163,12 @@ class Thread {
          * @type {?Target}
          */
         this.target = null;
+        
+        /**
+         * Original target of this thread.
+         * @type {?Target}
+         */
+        this.originalTarget = null;
 
         /**
          * Target stack of this thread.
@@ -266,6 +272,7 @@ class Thread {
 
     pushTarget (target) {
         this.targetStack.push(this.target);
+        if (this.target === null) this.originalTarget = target;
         this.target = target;
         this.blockContainer = this.target.blocks;
     }

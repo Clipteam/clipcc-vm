@@ -2647,8 +2647,8 @@ class Runtime extends EventEmitter {
      * @param {?string} name Name of procedure to query.
      * @return {?Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesAndIds (name, target) {
-        return this.getProcedureParamNamesIdsAndDefaults(name, target).slice(0, 2);
+    getProcedureParamNamesAndIds (name) {
+        return this.getProcedureParamNamesIdsAndDefaults(name).slice(0, 2);
     }
 
     /**
@@ -2656,12 +2656,9 @@ class Runtime extends EventEmitter {
      * @param {?string} name Name of procedure to query.
      * @return {?Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesIdsAndDefaults (name, preferTarget) {
-    // TODO: check if it is global instead of check current target first.
-        const preferDef = preferTarget.blocks.getProcedureParamNamesIdsAndDefaults(name);
-        if (preferDef) return preferDef;
-        
+    getProcedureParamNamesIdsAndDefaults (name) {
         for (const target of this.targets) {
+            // TODO: check if it is global
             const definition = target.blocks.getProcedureParamNamesIdsAndDefaults(name);
             if (definition) {
                 return definition;

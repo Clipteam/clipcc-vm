@@ -191,7 +191,7 @@ class BlockUtility {
      */
     getProcedureParamNamesAndIds (procedureCode) {
         // return this.thread.target.blocks.getProcedureParamNamesAndIds(procedureCode);
-        return this.sequencer.runtime.getProcedureParamNamesAndIds(procedureCode, this.thread.originalTarget);
+        return this.sequencer.runtime.getProcedureParamNamesAndIds(procedureCode);
     }
 
     /**
@@ -201,7 +201,7 @@ class BlockUtility {
      */
     getProcedureParamNamesIdsAndDefaults (procedureCode) {
         // return this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(procedureCode);
-        return this.sequencer.runtime.getProcedureParamNamesIdsAndDefaults(procedureCode, this.thread.originalTarget);
+        return this.sequencer.runtime.getProcedureParamNamesIdsAndDefaults(procedureCode);
     }
 
     /**

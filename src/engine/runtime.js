@@ -2636,6 +2636,7 @@ class Runtime extends EventEmitter {
             const definition = target.blocks.getProcedureDefinition(name);
             if (definition) {
                 // TODO: check if it is global
+                console.log([target, definition]);
                 return [target, definition];
             }
         }

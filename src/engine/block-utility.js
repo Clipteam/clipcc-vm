@@ -156,8 +156,8 @@ class BlockUtility {
      * Start a specified procedure on this thread.
      * @param {string} procedureCode Procedure code for procedure to start.
      */
-    startProcedure (procedureCode) {
-        this.sequencer.stepToProcedure(this.thread, procedureCode);
+    startProcedure (procedureCode, isGlobal) {
+        this.sequencer.stepToProcedure(this.thread, procedureCode, isGlobal);
     }
 
     /**

@@ -1,3 +1,4 @@
+const Cast = require('../util/cast');
 class Scratch3ProcedureBlocks {
     constructor (runtime) {
         /**
@@ -29,7 +30,7 @@ class Scratch3ProcedureBlocks {
 
     call (args, util) {
         if (!util.stackFrame.executed) {
-            const isGlobal = JSON.parse(args.mutation.global);
+            const isGlobal = Cast.toBoolean(args.mutation.global);
             const procedureCode = args.mutation.proccode;
             const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
 
@@ -60,7 +61,7 @@ class Scratch3ProcedureBlocks {
     callReturn (args, util) {
         if (!util.stackFrame.executed) {
             const procedureCode = args.mutation.proccode;
-            const isGlobal = JSON.parse(args.mutation.global);
+            const isGlobal = Cast.toBoolean(args.mutation.global);
             const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
 
             // If null, procedure could not be found, which can happen if custom

@@ -187,21 +187,24 @@ class BlockUtility {
     /**
      * Get names and ids of parameters for the given procedure.
      * @param {string} procedureCode Procedure code for procedure to query.
+     * @param {string} isGlobal Whether the procedure global.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesAndIds (procedureCode) {
-        // return this.thread.target.blocks.getProcedureParamNamesAndIds(procedureCode);
-        return this.sequencer.runtime.getProcedureParamNamesAndIds(procedureCode);
+    getProcedureParamNamesAndIds (procedureCode, isGlobal) {
+        if (isGlobal) return this.sequencer.runtime.getProcedureParamNamesAndIds(procedureCode);
+        return this.thread.target.blocks.getProcedureParamNamesAndIds(procedureCode);
     }
 
     /**
      * Get names, ids, and defaults of parameters for the given procedure.
      * @param {string} procedureCode Procedure code for procedure to query.
+     * @param {string} isGlobal Whether the procedure global.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesIdsAndDefaults (procedureCode) {
-        // return this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(procedureCode);
-        return this.sequencer.runtime.getProcedureParamNamesIdsAndDefaults(procedureCode);
+    getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal) {
+        if (isGlobal) return this.sequencer.runtime.getProcedureParamNamesIdsAndDefaults(procedureCode);
+        return this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(procedureCode);
+        
     }
 
     /**

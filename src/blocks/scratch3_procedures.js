@@ -60,7 +60,8 @@ class Scratch3ProcedureBlocks {
     callReturn (args, util) {
         if (!util.stackFrame.executed) {
             const procedureCode = args.mutation.proccode;
-            const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode);
+            const isGlobal = JSON.parse(args.mutation.global);
+            const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
 
             // If null, procedure could not be found, which can happen if custom
             // block is dragged between sprites without the definition.
@@ -85,7 +86,7 @@ class Scratch3ProcedureBlocks {
             // For the reason that the stack top is current command block,
             // rather than the call block, so we should push the block id.
             util.pushThreadStack(util.currentBlockId);
-            util.startProcedure(procedureCode);
+            util.startProcedure(procedureCode, isGlobal);
         }
     }
 

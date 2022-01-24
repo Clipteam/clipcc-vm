@@ -46,7 +46,7 @@ const CORE_EXTENSIONS = [
  * @constructor
  */
 class VirtualMachine extends EventEmitter {
-    constructor (extensionManager) {
+    constructor (config) {
         super();
 
         /**
@@ -57,6 +57,8 @@ class VirtualMachine extends EventEmitter {
         centralDispatch.setService('runtime', this.runtime).catch(e => {
             log.error(`Failed to register runtime service: ${JSON.stringify(e)}`);
         });
+        
+        this.runtime.version = config.version;
 
         /**
          * The "currently editing"/selected target ID for the VM.
@@ -166,7 +168,7 @@ class VirtualMachine extends EventEmitter {
         });
 
         this.extensionManager = new ExtensionManager(this.runtime);
-        this.ccExtensionManager = extensionManager;
+        this.ccExtensionManager = config.extensionManager;
 
         // Load core extensions
         for (const id of CORE_EXTENSIONS) {
@@ -179,6 +181,9 @@ class VirtualMachine extends EventEmitter {
         this.variableListener = this.variableListener.bind(this);
 
         this.extensionAPI = new ExtensionAPI(this);
+        
+        this.compressionLevel = 6;
+        this.runtime.deserializeOption = 'donotload';
     }
 
     /**
@@ -202,11 +207,8 @@ class VirtualMachine extends EventEmitter {
      */
     setTurboMode (turboModeOn) {
         this.runtime.turboMode = !!turboModeOn;
-        if (this.runtime.turboMode) {
-            this.emit(Runtime.TURBO_MODE_ON);
-        } else {
-            this.emit(Runtime.TURBO_MODE_OFF);
-        }
+        if (this.runtime.turboMode) this.emit(Runtime.TURBO_MODE_ON);
+        else this.emit(Runtime.TURBO_MODE_OFF);
     }
 
     /**
@@ -216,6 +218,19 @@ class VirtualMachine extends EventEmitter {
      */
     setCompatibilityMode (compatibilityModeOn) {
         this.runtime.setCompatibilityMode(!!compatibilityModeOn);
+    }
+    
+    /**
+     * Set the compression level of sb3 file.
+     * It's exposed to clipcc-gui.
+     * @param {number} the compression level.
+     */
+    setCompressionLevel (level) {
+    	if (level <= 9 && level >= 1) this.compressionLevel = level;
+    }
+    
+    setDeserializeOption (option) {
+    	this.runtime.deserializeOption = option;
     }
 
     /**
@@ -409,7 +424,7 @@ class VirtualMachine extends EventEmitter {
             mimeType: 'application/x.scratch.sb3',
             compression: 'DEFLATE',
             compressionOptions: {
-                level: 6 // Tradeoff between best speed (1) and best compression (9)
+                level: this.compressionLevel // Tradeoff between best speed (1) and best compression (9)
             }
         });
     }
@@ -542,7 +557,7 @@ class VirtualMachine extends EventEmitter {
             }
             return Promise.reject('Unable to verify Scratch Project version.');
         };
-        return deserializePromise().then(({targets, extensions}) => {
+        return deserializePromise().then(({targets, extensions}) => {            
             if (Array.isArray(extensions)) {
                 const temp = {};
                 for (const extension of extensions) {
@@ -1304,6 +1319,7 @@ class VirtualMachine extends EventEmitter {
         const copiedBlocks = JSON.parse(JSON.stringify(blocks));
         newBlockIds(copiedBlocks);
         const target = this.runtime.getTargetById(targetId);
+        target.deprecatedCache = true;
 
         if (optFromTargetId) {
             // If the blocks are being shared from another target,
@@ -1456,11 +1472,28 @@ class VirtualMachine extends EventEmitter {
             .map(k => this.editingTarget.comments[k])
             .filter(c => c.blockId === null);
 
+        // Get all mutations of procedures
+        let globalProcedures = [];
+        const localProcedures = this.editingTarget.blocks.getProcedureList(true);
+        for (let i = 0; i < this.runtime.targets.length; i++) {
+            const currTarget = this.runtime.targets[i];
+            if (currTarget === this.editingTarget) {
+                continue;
+            }
+            const currProcedures = currTarget.blocks.getProcedureList();
+            globalProcedures = globalProcedures.concat(currProcedures);
+        }
+
+
         const xmlString = `<xml xmlns="http://www.w3.org/1999/xhtml">
                             <variables>
                                 ${globalVariables.map(v => v.toXML()).join()}
                                 ${localVariables.map(v => v.toXML(true)).join()}
                             </variables>
+                            <procedures>
+                                ${globalProcedures.join()}
+                                ${localProcedures.join()}
+                            </procedures>
                             ${workspaceComments.map(c => c.toXML()).join()}
                             ${this.editingTarget.blocks.toXML(this.editingTarget.comments)}
                         </xml>`;

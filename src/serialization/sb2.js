@@ -1093,7 +1093,7 @@ const parseBlock = function (sb2block, addBroadcastMsg, getVariableId, extension
                 if (shadowObscured) {
                     fieldValue = 'this sprite';
                 }
-            }  else if (expectedArg.inputOp === 'clipblocks.menu.booleanParam') {
+            } else if (expectedArg.inputOp === 'clipblocks.menu.booleanParam') {
                 if (shadowObscured) {
                     fieldValue = 'false';
                 }

@@ -28,6 +28,7 @@ class Scratch3OperatorsBlocks {
             operator_not: this.not,
             operator_random: this.random,
             operator_join: this.join,
+            operator_indexof: this.indexOf,
             operator_letter_of: this.letterOf,
             operator_length: this.length,
             operator_contains: this.contains,
@@ -104,6 +105,19 @@ class Scratch3OperatorsBlocks {
 
     join (args) {
         return Cast.toString(args.STRING1) + Cast.toString(args.STRING2);
+    }
+
+    indexOf (args) {
+        let index = 0;
+        const mainStr = args.STRING; // Eg:shipshipship
+        if (Cast.toNumber(args.POS) <= 0) return -1;// Eg:1
+        for (let i = 0; i <= Cast.toNumber(args.POS) - 1; i++) {
+            index = mainStr.indexOf(args.SUBSTRING, index);
+            if (index === -1) return -1;
+            // eslint-disable-next-line no-else-return
+            else index += args.SUBSTRING.length - 1;
+        }
+        return index - args.SUBSTRING.length + 2;
     }
 
     letterOf (args) {

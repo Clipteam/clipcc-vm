@@ -8,7 +8,7 @@ const Timer = require('../util/timer');
  */
 
 class BlockUtility {
-    constructor (sequencer = null, thread = null) {
+    constructor (sequencer = null, thread = null, version = null, block = null) {
         /**
          * A sequencer block primitives use to branch or start procedures with
          * @type {?Sequencer}
@@ -21,6 +21,8 @@ class BlockUtility {
          * @type {?Thread}
          */
         this.thread = thread;
+
+        this.currentBlock = block;
 
         this._nowObj = {
             now: () => this.sequencer.runtime.currentMSecs
@@ -65,6 +67,10 @@ class BlockUtility {
             frame.executionContext = {};
         }
         return frame.executionContext;
+    }
+
+    get currentBlockId () {
+        return this.currentBlock.id;
     }
 
     /**
@@ -150,26 +156,55 @@ class BlockUtility {
      * Start a specified procedure on this thread.
      * @param {string} procedureCode Procedure code for procedure to start.
      */
-    startProcedure (procedureCode) {
-        this.sequencer.stepToProcedure(this.thread, procedureCode);
+    startProcedure (procedureCode, isGlobal) {
+        this.sequencer.stepToProcedure(this.thread, procedureCode, isGlobal);
+    }
+
+    /**
+     * Report a value to current thread.
+     * @param {*} value Reported value to push.
+     */
+    pushReportedValue (value) {
+        this.thread.pushReportedValue(value);
+    }
+
+    /**
+     * Push stack and update stack frames appropriately.
+     * @param {string} blockId Block ID to push to stack.
+     */
+    pushThreadStack (blockId) {
+        this.thread.pushStack(blockId);
+    }
+    
+    /**
+     * Pop last block on the stack and its stack frame.
+     * @return {string} Block ID popped from the stack.
+     */
+    popThreadStack () {
+        return this.thread.popStack();
     }
 
     /**
      * Get names and ids of parameters for the given procedure.
      * @param {string} procedureCode Procedure code for procedure to query.
+     * @param {string} isGlobal Whether the procedure global.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesAndIds (procedureCode) {
+    getProcedureParamNamesAndIds (procedureCode, isGlobal) {
+        if (isGlobal) return this.sequencer.runtime.getProcedureParamNamesAndIds(procedureCode);
         return this.thread.target.blocks.getProcedureParamNamesAndIds(procedureCode);
     }
 
     /**
      * Get names, ids, and defaults of parameters for the given procedure.
      * @param {string} procedureCode Procedure code for procedure to query.
+     * @param {string} isGlobal Whether the procedure global.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesIdsAndDefaults (procedureCode) {
+    getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal) {
+        if (isGlobal) return this.sequencer.runtime.getProcedureParamNamesIdsAndDefaults(procedureCode);
         return this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(procedureCode);
+        
     }
 
     /**

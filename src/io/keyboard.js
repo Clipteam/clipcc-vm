@@ -10,7 +10,19 @@ const KEY_NAME = {
     UP: 'up arrow',
     RIGHT: 'right arrow',
     DOWN: 'down arrow',
-    ENTER: 'enter'
+    ENTER: 'enter',
+    BACKSPACE: 'backspace',
+    DELETE: 'delete',
+    SHIFT: 'shift',
+    CAPS_LOCK: 'caps lock',
+    SCROLL_LOCK: 'scroll lock',
+    CONTROL: 'control',
+    ESCAPE: 'escape',
+    INSERT: 'insert',
+    HOME: 'home',
+    END: 'end',
+    PAGE_UP: 'page up',
+    PAGE_DOWN: 'page down'
 };
 
 /**
@@ -58,6 +70,18 @@ class Keyboard {
         case 'Down':
         case 'ArrowDown': return KEY_NAME.DOWN;
         case 'Enter': return KEY_NAME.ENTER;
+        case 'Backspace': return KEY_NAME.BACKSPACE;
+        case 'Delete': return KEY_NAME.DELETE;
+        case 'Shift': return KEY_NAME.SHIFT;
+        case 'CapsLock': return KEY_NAME.CAPS_LOCK;
+        case 'ScrollLock': return KEY_NAME.SCROLL_LOCK;
+        case 'Control': return KEY_NAME.CONTROL;
+        case 'Escape': return KEY_NAME.ESCAPE;
+        case 'Insert': return KEY_NAME.INSERT;
+        case 'Home': return KEY_NAME.HOME;
+        case 'End': return KEY_NAME.END;
+        case 'PageUp': return KEY_NAME.PAGE_UP;
+        case 'PageDown': return KEY_NAME.PAGE_DOWN;
         }
         // Ignore modifier keys
         if (keyString.length > 1) {
@@ -103,6 +127,14 @@ class Keyboard {
         // Check for the space character.
         if (keyArg === ' ') {
             return KEY_NAME.SPACE;
+        }
+        
+        // Scratch 2 hacked blocks support
+        if (keyArg === '\r') {
+            return KEY_NAME.ENTER;
+        }
+        if (keyArg === '\u001b') {
+            return KEY_NAME.ESCAPE;
         }
 
         return keyArg.toUpperCase();

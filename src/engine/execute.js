@@ -116,14 +116,18 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
         if (lastOperation) {
             let stackFrame;
             let nextBlockId;
+            let target;
             do {
                 // In the case that the promise is the last block in the current thread stack
                 // We need to pop out repeatedly until we find the next block.
-                const popped = thread.popStack();
-                if (popped === null) {
+                const top = thread.peekStack(); // Peak first, or the target may lost
+                if (top === null) {
+                    thread.popStack();
                     return;
                 }
-                nextBlockId = thread.target.blocks.getNextBlock(popped);
+                nextBlockId = thread.target.blocks.getNextBlock(top);
+                target = thread.target;
+                thread.popStack(); // Pop here
                 if (nextBlockId !== null) {
                     // A next block exists so break out this loop
                     break;
@@ -133,7 +137,7 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
                 stackFrame = thread.peekStackFrame();
             } while (stackFrame !== null && !stackFrame.isLoop);
 
-            thread.pushStack(nextBlockId);
+            thread.pushStack(nextBlockId, target);
         }
     }, rejectionReason => {
         // Promise rejected: the primitive had some error.
@@ -510,7 +514,12 @@ const execute = function (sequencer, thread) {
 
         // Inputs are set during previous steps in the loop.
 
+        blockUtility.currentBlock = opCached;
         const primitiveReportedValue = blockFunction(argValues, blockUtility);
+
+        if (opCached.opcode === 'procedures_return') {
+            break;
+        }
 
         // If it's a promise, wait until promise resolves.
         if (isPromise(primitiveReportedValue)) {
@@ -543,7 +552,11 @@ const execute = function (sequencer, thread) {
             break;
         } else if (thread.status === Thread.STATUS_RUNNING) {
             if (lastOperation) {
-                handleReport(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
+                if (opCached.opcode === 'procedures_call_return') {
+                    handleReport(thread.justReported, sequencer, thread, opCached, lastOperation);
+                } else {
+                    handleReport(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
+                }
             } else {
                 // By definition a block that is not last in the list has a
                 // parent.
@@ -559,6 +572,28 @@ const execute = function (sequencer, thread) {
                     parentValues[inputName] = primitiveReportedValue;
                 }
             }
+        }
+
+        // Waiting for a procedure call
+        if (opCached.opcode === 'procedures_call_return' && !lastOperation) {
+            thread.justReported = null;
+            currentStackFrame.reporting = ops[i].id;
+            currentStackFrame.reported = ops.slice(0, i).map(reportedCached => {
+                const inputName = reportedCached._parentKey;
+                const reportedValues = reportedCached._parentValues;
+
+                if (inputName === 'BROADCAST_INPUT') {
+                    return {
+                        opCached: reportedCached.id,
+                        inputValue: reportedValues[inputName].BROADCAST_OPTION.name
+                    };
+                }
+                return {
+                    opCached: reportedCached.id,
+                    inputValue: reportedValues[inputName]
+                };
+            });
+            break;
         }
     }
 

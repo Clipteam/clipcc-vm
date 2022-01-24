@@ -191,6 +191,13 @@ class Runtime extends EventEmitter {
          * @type {Array.<!Target>}
          */
         this.executableTargets = [];
+        
+        /**
+         * The version of ClipCC.
+         * It should be set by clipcc-gui.
+         * @type {String}
+         */
+        this.version = 'unknown';
 
         /**
          * A list of threads that are currently running in the VM.
@@ -298,23 +305,15 @@ class Runtime extends EventEmitter {
          */
         this.turboMode = false;
 
+        // the framerate of clipcc-vm
+        // 60 to match default of compatibility mode off
+        this.frameRate = 60;
+
         /**
          * Whether the project is in "compatibility mode" (30 TPS).
          * @type {Boolean}
          */
         this.compatibilityMode = false;
-
-        /**
-         * FPS 
-         * @type {number}
-         */
-        this.fps = parseInt(window.localStorage.getItem("fps")) | 60;
-
-        /**
-         * Compatibility FPS
-         * @type {number}
-         */
-         this.comFps = parseInt(window.localStorage.getItem("fps")) / 2 | 30;
 
         /**
          * A reference to the current runtime stepping interval, set
@@ -1627,7 +1626,7 @@ class Runtime extends EventEmitter {
      * @return {!Thread} The newly created thread.
      */
     _pushThread (id, target, opts) {
-        const thread = new Thread(id);
+        const thread = new Thread(id, this);
         thread.target = target;
         thread.stackClick = Boolean(opts && opts.stackClick);
         thread.updateMonitor = Boolean(opts && opts.updateMonitor);
@@ -1659,7 +1658,7 @@ class Runtime extends EventEmitter {
      * @return {Thread} The restarted thread.
      */
     _restartThread (thread) {
-        const newThread = new Thread(thread.topBlock);
+        const newThread = new Thread(thread.topBlock, this);
         newThread.target = thread.target;
         newThread.stackClick = thread.stackClick;
         newThread.updateMonitor = thread.updateMonitor;
@@ -2161,7 +2160,20 @@ class Runtime extends EventEmitter {
      * @param {boolean} compatibilityModeOn True iff in compatibility mode.
      */
     setCompatibilityMode (compatibilityModeOn) {
+        /*
         this.compatibilityMode = compatibilityModeOn;
+        if (this._steppingInterval) {
+            clearInterval(this._steppingInterval);
+            this._steppingInterval = null;
+            this.start();
+        }
+        */
+        if (compatibilityModeOn) this.setFramerate(30);
+        else this.setFramerate(60);
+    }
+
+    setFramerate (framerate) {
+        if (framerate <= 250 && framerate >= 0) this.frameRate = framerate; // 帧率合法性判断
         if (this._steppingInterval) {
             clearInterval(this._steppingInterval);
             this._steppingInterval = null;
@@ -2591,10 +2603,7 @@ class Runtime extends EventEmitter {
         // Do not start if we are already running
         if (this._steppingInterval) return;
 
-        let interval = 1000 / this.fps;
-        if (this.compatibilityMode) {
-            interval = 1000 / this.comFps;
-        }
+        const interval = 1000 / this.frameRate;
         this.currentStepTime = interval;
         this._steppingInterval = setInterval(() => {
             this._step();
@@ -2642,6 +2651,48 @@ class Runtime extends EventEmitter {
             throw new Error(`Failed to unregister an unexisted extension: ${extensionId}`);
         }
         this.extensions.splice(index);
+    }
+    
+    /**
+     * Get the procedure definition for a given name.
+     * @param {?string} name Name of procedure to query.
+     * @return {?string} ID of procedure definition.
+     */
+    getProcedureDefinition (name) {
+        for (const target of this.targets) {
+            const definition = target.blocks.getProcedureDefinition(name);
+            if (definition) {
+                // TODO: check if it is global
+                console.log([target, definition]);
+                return [target, definition];
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Get names and ids of parameters for the given procedure.
+     * @param {?string} name Name of procedure to query.
+     * @return {?Array.<string>} List of param names for a procedure.
+     */
+    getProcedureParamNamesAndIds (name) {
+        return this.getProcedureParamNamesIdsAndDefaults(name).slice(0, 2);
+    }
+
+    /**
+     * Get names, ids, and defaults of parameters for the given procedure.
+     * @param {?string} name Name of procedure to query.
+     * @return {?Array.<string>} List of param names for a procedure.
+     */
+    getProcedureParamNamesIdsAndDefaults (name) {
+        for (const target of this.targets) {
+            // TODO: check if it is global
+            const definition = target.blocks.getProcedureParamNamesIdsAndDefaults(name);
+            if (definition) {
+                return definition;
+            }
+        }
+        return null;
     }
 }
 

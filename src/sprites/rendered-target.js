@@ -42,7 +42,7 @@ class RenderedTarget extends Target {
          * object that used for store audio.
          * @type {?Number}
          */
-         this.audio = new Audio();
+        this.audio = new Audio();
 
         /**
          * Drag state of this rendered target. If true, x/y position can't be

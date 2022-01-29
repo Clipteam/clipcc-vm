@@ -557,7 +557,7 @@ class VirtualMachine extends EventEmitter {
             }
             return Promise.reject('Unable to verify Scratch Project version.');
         };
-        return deserializePromise().then(({targets, extensions}) => {            
+        return deserializePromise().then(({targets, extensions}) => {
             if (Array.isArray(extensions)) {
                 const temp = {};
                 for (const extension of extensions) {
@@ -577,7 +577,7 @@ class VirtualMachine extends EventEmitter {
 
             // cc - clear before installing targets, not before loading project data
             this.clear();
-            return this.installTargets(targets, null, true)
+            return this.installTargets(targets, null, true);
         });
     }
 
@@ -605,37 +605,37 @@ class VirtualMachine extends EventEmitter {
 
         targets = targets.filter(target => !!target);
 
-        //return Promise.all(extensionPromises).then(() => {
-            targets.forEach(target => {
-                this.runtime.addTarget(target);
-                (/** @type RenderedTarget */ target).updateAllDrawableProperties();
-                // Ensure unique sprite name
-                if (target.isSprite()) this.renameSprite(target.id, target.getName());
-            });
-            // Sort the executable targets by layerOrder.
-            // Remove layerOrder property after use.
-            this.runtime.executableTargets.sort((a, b) => a.layerOrder - b.layerOrder);
-            targets.forEach(target => {
-                delete target.layerOrder;
-            });
+        // return Promise.all(extensionPromises).then(() => {
+        targets.forEach(target => {
+            this.runtime.addTarget(target);
+            (/** @type RenderedTarget */ target).updateAllDrawableProperties();
+            // Ensure unique sprite name
+            if (target.isSprite()) this.renameSprite(target.id, target.getName());
+        });
+        // Sort the executable targets by layerOrder.
+        // Remove layerOrder property after use.
+        this.runtime.executableTargets.sort((a, b) => a.layerOrder - b.layerOrder);
+        targets.forEach(target => {
+            delete target.layerOrder;
+        });
 
-            // Select the first target for editing, e.g., the first sprite.
-            if (wholeProject && (targets.length > 1)) {
-                this.editingTarget = targets[1];
-            } else {
-                this.editingTarget = targets[0];
-            }
+        // Select the first target for editing, e.g., the first sprite.
+        if (wholeProject && (targets.length > 1)) {
+            this.editingTarget = targets[1];
+        } else {
+            this.editingTarget = targets[0];
+        }
 
-            if (!wholeProject) {
-                this.editingTarget.fixUpVariableReferences();
-            }
+        if (!wholeProject) {
+            this.editingTarget.fixUpVariableReferences();
+        }
 
-            // Update the VM user's knowledge of targets and blocks on the workspace.
-            this.emitTargetsUpdate(false /* Don't emit project change */);
-            this.emitWorkspaceUpdate();
-            this.runtime.setEditingTarget(this.editingTarget);
-            this.runtime.ioDevices.cloud.setStage(this.runtime.getTargetForStage());
-        //});
+        // Update the VM user's knowledge of targets and blocks on the workspace.
+        this.emitTargetsUpdate(false /* Don't emit project change */);
+        this.emitWorkspaceUpdate();
+        this.runtime.setEditingTarget(this.editingTarget);
+        this.runtime.ioDevices.cloud.setStage(this.runtime.getTargetForStage());
+        // });
     }
 
     /**
@@ -1227,7 +1227,7 @@ class VirtualMachine extends EventEmitter {
         if (locale !== formatMessage.setup().locale) {
             formatMessage.setup({locale: locale, translations: {[locale]: messages}});
         }
-        //return this.extensionManager.refreshBlocks();
+        // return this.extensionManager.refreshBlocks();
         return Promise.all([this.extensionAPI.refreshBlocks(), this.extensionManager.refreshBlocks()]);
     }
 
@@ -1664,11 +1664,11 @@ class VirtualMachine extends EventEmitter {
         this.runtime.configureScratchLinkSocketFactory(factory);
     }
 
-    registerExtension(extensionId) {
+    registerExtension (extensionId) {
         this.runtime.registerExtension(extensionId);
     }
 
-    unregisterExtension(extensionId) {
+    unregisterExtension (extensionId) {
         this.runtime.unregisterExtension(extensionId);
     }
 }

@@ -30,7 +30,7 @@ class ExtensionAPI {
         this.vm = vm;
         this.categorys = [];
         this.blocks = [];
-        //console.log("ExtensionAPI已加载！",this.vm, this.blockly);//DEBUG
+        // console.log("ExtensionAPI已加载！",this.vm, this.blockly);//DEBUG
     }
 
     _getCategory (categoryId) {
@@ -48,7 +48,7 @@ class ExtensionAPI {
             paramInfo[name] = {
                 type: argumentType[block.param[name].type],
                 defaultValue: block.param[name].default || '',
-                shadow: block.param[name].shadow,
+                shadow: block.param[name].shadow
             };
         }
         return {
@@ -162,7 +162,7 @@ class ExtensionAPI {
                 // TODO: Block with branch
                 break;
             case 5: // HAT
-                //blockInfo.isEdgeActivated = block.isEdgeActivated;
+                // blockInfo.isEdgeActivated = block.isEdgeActivated;
                 if (!blockInfo.isEdgeActivated) {
                     blockInfo.isEdgeActivated = true;
                 }
@@ -231,7 +231,7 @@ class ExtensionAPI {
                     // TODO: edgeActivated ?
                     this.vm.runtime._hats[opcode] = {
                         edgeActivated: blockInfo.isEdgeActivated
-                    }
+                    };
                 }
             }
 
@@ -239,14 +239,14 @@ class ExtensionAPI {
             this.vm.emit('BLOCKSINFO_UPDATE', category);
         } catch (e) {
             console.error(e);
-            return ;
+            return;
         }
     }
 
     removeBlock (blockId) {
-        for (let i in this.vm.runtime._blockInfo) {
+        for (const i in this.vm.runtime._blockInfo) {
             const category = this.vm.runtime._blockInfo[i];
-            for (let j in category.blocks){
+            for (const j in category.blocks){
                 // console.log(category.blocks[j])
                 if (category.blocks[j].info.opcode === blockId) {
                     this.vm.runtime._blockInfo[i].blocks.splice(j, 1);
@@ -282,7 +282,7 @@ class ExtensionAPI {
     }
 
     removeCategory (categoryId) {
-        for (let i in this.vm.runtime._blockInfo) {
+        for (const i in this.vm.runtime._blockInfo) {
             const category = this.vm.runtime._blockInfo[i];
             if (category.id === categoryId) {
                 this.vm.runtime._blockInfo.splice(i, 1);

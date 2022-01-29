@@ -538,8 +538,7 @@ class Blocks {
                     const currTarget = targets[i];
                     currTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation, currTarget === editingTarget);
                 }
-            }
-            else {
+            } else {
                 // This is a local function originally
                 editingTarget.blocks.updateBlocksAfterFuncModify(proccode, newMutation, true);
             }
@@ -963,8 +962,7 @@ class Blocks {
                 block.mutation.global = newMutation.global;
                 block.mutation.return = newMutation.return;
                 block.mutation.warp = newMutation.warp;
-            }
-            else if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
+            } else if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
                 if (block.mutation.proccode !== proccode) continue;
                 if (block.mutation.return !== newMutation.return) {
                     block.opcode = `procedures_call${newMutation.return === 'true' ? '_return' : ''}`;

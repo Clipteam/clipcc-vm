@@ -201,7 +201,7 @@ class BlockUtility {
      * @param {string} isGlobal Whether the procedure global.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal) {
+    getProcedureParamNamesIdsAndDefaults (procedureCode, isGlobal) {
         if (isGlobal) return this.sequencer.runtime.getProcedureParamNamesIdsAndDefaults(procedureCode);
         return this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(procedureCode);
         

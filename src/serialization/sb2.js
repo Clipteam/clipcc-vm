@@ -870,7 +870,7 @@ const sb2import = function (json, runtime, optForceSprite, zip) {
         .then(reorderParsedTargets)
         .then(targets => ({
             targets,
-            extensions
+            extensions: Array.from(extensions.extensionIDs)
         }));
 };
 

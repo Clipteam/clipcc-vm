@@ -14,7 +14,6 @@ const builtinExtensions = {
     makeymakey: () => require('../extensions/scratch3_makeymakey'),
     boost: () => require('../extensions/scratch3_boost'),
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
-    libra: () => require('../extensions/scp_libra'),
     httpio: () => require('../extensions/clip_httpio'),
     ccjson: () => require('../extensions/clipcc_json'),
     clipblocks: () => require('../extensions/clipblocks')

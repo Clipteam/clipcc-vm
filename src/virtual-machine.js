@@ -25,6 +25,8 @@ const {loadSound} = require('./import/load-sound.js');
 const {serializeSounds, serializeCostumes} = require('./serialization/serialize-assets');
 require('canvas-toBlob');
 
+const ExtensionAPI = require('./extension-support/extension-api');
+
 const RESERVED_NAMES = ['_mouse_', '_stage_', '_edge_', '_myself_', '_random_'];
 
 const CORE_EXTENSIONS = [
@@ -44,19 +46,19 @@ const CORE_EXTENSIONS = [
  * @constructor
  */
 class VirtualMachine extends EventEmitter {
-    constructor (version) {
+    constructor (config) {
         super();
 
         /**
          * VM runtime, to store blocks, I/O devices, sprites/targets, etc.
          * @type {!Runtime}
          */
-        this.runtime = new Runtime();
+        this.runtime = new Runtime(this);
         centralDispatch.setService('runtime', this.runtime).catch(e => {
             log.error(`Failed to register runtime service: ${JSON.stringify(e)}`);
         });
         
-        this.runtime.version = version;
+        this.runtime.version = config.version;
 
         /**
          * The "currently editing"/selected target ID for the VM.
@@ -70,6 +72,8 @@ class VirtualMachine extends EventEmitter {
          * @type {Target}
          */
         this._dragTarget = null;
+
+        formatMessage.setup({locale: 'uninit', translations: {}});
 
         // Runtime emits are passed along as VM emits.
         this.runtime.on(Runtime.SCRIPT_GLOW_ON, glowData => {
@@ -164,6 +168,7 @@ class VirtualMachine extends EventEmitter {
         });
 
         this.extensionManager = new ExtensionManager(this.runtime);
+        this.ccExtensionManager = config.extensionManager;
 
         // Load core extensions
         for (const id of CORE_EXTENSIONS) {
@@ -174,6 +179,8 @@ class VirtualMachine extends EventEmitter {
         this.flyoutBlockListener = this.flyoutBlockListener.bind(this);
         this.monitorBlockListener = this.monitorBlockListener.bind(this);
         this.variableListener = this.variableListener.bind(this);
+
+        this.extensionAPI = new ExtensionAPI(this);
         
         this.compressionLevel = 6;
         this.runtime.deserializeOption = 'donotload';
@@ -395,17 +402,22 @@ class VirtualMachine extends EventEmitter {
      * @returns {string} Project in a Scratch 3.0 JSON representation.
      */
     saveProjectSb3 () {
-        const soundDescs = serializeSounds(this.runtime);
-        const costumeDescs = serializeCostumes(this.runtime);
-        const projectJson = this.toJSON();
+        const sb3 = require('./serialization/sb3');
+        const data = {
+            soundDescs: serializeSounds(this.runtime),
+            costumeDescs: serializeCostumes(this.runtime),
+            projectData: sb3.serialize(this.runtime)
+        };
 
         // TODO want to eventually move zip creation out of here, and perhaps
         // into scratch-storage
         const zip = new JSZip();
 
+        this.ccExtensionManager.emitEvent('beforeProjectSave', data);
+        const projectJson = JSON.stringify(data.projectData);
         // Put everything in a zip file
         zip.file('project.json', projectJson);
-        this._addFileDescsToZip(soundDescs.concat(costumeDescs), zip);
+        this._addFileDescsToZip(data.soundDescs.concat(data.costumeDescs), zip);
 
         return zip.generateAsync({
             type: 'blob',
@@ -416,6 +428,38 @@ class VirtualMachine extends EventEmitter {
             }
         });
     }
+
+    /**
+     * @returns {string} Project in a Scratch 3.0 JSON representation.
+     */
+    saveProjectCc3 () {
+        const sb3 = require('./serialization/cc3');
+        const data = {
+            soundDescs: serializeSounds(this.runtime),
+            costumeDescs: serializeCostumes(this.runtime),
+            projectData: sb3.serialize(this.runtime)
+        };
+
+        // TODO want to eventually move zip creation out of here, and perhaps
+        // into scratch-storage
+        const zip = new JSZip();
+
+        this.ccExtensionManager.emitEvent('beforeProjectSave', data);
+        const projectJson = JSON.stringify(data.projectData);
+        // Put everything in a zip file
+        zip.file('project.json', projectJson);
+        this._addFileDescsToZip(data.soundDescs.concat(data.costumeDescs), zip);
+
+        return zip.generateAsync({
+            type: 'blob',
+            mimeType: 'application/x.clipcc.cc3',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 9 // Tradeoff between best speed (1) and best compression (9)
+            }
+        });
+    }
+    
 
     /*
      * @type {Array<object>} Array of all costumes and sounds currently in the runtime
@@ -496,13 +540,12 @@ class VirtualMachine extends EventEmitter {
      * @returns {Promise} Promise that resolves after the project has loaded
      */
     deserializeProject (projectJSON, zip) {
-        // Clear the current runtime
-        this.clear();
-        if (typeof performance !== 'undefined') {
-            performance.mark('scratch-vm-deserialize-start');
-        }
         const runtime = this.runtime;
         const deserializePromise = function () {
+            if (projectJSON.meta && projectJSON.meta.editor === 'clipcc') {
+                const cc3 = require('./serialization/cc3');
+                return cc3.deserialize(projectJSON, runtime, zip);
+            }
             const projectVersion = projectJSON.projectVersion;
             if (projectVersion === 2) {
                 const sb2 = require('./serialization/sb2');
@@ -514,25 +557,42 @@ class VirtualMachine extends EventEmitter {
             }
             return Promise.reject('Unable to verify Scratch Project version.');
         };
-        return deserializePromise()
-            .then(({targets, extensions}) => {
-                if (typeof performance !== 'undefined') {
-                    performance.mark('scratch-vm-deserialize-end');
-                    performance.measure('scratch-vm-deserialize',
-                        'scratch-vm-deserialize-start', 'scratch-vm-deserialize-end');
+        return deserializePromise().then(({targets, extensions}) => {
+            if (Array.isArray(extensions)) {
+                const temp = {};
+                for (const extension of extensions) {
+                    temp[extension] = '1.0.0';
                 }
-                return this.installTargets(targets, extensions, true);
-            });
+                extensions = temp;
+            }
+
+            this.ccExtensionManager.emitEventToAll('beforeProjectLoadExtension', targets, extensions);
+
+            const loadOrder = this.ccExtensionManager.getExtensionLoadOrder(Object.keys(extensions));
+            this.ccExtensionManager.loadExtensionsWithMode(loadOrder, extension => this.extensionManager.loadExtensionURL(extension));
+
+            // In some cases, the extension category ID of project will different from extension's.
+            // So it's better to let extensions to deal with before getting the extension loading order.
+            this.ccExtensionManager.emitEvent('beforeProjectLoad', targets, extensions);
+
+            // cc - clear before installing targets, not before loading project data
+            this.clear();
+            return this.installTargets(targets, null, true);
+        });
     }
 
     /**
      * Install `deserialize` results: zero or more targets after the extensions (if any) used by those targets.
      * @param {Array.<Target>} targets - the targets to be installed
-     * @param {ImportedExtensionsInfo} extensions - metadata about extensions used by these targets
+     * @param {ImportedExtensionsInfo} extensions - Deprecated: metadata about extensions used by these targets
      * @param {boolean} wholeProject - set to true if installing a whole project, as opposed to a single sprite.
      * @returns {Promise} resolved once targets have been installed
      */
     installTargets (targets, extensions, wholeProject) {
+        /*
+        // Since the extension loader was established in gui, so that
+        // we shouldn't load extension here.
+        // See: clipcc-gui/src/lib/sb-file-uploader-hoc.jsx
         const extensionPromises = [];
 
         extensions.extensionIDs.forEach(extensionID => {
@@ -541,40 +601,41 @@ class VirtualMachine extends EventEmitter {
                 extensionPromises.push(this.extensionManager.loadExtensionURL(extensionURL));
             }
         });
+        */
 
         targets = targets.filter(target => !!target);
 
-        return Promise.all(extensionPromises).then(() => {
-            targets.forEach(target => {
-                this.runtime.addTarget(target);
-                (/** @type RenderedTarget */ target).updateAllDrawableProperties();
-                // Ensure unique sprite name
-                if (target.isSprite()) this.renameSprite(target.id, target.getName());
-            });
-            // Sort the executable targets by layerOrder.
-            // Remove layerOrder property after use.
-            this.runtime.executableTargets.sort((a, b) => a.layerOrder - b.layerOrder);
-            targets.forEach(target => {
-                delete target.layerOrder;
-            });
-
-            // Select the first target for editing, e.g., the first sprite.
-            if (wholeProject && (targets.length > 1)) {
-                this.editingTarget = targets[1];
-            } else {
-                this.editingTarget = targets[0];
-            }
-
-            if (!wholeProject) {
-                this.editingTarget.fixUpVariableReferences();
-            }
-
-            // Update the VM user's knowledge of targets and blocks on the workspace.
-            this.emitTargetsUpdate(false /* Don't emit project change */);
-            this.emitWorkspaceUpdate();
-            this.runtime.setEditingTarget(this.editingTarget);
-            this.runtime.ioDevices.cloud.setStage(this.runtime.getTargetForStage());
+        // return Promise.all(extensionPromises).then(() => {
+        targets.forEach(target => {
+            this.runtime.addTarget(target);
+            (/** @type RenderedTarget */ target).updateAllDrawableProperties();
+            // Ensure unique sprite name
+            if (target.isSprite()) this.renameSprite(target.id, target.getName());
         });
+        // Sort the executable targets by layerOrder.
+        // Remove layerOrder property after use.
+        this.runtime.executableTargets.sort((a, b) => a.layerOrder - b.layerOrder);
+        targets.forEach(target => {
+            delete target.layerOrder;
+        });
+
+        // Select the first target for editing, e.g., the first sprite.
+        if (wholeProject && (targets.length > 1)) {
+            this.editingTarget = targets[1];
+        } else {
+            this.editingTarget = targets[0];
+        }
+
+        if (!wholeProject) {
+            this.editingTarget.fixUpVariableReferences();
+        }
+
+        // Update the VM user's knowledge of targets and blocks on the workspace.
+        this.emitTargetsUpdate(false /* Don't emit project change */);
+        this.emitWorkspaceUpdate();
+        this.runtime.setEditingTarget(this.editingTarget);
+        this.runtime.ioDevices.cloud.setStage(this.runtime.getTargetForStage());
+        // });
     }
 
     /**
@@ -653,6 +714,20 @@ class VirtualMachine extends EventEmitter {
         // Validate & parse
         const sb3 = require('./serialization/sb3');
         return sb3
+            .deserialize(sprite, this.runtime, zip, true)
+            .then(({targets, extensions}) => this.installTargets(targets, extensions, false));
+    }
+
+    /**
+     * Add a single cc3 sprite.
+     * @param {object} sprite Object rperesenting 3.0 sprite to be added.
+     * @param {?ArrayBuffer} zip Optional zip of assets being referenced by target json
+     * @returns {Promise} Promise that resolves after the sprite is added
+     */
+    _addSpriteCc3 (sprite, zip) {
+        // Validate & parse
+        const cc3 = require('./serialization/cc3');
+        return cc3
             .deserialize(sprite, this.runtime, zip, true)
             .then(({targets, extensions}) => this.installTargets(targets, extensions, false));
     }
@@ -1148,10 +1223,12 @@ class VirtualMachine extends EventEmitter {
      *     updated for a new locale (or empty if locale hasn't changed.)
      */
     setLocale (locale, messages) {
+        console.log(locale, formatMessage.setup().locale);
         if (locale !== formatMessage.setup().locale) {
             formatMessage.setup({locale: locale, translations: {[locale]: messages}});
         }
-        return this.extensionManager.refreshBlocks();
+        // return this.extensionManager.refreshBlocks();
+        return Promise.all([this.extensionAPI.refreshBlocks(), this.extensionManager.refreshBlocks()]);
     }
 
     /**
@@ -1585,6 +1662,14 @@ class VirtualMachine extends EventEmitter {
      */
     configureScratchLinkSocketFactory (factory) {
         this.runtime.configureScratchLinkSocketFactory(factory);
+    }
+
+    registerExtension (extensionId) {
+        this.runtime.registerExtension(extensionId);
+    }
+
+    unregisterExtension (extensionId) {
+        this.runtime.unregisterExtension(extensionId);
     }
 }
 

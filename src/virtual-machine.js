@@ -58,7 +58,7 @@ class VirtualMachine extends EventEmitter {
             log.error(`Failed to register runtime service: ${JSON.stringify(e)}`);
         });
         
-        this.runtime.version = config.version;
+        this.runtime.version = config.appVersion;
 
         /**
          * The "currently editing"/selected target ID for the VM.

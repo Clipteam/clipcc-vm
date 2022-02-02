@@ -29,7 +29,7 @@ class Scratch3ProcedureBlocks {
     }
 
     call (args, util) {
-        if (!util.stackFrame.executed) {
+        if (util.stackFrame.executed !== util.currentBlockId) {
             const isGlobal = Cast.toBoolean(args.mutation.global);
             const procedureCode = args.mutation.proccode;
             const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
@@ -53,13 +53,13 @@ class Scratch3ProcedureBlocks {
                 }
             }
 
-            util.stackFrame.executed = true;
+            util.stackFrame.executed = util.currentBlockId;
             util.startProcedure(procedureCode, isGlobal);
         }
     }
 
     callReturn (args, util) {
-        if (!util.stackFrame.executed) {
+        if (util.stackFrame.executed !== util.currentBlockId) {
             const procedureCode = args.mutation.proccode;
             const isGlobal = Cast.toBoolean(args.mutation.global);
             const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
@@ -83,7 +83,7 @@ class Scratch3ProcedureBlocks {
                 }
             }
 
-            util.stackFrame.executed = true;
+            util.stackFrame.executed = util.currentBlockId;
             // For the reason that the stack top is current command block,
             // rather than the call block, so we should push the block id.
             util.pushThreadStack(util.currentBlockId);

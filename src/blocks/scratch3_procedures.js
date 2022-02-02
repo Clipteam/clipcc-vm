@@ -29,66 +29,60 @@ class Scratch3ProcedureBlocks {
     }
 
     call (args, util) {
-        if (!util.stackFrame.executed) {
-            const isGlobal = Cast.toBoolean(args.mutation.global);
-            const procedureCode = args.mutation.proccode;
-            const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
+        const isGlobal = Cast.toBoolean(args.mutation.global);
+        const procedureCode = args.mutation.proccode;
+        const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
 
-            // If null, procedure could not be found, which can happen if custom
-            // block is dragged between sprites without the definition.
-            // Match Scratch 2.0 behavior and noop.
-            if (paramNamesIdsAndDefaults === null) return;
+        // If null, procedure could not be found, which can happen if custom
+        // block is dragged between sprites without the definition.
+        // Match Scratch 2.0 behavior and noop.
+        if (paramNamesIdsAndDefaults === null) return;
 
-            const [paramNames, paramIds, paramDefaults] = paramNamesIdsAndDefaults;
+        const [paramNames, paramIds, paramDefaults] = paramNamesIdsAndDefaults;
 
-            // Initialize params for the current stackFrame to {}, even if the procedure does
-            // not take any arguments. This is so that `getParam` down the line does not look
-            // at earlier stack frames for the values of a given parameter (#1729)
-            util.initParams();
-            for (let i = 0; i < paramIds.length; i++) {
-                if (args.hasOwnProperty(paramIds[i])) {
-                    util.pushParam(paramNames[i], args[paramIds[i]]);
-                } else {
-                    util.pushParam(paramNames[i], paramDefaults[i]);
-                }
+        // Initialize params for the current stackFrame to {}, even if the procedure does
+        // not take any arguments. This is so that `getParam` down the line does not look
+        // at earlier stack frames for the values of a given parameter (#1729)
+        util.initParams();
+        for (let i = 0; i < paramIds.length; i++) {
+            if (args.hasOwnProperty(paramIds[i])) {
+                util.pushParam(paramNames[i], args[paramIds[i]]);
+            } else {
+                util.pushParam(paramNames[i], paramDefaults[i]);
             }
-
-            util.stackFrame.executed = true;
-            util.startProcedure(procedureCode, isGlobal);
         }
+
+        util.startProcedure(procedureCode, isGlobal);
     }
 
     callReturn (args, util) {
-        if (!util.stackFrame.executed) {
-            const procedureCode = args.mutation.proccode;
-            const isGlobal = Cast.toBoolean(args.mutation.global);
-            const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
+        const procedureCode = args.mutation.proccode;
+        const isGlobal = Cast.toBoolean(args.mutation.global);
+        const paramNamesIdsAndDefaults = util.getProcedureParamNamesIdsAndDefaults(procedureCode, isGlobal);
 
-            // If null, procedure could not be found, which can happen if custom
-            // block is dragged between sprites without the definition.
-            // Match Scratch 2.0 behavior and noop.
-            if (paramNamesIdsAndDefaults === null) return;
+        // If null, procedure could not be found, which can happen if custom
+        // block is dragged between sprites without the definition.
+        // Match Scratch 2.0 behavior and noop.
+        if (paramNamesIdsAndDefaults === null) return;
 
-            const [paramNames, paramIds, paramDefaults] = paramNamesIdsAndDefaults;
+        const [paramNames, paramIds, paramDefaults] = paramNamesIdsAndDefaults;
 
-            // Initialize params for the current stackFrame to {}, even if the procedure does
-            // not take any arguments. This is so that `getParam` down the line does not look
-            // at earlier stack frames for the values of a given parameter (#1729)
-            util.initParams();
-            for (let i = 0; i < paramIds.length; i++) {
-                if (args.hasOwnProperty(paramIds[i])) {
-                    util.pushParam(paramNames[i], args[paramIds[i]]);
-                } else {
-                    util.pushParam(paramNames[i], paramDefaults[i]);
-                }
+        // Initialize params for the current stackFrame to {}, even if the procedure does
+        // not take any arguments. This is so that `getParam` down the line does not look
+        // at earlier stack frames for the values of a given parameter (#1729)
+        util.initParams();
+        for (let i = 0; i < paramIds.length; i++) {
+            if (args.hasOwnProperty(paramIds[i])) {
+                util.pushParam(paramNames[i], args[paramIds[i]]);
+            } else {
+                util.pushParam(paramNames[i], paramDefaults[i]);
             }
-
-            util.stackFrame.executed = true;
-            // For the reason that the stack top is current command block,
-            // rather than the call block, so we should push the block id.
-            util.pushThreadStack(util.currentBlockId);
-            util.startProcedure(procedureCode, isGlobal);
         }
+
+        // For the reason that the stack top is current command block,
+        // rather than the call block, so we should push the block id.
+        util.pushThreadStack(util.currentBlockId);
+        util.startProcedure(procedureCode, isGlobal);
     }
 
     return (args, util) {

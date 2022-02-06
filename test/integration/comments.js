@@ -8,7 +8,7 @@ const projectUri = path.resolve(__dirname, '../fixtures/comments.sb2');
 const project = readFileToBuffer(projectUri);
 
 test('importing sb2 project with comments', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

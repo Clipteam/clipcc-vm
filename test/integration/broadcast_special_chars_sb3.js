@@ -11,7 +11,7 @@ const projectUri = path.resolve(__dirname, '../fixtures/broadcast_special_chars.
 const project = readFileToBuffer(projectUri);
 
 test('importing sb3 project with special chars in message names', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

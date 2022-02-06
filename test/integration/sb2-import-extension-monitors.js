@@ -28,7 +28,7 @@ const visibleTempoMonitorProject = readFileToBuffer(visibleTempoMonitorProjectUr
 tap.tearDown(() => process.nextTick(process.exit));
 
 test('loading sb2 project with invisible video monitor should not load monitor or extension', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -44,7 +44,7 @@ test('loading sb2 project with invisible video monitor should not load monitor o
 });
 
 test('loading sb2 project with visible video monitor should not load extension', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -63,7 +63,7 @@ test('loading sb2 project with visible video monitor should not load extension',
 // the video sensing block requires a mock renderer and other setup, so instead
 // we are just using deserialize to test what we need instead
 test('sb2 project with video sensing blocks and monitor should load extension but not monitor', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
 
     sb2.deserialize(visibleVideoMonitorAndBlocksProject, vm.runtime).then(project => {
         // Extension loads but monitor does not
@@ -75,7 +75,7 @@ test('sb2 project with video sensing blocks and monitor should load extension bu
 });
 
 test('sb2 project with invisible music monitor should not load monitor or extension', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -91,7 +91,7 @@ test('sb2 project with invisible music monitor should not load monitor or extens
 });
 
 test('sb2 project with visible music monitor should load monitor and extension', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run

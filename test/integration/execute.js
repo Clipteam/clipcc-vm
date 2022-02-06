@@ -100,7 +100,7 @@ fs.readdirSync(executeDir)
                 return reporters.comment(text);
             };
 
-            const vm = new VirtualMachine();
+            const vm = new VirtualMachine({appVersion: '0.0.0'});
             vm.attachStorage(makeTestStorage());
 
             // Start the VM and initialize some vm properties.

@@ -8,7 +8,7 @@ const VirtualMachine = require('../../src/virtual-machine');
 const projectUri = path.resolve(__dirname, '../fixtures/sb2-from-sb1-missing-backdrop-image.sb2');
 const project = readFileToBuffer(projectUri);
 
-const vm = new VirtualMachine();
+const vm = new VirtualMachine({appVersion: '0.0.0'});
 
 test('sb2 project (originally from Scratch 1.4) with missing backdrop image should load', t => {
     vm.attachStorage(makeTestStorage());

@@ -12,7 +12,7 @@ tap.beforeEach(() => {
     const projectUri = path.resolve(__dirname, '../fixtures/default.sb2');
     const project = readFileToBuffer(projectUri);
 
-    vm = new VirtualMachine();
+    vm = new VirtualMachine({appVersion: '0.0.0'});
 
     vm.runtime.addListener('PROJECT_CHANGED', () => {
         projectChanged = true;

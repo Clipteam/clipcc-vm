@@ -15,7 +15,7 @@ test('Loading a project should not emit a project changed event', t => {
     const projectUri = path.resolve(__dirname, '../fixtures/default.sb2');
     const project = readFileToBuffer(projectUri);
 
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
 
     let projectChanged = false;
     vm.runtime.addListener('PROJECT_CHANGED', () => {

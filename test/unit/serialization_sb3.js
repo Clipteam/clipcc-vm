@@ -16,7 +16,7 @@ const originAbsentSB3ProjectPath = path.resolve(__dirname, '../fixtures/origin-a
 const FakeRenderer = require('../fixtures/fake-renderer');
 
 test('serialize', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(exampleProjectPath))
         .then(() => {
             const result = sb3.serialize(vm.runtime);
@@ -27,7 +27,7 @@ test('serialize', t => {
 });
 
 test('deserialize', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     sb3.deserialize('', vm.runtime).then(({targets}) => {
         // @todo Analyze
         t.type(targets, 'object');
@@ -37,7 +37,7 @@ test('deserialize', t => {
 
 
 test('serialize sb2 project with comments as sb3', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(commentsSB2ProjectPath))
         .then(() => {
             const result = sb3.serialize(vm.runtime);
@@ -77,7 +77,7 @@ test('serialize sb2 project with comments as sb3', t => {
 });
 
 test('deserialize sb3 project with comments', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(commentsSB3ProjectPath))
         .then(() => {
             const runtime = vm.runtime;
@@ -116,7 +116,7 @@ test('deserialize sb3 project with comments', t => {
 });
 
 test('deserialize sb3 project with comments - no duplicate id serialization', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(commentsSB3NoDupeIds))
         .then(() => {
             const runtime = vm.runtime;
@@ -151,7 +151,7 @@ test('deserialize sb3 project with comments - no duplicate id serialization', t 
 });
 
 test('serializing and deserializing sb3 preserves sprite layer order', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachRenderer(new FakeRenderer());
     return vm.loadProject(readFileToBuffer(path.resolve(__dirname, '../fixtures/ordering.sb2')))
         .then(() => {
@@ -210,7 +210,7 @@ test('serializing and deserializing sb3 preserves sprite layer order', t => {
 });
 
 test('serializeBlocks', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(commentsSB3ProjectPath))
         .then(() => {
             const blocks = vm.runtime.targets[1].blocks._blocks;
@@ -224,7 +224,7 @@ test('serializeBlocks', t => {
 });
 
 test('serializeBlocks serializes x and y for topLevel blocks with x,y of 0,0', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(topLevelReportersProjectPath))
         .then(() => {
             // Verify that there are 2 blocks and they are both top level
@@ -256,7 +256,7 @@ test('serializeBlocks serializes x and y for topLevel blocks with x,y of 0,0', t
 });
 
 test('deserializeBlocks', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(commentsSB3ProjectPath))
         .then(() => {
             const blocks = vm.runtime.targets[1].blocks._blocks;
@@ -268,7 +268,7 @@ test('deserializeBlocks', t => {
 });
 
 test('deserializeBlocks on already deserialized input', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(commentsSB3ProjectPath))
         .then(() => {
             const blocks = vm.runtime.targets[1].blocks._blocks;
@@ -299,7 +299,7 @@ test('getExtensionIdForOpcode', t => {
 });
 
 test('(#1608) serializeBlocks maintains top level variable reporters', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(variableReporterSB2ProjectPath))
         .then(() => {
             const blocks = vm.runtime.targets[0].blocks._blocks;
@@ -317,7 +317,7 @@ test('(#1608) serializeBlocks maintains top level variable reporters', t => {
 });
 
 test('(#1850) sprite draggability state read when loading SB3 file', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(draggableSB3ProjectPath))
         .then(() => {
             const sprite1Obj = vm.runtime.targets.find(target => target.sprite.name === 'Sprite1');
@@ -328,7 +328,7 @@ test('(#1850) sprite draggability state read when loading SB3 file', t => {
 });
 
 test('load origin value from SB3 file json metadata', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(originSB3ProjectPath))
         .then(() => {
             t.type(vm.runtime.origin, 'string');
@@ -343,7 +343,7 @@ test('load origin value from SB3 file json metadata', t => {
 });
 
 test('serialize origin value if it is present', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(originSB3ProjectPath))
         .then(() => {
             const result = sb3.serialize(vm.runtime);
@@ -353,7 +353,7 @@ test('serialize origin value if it is present', t => {
 });
 
 test('do not serialize origin value if it is not present', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.loadProject(readFileToBuffer(originAbsentSB3ProjectPath))
         .then(() => {
             const result = sb3.serialize(vm.runtime);

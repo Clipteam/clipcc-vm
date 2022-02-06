@@ -13,7 +13,7 @@ const project = readFileToBuffer(uri);
 dispatch.workerClass = Worker;
 
 test('sound', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

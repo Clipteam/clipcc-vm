@@ -52,7 +52,7 @@ class TestInternalExtension {
 }
 
 test('internal extension', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
 
     const extension = new TestInternalExtension();
     t.ok(extension.status.constructorCalled);
@@ -94,7 +94,7 @@ test('internal extension', t => {
 });
 
 test('load sync', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.extensionManager.loadExtensionIdSync('coreExample');
     t.ok(vm.extensionManager.isExtensionLoaded('coreExample'));
 

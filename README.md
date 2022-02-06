@@ -45,7 +45,7 @@ yarn run build
 ```html
 <script src="/path/to/dist/web/clipcc-vm.js"></script>
 <script>
-    var vm = new window.VirtualMachine();
+    var vm = new window.VirtualMachine({appVersion: '0.0.0'});
     // do things
 </script>
 ```
@@ -54,7 +54,7 @@ yarn run build
 For an extended setup example, check out the /src/playground directory, which includes a fully running VM instance.
 ```js
 var VirtualMachine = require('clipcc-vm');
-var vm = new VirtualMachine();
+var vm = new VirtualMachine({appVersion: '0.0.0'});
 
 // Block events
 Scratch.workspace.addChangeListener(vm.blockListener);

@@ -31,7 +31,7 @@ const checkIsStackClickThread = (t, vm, stackClickThread) => {
  * on each frame.
  */
 test('edge activated hat thread runs once every frame', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -69,7 +69,7 @@ test('edge activated hat thread runs once every frame', t => {
  * caching should be reset.
  */
 test('edge activated hat thread runs after being added to previously executed target', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -115,7 +115,7 @@ test('edge activated hat thread runs after being added to previously executed ta
  * on the next frame. (We skip execution by setting the step time to 0)
  */
 test('edge activated hat thread not added twice', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -162,7 +162,7 @@ test('edge activated hat should trigger for both sprites when sprite is duplicat
     const projectWithSpriteUri = path.resolve(__dirname, '../fixtures/edge-triggered-hat.sb3');
     const projectWithSprite = readFileToBuffer(projectWithSpriteUri);
 
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -209,7 +209,7 @@ test('edge activated hat should trigger for both sprites when sprite is cloned',
     const projectWithSpriteUri = path.resolve(__dirname, '../fixtures/edge-triggered-hat.sb3');
     const projectWithSprite = readFileToBuffer(projectWithSpriteUri);
 
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -254,7 +254,7 @@ test('edge activated hat should trigger for both sprites when sprite is cloned',
  * the stack click thread are both pushed and run (despite having the same top block)
  */
 test('edge activated hat thread does not interrupt stack click thread', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run
@@ -306,7 +306,7 @@ test('edge activated hat thread does not interrupt stack click thread', t => {
  * the stack click thread are both pushed and run (despite having the same top block)
  */
 test('edge activated hat thread does not interrupt stack click thread', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run

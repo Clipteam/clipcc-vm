@@ -13,7 +13,7 @@ tap.tearDown(() => process.nextTick(process.exit));
 const test = tap.test;
 
 test('deleteSound returns function after deleting or null if nothing was deleted', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const rt = new Runtime();
     const sprite = new Sprite(null, rt);
     sprite.sounds = [{id: 1}, {id: 2}, {id: 3}];
@@ -36,7 +36,7 @@ test('deleteSound returns function after deleting or null if nothing was deleted
 });
 
 test('deleteCostume returns function after deleting or null if nothing was deleted', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const rt = new Runtime();
     const sprite = new Sprite(null, rt);
     sprite.costumes = [{id: 1}, {id: 2}, {id: 3}];
@@ -61,7 +61,7 @@ test('deleteCostume returns function after deleting or null if nothing was delet
 
 
 test('addSprite throws on invalid string', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.addSprite('this is not a sprite')
         .catch(e => {
             t.equal(e.startsWith('Sprite Upload Error:'), true);
@@ -70,7 +70,7 @@ test('addSprite throws on invalid string', t => {
 });
 
 test('renameSprite throws when there is no sprite with that id', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.runtime.getTargetById = () => null;
     t.throws(
         (() => vm.renameSprite('id', 'name')),
@@ -80,7 +80,7 @@ test('renameSprite throws when there is no sprite with that id', t => {
 });
 
 test('renameSprite throws when used on a non-sprite target', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const fakeTarget = {
         isSprite: () => false
     };
@@ -93,7 +93,7 @@ test('renameSprite throws when used on a non-sprite target', t => {
 });
 
 test('renameSprite throws when there is no sprite for given target', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const fakeTarget = {
         sprite: null,
         isSprite: () => true
@@ -107,7 +107,7 @@ test('renameSprite throws when there is no sprite for given target', t => {
 });
 
 test('renameSprite sets the sprite name', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const fakeTarget = {
         sprite: {name: 'original'},
         isSprite: () => true
@@ -119,7 +119,7 @@ test('renameSprite sets the sprite name', t => {
 });
 
 test('renameSprite does not set sprite names to an empty string', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const fakeTarget = {
         sprite: {name: 'original'},
         isSprite: () => true
@@ -131,7 +131,7 @@ test('renameSprite does not set sprite names to an empty string', t => {
 });
 
 test('renameSprite does not set sprite names to reserved names', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const fakeTarget = {
         sprite: {name: 'original'},
         isSprite: () => true
@@ -143,7 +143,7 @@ test('renameSprite does not set sprite names to reserved names', t => {
 });
 
 test('renameSprite increments from existing sprite names', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.emitTargetsUpdate = () => {};
 
     const spr1 = new Sprite(null, vm.runtime);
@@ -160,7 +160,7 @@ test('renameSprite increments from existing sprite names', t => {
 });
 
 test('renameSprite does not increment when renaming to the same name', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.emitTargetsUpdate = () => {};
 
     const spr = new Sprite(null, vm.runtime);
@@ -177,7 +177,7 @@ test('renameSprite does not increment when renaming to the same name', t => {
 });
 
 test('deleteSprite throws when used on a non-sprite target', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.runtime.targets = [{
         id: 'id',
         isSprite: () => false
@@ -190,7 +190,7 @@ test('deleteSprite throws when used on a non-sprite target', t => {
 });
 
 test('deleteSprite throws when there is no sprite for the given target', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.runtime.targets = [{
         id: 'id',
         isSprite: () => true,
@@ -204,7 +204,7 @@ test('deleteSprite throws when there is no sprite for the given target', t => {
 });
 
 test('deleteSprite throws when there is no target with given id', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.runtime.targets = [{
         id: 'id',
         isSprite: () => true,
@@ -220,7 +220,7 @@ test('deleteSprite throws when there is no target with given id', t => {
 });
 
 test('deleteSprite deletes a sprite when given id is associated with a known sprite', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr = new Sprite(null, vm.runtime);
     const currTarget = spr.createClone();
 
@@ -234,7 +234,7 @@ test('deleteSprite deletes a sprite when given id is associated with a known spr
 
 // eslint-disable-next-line max-len
 test('deleteSprite sets editing target as null when given sprite is current editing target, and the only target in the runtime', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr = new Sprite(null, vm.runtime);
     const currTarget = spr.createClone();
 
@@ -250,7 +250,7 @@ test('deleteSprite sets editing target as null when given sprite is current edit
 
 // eslint-disable-next-line max-len
 test('deleteSprite updates editingTarget when sprite being deleted is current editing target, and there is another target in the runtime', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr1 = new Sprite(null, vm.runtime);
     const spr2 = new Sprite(null, vm.runtime);
     const currTarget = spr1.createClone();
@@ -284,7 +284,7 @@ test('deleteSprite updates editingTarget when sprite being deleted is current ed
 });
 
 test('duplicateSprite throws when there is no target with given id', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.runtime.targets = [{
         id: 'id',
         isSprite: () => true,
@@ -300,7 +300,7 @@ test('duplicateSprite throws when there is no target with given id', t => {
 });
 
 test('duplicateSprite throws when used on a non-sprite target', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.runtime.targets = [{
         id: 'id',
         isSprite: () => false
@@ -313,7 +313,7 @@ test('duplicateSprite throws when used on a non-sprite target', t => {
 });
 
 test('duplicateSprite throws when there is no sprite for the given target', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.runtime.targets = [{
         id: 'id',
         isSprite: () => true,
@@ -327,7 +327,7 @@ test('duplicateSprite throws when there is no sprite for the given target', t =>
 });
 
 test('duplicateSprite duplicates a sprite when given id is associated with known sprite', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr = new Sprite(null, vm.runtime);
     const currTarget = spr.createClone();
     vm.editingTarget = currTarget;
@@ -344,7 +344,7 @@ test('duplicateSprite duplicates a sprite when given id is associated with known
 });
 
 test('duplicateSprite assigns duplicated sprite a fresh name', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr = new Sprite(null, vm.runtime);
     spr.name = 'sprite1';
     const currTarget = spr.createClone();
@@ -364,7 +364,7 @@ test('duplicateSprite assigns duplicated sprite a fresh name', t => {
 });
 
 test('reorderCostume', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.emitTargetsUpdate = () => {};
 
     const spr = new Sprite(null, vm.runtime);
@@ -395,7 +395,7 @@ test('reorderCostume', t => {
 });
 
 test('reorderSound', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.emitTargetsUpdate = () => {};
 
     const spr = new Sprite(null, vm.runtime);
@@ -426,7 +426,7 @@ test('reorderSound', t => {
 });
 
 test('shareCostumeToTarget', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr1 = new Sprite(null, vm.runtime);
     spr1.name = 'foo';
     const target1 = spr1.createClone();
@@ -451,7 +451,7 @@ test('shareCostumeToTarget', t => {
 });
 
 test('shareSoundToTarget', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr1 = new Sprite(null, vm.runtime);
     spr1.name = 'foo';
     const target1 = spr1.createClone();
@@ -475,7 +475,7 @@ test('shareSoundToTarget', t => {
 });
 
 test('reorderTarget', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.emitTargetsUpdate = () => {};
 
     vm.runtime.targets = ['a', 'b', 'c', 'd'];
@@ -499,7 +499,7 @@ test('reorderTarget', t => {
 });
 
 test('emitWorkspaceUpdate', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const blocksToXML = comments => {
         let blockString = 'blocks\n';
         if (comments) {
@@ -581,7 +581,7 @@ test('emitWorkspaceUpdate', t => {
 });
 
 test('drag IO redirect', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const sprite1Info = [];
     const sprite2Info = [];
     vm.runtime.targets = [
@@ -620,7 +620,7 @@ test('drag IO redirect', t => {
 });
 
 test('select original after dragging clone', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     let newEditingTargetId = null;
     vm.setEditingTarget = id => {
         newEditingTargetId = id;
@@ -647,7 +647,7 @@ test('select original after dragging clone', t => {
 });
 
 test('setVariableValue', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr = new Sprite(null, vm.runtime);
     const target = spr.createClone();
     target.createVariable('a-variable', 'a-name', Variable.SCALAR_TYPE);
@@ -668,7 +668,7 @@ test('setVariableValue', t => {
 });
 
 test('setVariableValue requests update for cloud variable', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr = new Sprite(null, vm.runtime);
     const target = spr.createClone();
     target.isStage = true;
@@ -698,7 +698,7 @@ test('setVariableValue requests update for cloud variable', t => {
 });
 
 test('getVariableValue', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr = new Sprite(null, vm.runtime);
     const target = spr.createClone();
     target.createVariable('a-variable', 'a-name', Variable.SCALAR_TYPE);
@@ -721,7 +721,7 @@ test('getVariableValue', t => {
 
 // Block Listener tests for comment
 test('comment_create event updates comment with null position', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const spr = new Sprite(null, vm.runtime);
     const target = spr.createClone();
 
@@ -744,7 +744,7 @@ test('comment_create event updates comment with null position', t => {
 });
 
 test('shareBlocksToTarget shares global variables without any name changes', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const runtime = vm.runtime;
     const spr1 = new Sprite(null, runtime);
     const stage = spr1.createClone();
@@ -808,7 +808,7 @@ test('shareBlocksToTarget shares global variables without any name changes', t =
 });
 
 test('shareBlocksToTarget shares a local variable to the stage, creating a global variable with a new name', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const runtime = vm.runtime;
     const spr1 = new Sprite(null, runtime);
     const stage = spr1.createClone();
@@ -876,7 +876,7 @@ test('shareBlocksToTarget shares a local variable to the stage, creating a globa
 });
 
 test('shareBlocksToTarget chooses a fresh name for a new global variable checking for conflicts on all sprites', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const runtime = vm.runtime;
     const spr1 = new Sprite(null, runtime);
     const stage = spr1.createClone();
@@ -951,7 +951,7 @@ test('shareBlocksToTarget chooses a fresh name for a new global variable checkin
 });
 
 test('shareBlocksToTarget loads extensions that have not yet been loaded', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const runtime = vm.runtime;
     const spr1 = new Sprite(null, runtime);
     const stage = spr1.createClone();
@@ -982,7 +982,7 @@ test('shareBlocksToTarget loads extensions that have not yet been loaded', t => 
 test('Setting turbo mode emits events', t => {
     let turboMode = null;
 
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
 
     vm.addListener('TURBO_MODE_ON', () => {
         turboMode = true;
@@ -1002,7 +1002,7 @@ test('Setting turbo mode emits events', t => {
 
 test('Getting the renderer returns the renderer', t => {
     const renderer = new Renderer();
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachRenderer(renderer);
     t.equal(vm.renderer, renderer);
     t.end();
@@ -1010,7 +1010,7 @@ test('Getting the renderer returns the renderer', t => {
 
 test('Starting the VM emits an event', t => {
     let started = false;
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.addListener('RUNTIME_STARTED', () => {
         started = true;
     });
@@ -1021,7 +1021,7 @@ test('Starting the VM emits an event', t => {
 
 test('vm.greenFlag() emits a PROJECT_START event', t => {
     let greenFlagged = false;
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.addListener('PROJECT_START', () => {
         greenFlagged = true;
     });
@@ -1031,7 +1031,7 @@ test('vm.greenFlag() emits a PROJECT_START event', t => {
 });
 
 test('toJSON encodes Infinity/NaN as 0, not null', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const runtime = vm.runtime;
     const spr1 = new Sprite(null, runtime);
     const stage = spr1.createClone();

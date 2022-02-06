@@ -15,7 +15,7 @@ const project = readFileToBuffer(projectUri);
  * even when the hat predicate is false.
  */
 test('stack click activates the stack', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

@@ -24,7 +24,7 @@ const sound = projectZip.readFile('0.wav');
 const soundData = new Uint8Array(sound);
 
 test('offline-custom-assets', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     // Use a test storage here that does not have any web sources added to it.
     const testStorage = new ScratchStorage();
     vm.attachStorage(testStorage);

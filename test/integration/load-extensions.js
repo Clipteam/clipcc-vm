@@ -8,7 +8,7 @@ const VirtualMachine = require('../../src/index');
 tap.tearDown(() => process.nextTick(process.exit));
 
 test('Load external extensions', async t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const testFiles = fs.readdirSync('./test/fixtures/load-extensions/confirm-load/');
 
     // Test each example extension file
@@ -29,7 +29,7 @@ test('Load external extensions', async t => {
 });
 
 test('Load video sensing extension and video properties', async t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     // An array of test projects and their expected video state values
     const testProjects = [
         {

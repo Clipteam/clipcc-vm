@@ -10,7 +10,7 @@ tap.beforeEach(() => {
     const projectUri = path.resolve(__dirname, '../fixtures/monitors.sb2');
     const project = readFileToBuffer(projectUri);
 
-    vm = new VirtualMachine();
+    vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // TODO figure out why running threads doesn't work in this test

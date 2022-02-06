@@ -8,7 +8,7 @@ const uri = path.resolve(__dirname, '../fixtures/unknown-opcode-in-c-block.sb2')
 const project = readFileToBuffer(uri);
 
 test('unknown opcode', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     vm.start();

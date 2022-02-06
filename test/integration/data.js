@@ -8,7 +8,7 @@ const uri = path.resolve(__dirname, '../fixtures/data.sb2');
 const project = readFileToBuffer(uri);
 
 test('data', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

@@ -585,7 +585,7 @@ class ProfilerRun {
 const runBenchmark = function () {
     // Lots of global variables to make debugging easier
     // Instantiate the VM.
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     Scratch.vm = vm;
 
     vm.setTurboMode(true);
@@ -724,7 +724,7 @@ const runBenchmark = function () {
  * @param {object} json data from a previous benchmark run.
  */
 const renderBenchmarkData = function (json) {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     new ProfilerRun({vm}).render(json);
     setShareLink(json);
 };

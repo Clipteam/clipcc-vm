@@ -8,7 +8,7 @@ const projectUri = path.resolve(__dirname, '../fixtures/clone-cleanup.sb2');
 const project = readFileToBuffer(projectUri);
 
 test('clone-cleanup', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     /**

@@ -8,7 +8,7 @@ const projectUri = path.resolve(__dirname, '../fixtures/block-to-workspace-comme
 const project = readFileToBuffer(projectUri);
 
 test('importing sb2 project where block comment is converted to workspace comment and block is deleted', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

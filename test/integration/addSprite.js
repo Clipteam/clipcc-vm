@@ -9,7 +9,7 @@ const RenderedTarget = require('../../src/sprites/rendered-target');
 const projectUri = path.resolve(__dirname, '../fixtures/default.sb2');
 const project = readFileToBuffer(projectUri);
 
-const vm = new VirtualMachine();
+const vm = new VirtualMachine({appVersion: '0.0.0'});
 
 test('spec', t => {
     t.type(vm.addSprite, 'function');

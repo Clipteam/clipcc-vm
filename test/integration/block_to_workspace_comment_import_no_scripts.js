@@ -9,7 +9,7 @@ const project = readFileToBuffer(projectUri);
 
 /* eslint-disable-next-line max-len */
 test('importing sb2 project where block comment is converted to workspace comment and block is deleted, and there are no scripts on the workspace', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

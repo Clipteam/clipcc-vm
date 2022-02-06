@@ -12,7 +12,7 @@ const spriteUri = path.resolve(__dirname, '../fixtures/sprite.json');
 const sprite = fs.readFileSync(spriteUri, 'utf8');
 
 test('complex', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

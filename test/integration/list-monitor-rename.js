@@ -8,7 +8,7 @@ const projectUri = path.resolve(__dirname, '../fixtures/list-monitor-rename.sb3'
 const project = readFileToBuffer(projectUri);
 
 test('importing sb3 project with incorrect list monitor name', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

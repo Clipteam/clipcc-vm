@@ -124,7 +124,7 @@ test('getLabelForOpcode', t => {
 });
 
 test('Project loaded emits runtime event', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     const projectUri = path.resolve(__dirname, '../fixtures/default.sb2');
     const project = readFileToBuffer(projectUri);
     let projectLoaded = false;

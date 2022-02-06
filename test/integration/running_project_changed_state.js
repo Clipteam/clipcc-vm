@@ -8,7 +8,7 @@ const uri = path.resolve(__dirname, '../fixtures/looks.sb2');
 const project = readFileToBuffer(uri);
 
 test('Running project should not emit project changed event', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     let projectChanged = false;

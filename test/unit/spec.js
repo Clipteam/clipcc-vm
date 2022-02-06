@@ -2,7 +2,7 @@ const test = require('tap').test;
 const VirtualMachine = require('../../src/index');
 
 test('interface', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     t.type(vm, 'object');
     t.type(vm.start, 'function');
     t.type(vm.greenFlag, 'function');

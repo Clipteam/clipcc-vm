@@ -11,7 +11,7 @@ const anotherProjectUri = path.resolve(__dirname, '../fixtures/default.sb2');
 const anotherProject = readFileToBuffer(anotherProjectUri);
 
 test('importing one project after the other resets monitored variables', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Start VM, load project, and run

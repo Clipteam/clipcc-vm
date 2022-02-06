@@ -8,7 +8,7 @@ const uri = path.resolve(__dirname, '../fixtures/sensing.sb2');
 const project = readFileToBuffer(uri);
 
 test('sensing', t => {
-    const vm = new VirtualMachine();
+    const vm = new VirtualMachine({appVersion: '0.0.0'});
     vm.attachStorage(makeTestStorage());
 
     // Evaluate playground data and exit

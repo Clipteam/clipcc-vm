@@ -239,6 +239,8 @@ class Sequencer {
                 if (!block || block.opcode !== 'procedures_return') {
                     thread.goToNextBlock();
                 }
+            } else if (thread.peekStackFrame().isExcuted) {
+                thread.goToNextBlock();
             }
             // If no next block has been found at this point, look on the stack.
             while (!thread.peekStack()) {
@@ -272,6 +274,8 @@ class Sequencer {
                     // This level of the stack was waiting for a value.
                     // This means a reporter has just returned - so don't go
                     // to the next block for this level of the stack.
+                    return;
+                } else if (stackFrame.isCalling && !stackFrame.isExcuted) {
                     return;
                 }
                 // Get next block of existing block on the stack.
@@ -310,7 +314,7 @@ class Sequencer {
      * @param {!string} procedureCode Procedure code of procedure to step to.
      */
     stepToProcedure (thread, procedureCode, isGlobal) {
-        let target = 'THIS';
+        let target = null;
         let definition = null;
         if (isGlobal) {
             [target, definition] = this.runtime.getProcedureDefinition(procedureCode);
@@ -323,12 +327,13 @@ class Sequencer {
         // Check if the call is recursive.
         // If so, set the thread to yield after pushing.
         const isRecursive = thread.isRecursiveCall(procedureCode);
+        thread.peekStackFrame().isCalling = true;
         // To step to a procedure, we put its definition on the stack.
         // Execution for the thread will proceed through the definition hat
         // and on to the main definition of the procedure.
         // When that set of blocks finishes executing, it will be popped
         // from the stack by the sequencer, returning control to the caller.
-        if (target === thread.target || target === 'THIS') {
+        if (target === thread.target) {
             thread.pushStack(definition);
         } else {
             thread.pushStack(definition, target);

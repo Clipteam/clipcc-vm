@@ -135,7 +135,7 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
                 // Investigate the next block and if not in a loop,
                 // then repeat and pop the next item off the stack frame
                 stackFrame = thread.peekStackFrame();
-            } while (stackFrame !== null && !stackFrame.isLoop);
+            } while (stackFrame !== null && !stackFrame.isLoop && (!stackFrame.isCalling || stackFrame.isExcuted));
 
             thread.pushStack(nextBlockId, target);
         }
@@ -466,7 +466,7 @@ const execute = function (sequencer, thread) {
         }
 
         // The reporting block must exist and must be the next one in the sequence of operations.
-        if (thread.justReported !== null && ops[i] && ops[i].id === currentStackFrame.reporting) {
+        if (ops[i] && ops[i].id === currentStackFrame.reporting) {
             const opCached = ops[i];
             const inputValue = thread.justReported;
 
@@ -516,6 +516,10 @@ const execute = function (sequencer, thread) {
 
         blockUtility.currentBlock = opCached;
         const primitiveReportedValue = blockFunction(argValues, blockUtility);
+
+        if (lastOperation) {
+            currentStackFrame.isExcuted = true;
+        }
 
         if (opCached.opcode === 'procedures_return') {
             break;

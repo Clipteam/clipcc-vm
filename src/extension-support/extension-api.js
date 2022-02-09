@@ -20,9 +20,9 @@ const argumentType = [
     'Boolean', // BOOLEAN: 3
     'any', // ANY: 4
     'color', // COLOR: 5
-    '', // MATRIX: 6
-    '', // NOTE: 7
-    '' // ANGLE: 8
+    'matrix', // MATRIX: 6
+    'note', // NOTE: 7
+    'angle' // ANGLE: 8
 ];
 
 class ExtensionAPI {

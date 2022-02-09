@@ -206,8 +206,13 @@ class ExtensionAPI {
                 }
             }
 
-            // TODO: Monitor of reporter
-            // engine/runtime.js: line 1169-1173
+            // Monitor of a repoter
+            // add iff there is no input and hasMonitor is set
+            if (block.type == 2) { // REPORTER
+                if (context.inputList.length === 0 && block.hasMonitor) {
+                    blockJSON.checkboxInFlyout = true;
+                }
+            }
 
             // TODO: Icon of loop block
             // engine/runtime.js: line 1173-1186

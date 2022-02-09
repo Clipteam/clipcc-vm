@@ -121,6 +121,7 @@ class ExtensionAPI {
     }
 
     addBlock (block) {
+        if (!block.option) block.option = {};
         try {
             const category = this._getCategory(block.categoryId);
             const blockJSON = {
@@ -146,7 +147,7 @@ class ExtensionAPI {
             case 1: // COMMAND
                 blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
                 blockJSON.previousStatement = null;
-                if (!block.isTerminal) {
+                if (!block.option.terminal) {
                     blockJSON.nextStatement = null;
                 }
                 break;
@@ -209,7 +210,7 @@ class ExtensionAPI {
             // Monitor of a repoter
             // add iff there is no input and hasMonitor is set
             if (block.type == 2) { // REPORTER
-                if (context.inputList.length === 0 && block.hasMonitor) {
+                if (context.inputList.length === 0 && block.option.monitor) {
                     blockJSON.checkboxInFlyout = true;
                 }
             }

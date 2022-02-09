@@ -85,6 +85,15 @@ class CentralDispatch extends SharedDispatch {
         }
     }
 
+    removeServiceSync (service) {
+        if (this.services.hasOwnProperty(service)) {
+            delete this.services[service];
+        }
+        else {
+            log.error(`Try to remove a unknown service`);
+        }
+    }
+
     /**
      * Add a worker to the message dispatch system. The worker must implement a compatible message dispatch framework.
      * The dispatcher will immediately attempt to "handshake" with the worker.

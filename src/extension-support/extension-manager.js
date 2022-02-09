@@ -149,6 +149,30 @@ class ExtensionManager {
     }
 
     /**
+     * Unload an extension by URL or internal extension ID
+     * @param {string} extensionURL - the URL for the extension to load OR the ID of an internal extension
+     * @returns {Promise} resolved once the extension is loaded and initialized or rejected on failure
+     */
+    unloadExtensionURL (extensionURL) {
+        if (!this.isExtensionLoaded(extensionURL)) {
+            const message = `Rejecting attempt to unload an unloaded extension with ID ${extensionURL}`;
+            log.warn(message);
+            return Promise.resolve();
+        }
+
+        const serviceName = this._loadedExtensions.get(extensionURL);
+        this._loadedExtensions.delete(extensionURL);
+        dispatch.call(serviceName, 'getInfo')
+            .then(content => {
+                const info = this._prepareExtensionInfo(serviceName, content);
+                dispatch.removeServiceSync(serviceName);
+                this.runtime.vm.extensionAPI.removeCategory(info.id);
+                this.refreshBlocks();
+            });
+        return Promise.resolve();
+    }
+
+    /**
      * Regenerate blockinfo for any loaded extensions
      * @returns {Promise} resolved once all the extensions have been reinitialized
      */

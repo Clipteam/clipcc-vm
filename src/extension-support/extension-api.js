@@ -146,9 +146,9 @@ class ExtensionAPI {
             case 1: // COMMAND
                 blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
                 blockJSON.previousStatement = null;
-                blockJSON.nextStatement = null;
-                // TODO: before and next connection
-                // engine/runtime.js: Line 1104-1107
+                if (!block.isTerminal) {
+                    blockJSON.nextStatement = null;
+                }
                 break;
             case 2: // REPORTER
                 blockJSON.output = 'String';

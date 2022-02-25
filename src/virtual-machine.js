@@ -451,7 +451,6 @@ class VirtualMachine extends EventEmitter {
         this._addFileDescsToZip(data.soundDescs.concat(data.costumeDescs), zip);
 
         const extensionFiles = extensionCallback(data.projectData.extensions);
-        console.log(extensionFiles);
         this._addFileDescsToZip(extensionFiles, zip);
 
         return zip.generateAsync({

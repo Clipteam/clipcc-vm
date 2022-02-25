@@ -432,7 +432,7 @@ class VirtualMachine extends EventEmitter {
     /**
      * @returns {string} Project in a Scratch 3.0 JSON representation.
      */
-    saveProjectCc3 () {
+    saveProjectCc3 (extensionCallback) {
         const sb3 = require('./serialization/cc3');
         const data = {
             soundDescs: serializeSounds(this.runtime),
@@ -449,6 +449,10 @@ class VirtualMachine extends EventEmitter {
         // Put everything in a zip file
         zip.file('project.json', projectJson);
         this._addFileDescsToZip(data.soundDescs.concat(data.costumeDescs), zip);
+
+        const extensionFiles = extensionCallback(data.projectData.extensions);
+        console.log(extensionFiles);
+        this._addFileDescsToZip(extensionFiles, zip);
 
         return zip.generateAsync({
             type: 'blob',

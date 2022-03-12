@@ -430,14 +430,17 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * Save *.cc3 project file.
+     * @param {object} options Project save options
+     * @param {function} extensionCallback Get extensions
      * @returns {string} Project in a Scratch 3.0 JSON representation.
      */
-    saveProjectCc3 (extensionCallback) {
-        const sb3 = require('./serialization/cc3');
+    saveProjectCc3 (options, extensionCallback) {
+        const cc3 = require('./serialization/cc3');
         const data = {
             soundDescs: serializeSounds(this.runtime),
             costumeDescs: serializeCostumes(this.runtime),
-            projectData: sb3.serialize(this.runtime)
+            projectData: cc3.serialize(options, this.runtime)
         };
 
         // TODO want to eventually move zip creation out of here, and perhaps
@@ -450,8 +453,10 @@ class VirtualMachine extends EventEmitter {
         zip.file('project.json', projectJson);
         this._addFileDescsToZip(data.soundDescs.concat(data.costumeDescs), zip);
 
-        const extensionFiles = extensionCallback(data.projectData.extensions);
-        this._addFileDescsToZip(extensionFiles, zip);
+        if (options.saveExtension) {
+            const extensionFiles = extensionCallback(data.projectData.extensions);
+            this._addFileDescsToZip(extensionFiles, zip);
+        }
 
         return zip.generateAsync({
             type: 'blob',

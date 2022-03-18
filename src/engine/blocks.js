@@ -341,6 +341,9 @@ class Blocks {
 
         // Block create/update/destroy
         switch (e.type) {
+        case 'ui': {
+            // 无意义事件，暂时不做处理
+        }
         case 'create': {
             const newBlocks = adapter(e);
             // A create event can create many blocks. Add them all.

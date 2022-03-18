@@ -1134,7 +1134,7 @@ class VirtualMachine extends EventEmitter {
                 // 避免因为 sprite.removeClone 被二次调用导致克隆体无法正常删除的问题
                 const clone = sprite.clones[0];
                 this.runtime.stopForTarget(clone);
-                this.runtime.disposeTarget(clones);
+                this.runtime.disposeTarget(clone);
                 // Ensure editing target is switched if we are deleting it.
                 if (clone === currentEditingTarget) {
                     const nextTargetIndex = Math.min(this.runtime.targets.length - 1, targetIndexBeforeDelete);

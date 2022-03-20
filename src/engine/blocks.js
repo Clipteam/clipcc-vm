@@ -343,6 +343,7 @@ class Blocks {
         switch (e.type) {
         case 'ui': {
             // 无意义事件，暂时不做处理
+            break;
         }
         case 'create': {
             const newBlocks = adapter(e);

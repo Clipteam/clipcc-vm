@@ -939,6 +939,10 @@ const getReporters = function (blocks) {
 };
 
 const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod, reporters) {
+    // eslint-disable-next-line no-alert
+    alert('由于原有逻辑会与ClipCC扩展功能冲突，故该功能暂时下线。请期待之后的重制版扩展!');
+    return;
+    /*
     switch (handleMethod) {
     case 'replace': {
         // console.log("扩展" + extensionID + "不存在！尝试替换" + blockJSON.id);
@@ -947,29 +951,32 @@ const handleUnknownBlocks = function (blockJSON, extensionID, handleMethod, repo
             isUnknownBlocks: true,
             originalInputs: blockJSON.inputs
         };
-        if (!reporters.has(blockJSON.id)) { // 检测是否需要转换为reporter
+        if (reporters.has(blockJSON.id)) { // 检测是否需要转换为reporter
+            // 暂时没想到区分boolean/string的方法，于是暂用Boolean替代
+            // 关于为什么是Boolean，因为在判断语句下使用Reporter可能会导致Blockly解析异常。
+            blockJSON.opcode = 'argument_reporter_boolean';
+            if (!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
+            blockJSON.fields.VALUE = {
+                name: 'VALUE',
+                value: `[${extensionID.trim()}] ${originalOpcode}`
+            };
+            
+        } else {
             blockJSON.opcode = 'procedures_call';
             if (!blockJSON.mutation) blockJSON.mutation = {}; // 在mutation不存在的情况下创建mutation
             blockJSON.mutation.proccode = `[${extensionID.trim()}] ${originalOpcode}`;
             blockJSON.mutation.children = [];
             blockJSON.mutation.tagName = 'mutation';
-        } else {
-            	// 暂时没想到区分boolean/string的方法，于是暂用Boolean替代
-            	// 关于为什么是Boolean，因为在判断语句下使用Reporter可能会导致Blockly解析异常。
-            	blockJSON.opcode = 'argument_reporter_boolean';
-            	if (!blockJSON.fields) blockJSON.fields = {}; // 在mutation不存在的情况下创建mutation
-            	blockJSON.fields.VALUE = {
-            		name: 'VALUE',
-            		value: `[${extensionID.trim()}] ${originalOpcode}`
-        	    };
-	        }
-	        delete blockJSON.inputs;
-	        // console.log("替换后：", blockJSON);
-	    }
-	    case 'delete': {
-	    	// @todo
-	    }
+        }
+        delete blockJSON.inputs;
+        // console.log("替换后：", blockJSON);
+        break;
     }
+    case 'delete': {
+        break;
+    }
+    }
+    */
 };
 /**
  * Parse a single "Scratch object" and create all its in-memory VM objects.
@@ -1000,8 +1007,8 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
     if (object.hasOwnProperty('blocks')) {
         deserializeBlocks(object.blocks);
         if (!reporters && option != 'donotload') {
-        	reporters = getReporters(object.blocks);
-        	// console.log(reporters); //DEBUG
+            reporters = getReporters(object.blocks);
+            // console.log(reporters); //DEBUG
         }
         // Take a second pass to create objects and add extensions
         for (const blockId in object.blocks) {

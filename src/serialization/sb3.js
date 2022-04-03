@@ -1019,9 +1019,9 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
             // If the block is from an extension, record it.
             const extensionID = getExtensionIdForOpcode(blockJSON.opcode);
             if (extensionID) {
-                if (builtinExtensions.hasOwnProperty(extensionID)) extensions.extensionIDs.add(extensionID);
-                else if (option == 'donotload') return Promise.resolve(null);
-                else handleUnknownBlocks(blockJSON, extensionID, option, reporters);
+                /* if (builtinExtensions.hasOwnProperty(extensionID))*/ extensions.extensionIDs.add(extensionID);
+                // else if (option == 'donotload') return Promise.resolve(null);
+                // else handleUnknownBlocks(blockJSON, extensionID, option, reporters);
             }
             blocks.createBlock(blockJSON);
         }

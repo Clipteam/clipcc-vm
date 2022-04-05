@@ -108,16 +108,14 @@ class Scratch3OperatorsBlocks {
     }
 
     indexOf (args) {
-        let index = 0;
-        const mainStr = args.STRING; // Eg:shipshipship
-        if (Cast.toNumber(args.POS) <= 0) return -1;// Eg:1
-        for (let i = 0; i <= Cast.toNumber(args.POS) - 1; i++) {
-            index = mainStr.indexOf(args.SUBSTRING, index);
+        const {STRING, SUBSTRING, POS} = args;
+        let index = STRING.indexOf(SUBSTRING);
+        if (index === -1) return -1;
+        for (let i = 0; i < Number(POS) - 1; i++) {
+            index = STRING.indexOf(SUBSTRING, index + 1);
             if (index === -1) return -1;
-            // eslint-disable-next-line no-else-return
-            else index += args.SUBSTRING.length - 1;
         }
-        return index - args.SUBSTRING.length + 2;
+        return index + 1;
     }
 
     letterOf (args) {

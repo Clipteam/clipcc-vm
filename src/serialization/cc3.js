@@ -9,11 +9,12 @@ const sb3 = require('./sb3');
 
 /**
  * Serializes the specified VM runtime.
+ * @param {object} options Options for saving.
  * @param {!Runtime} runtime VM runtime instance to be serialized.
  * @param {string=} targetId Optional target id if serializing only a single target
  * @return {object} Serialized runtime instance.
  */
-const serialize = function (runtime, targetId) {
+const serialize = function (options, runtime, targetId) {
     // Fetch targets
     const obj = Object.create(null);
     // Create extension set to hold extension ids found while serializing targets
@@ -46,7 +47,7 @@ const serialize = function (runtime, targetId) {
     obj.monitors = sb3.serializeMonitors(runtime.getMonitorState());
 
     // Assemble extension list
-    obj.extensions = runtime.vm.ccExtensionManager.getLoadedExtensions();
+    obj.extensions = runtime.vm.ccExtensionManager.getLoadedExtensions(options.saveOptionalExtension);
 
     // Assemble metadata
     const meta = Object.create(null);

@@ -463,7 +463,7 @@ class VirtualMachine extends EventEmitter {
             mimeType: 'application/x.clipcc.cc3',
             compression: 'DEFLATE',
             compressionOptions: {
-                level: 9 // Tradeoff between best speed (1) and best compression (9)
+                level: this.compressionLevel // Tradeoff between best speed (1) and best compression (9)
             }
         });
     }

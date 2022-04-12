@@ -1872,9 +1872,13 @@ class Runtime extends EventEmitter {
      * Dispose all targets. Return to clean state.
      */
     dispose () {
+        this.renderer._allSkins.forEach(skin => {
+            if (skin) this.renderer.destroySkin(skin._id);
+        });
         this.stopAll();
         // Deleting each target's variable's monitors.
         this.targets.forEach(target => {
+            console.log(target);
             if (target.isOriginal) target.deleteMonitors();
         });
 

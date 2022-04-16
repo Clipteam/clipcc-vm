@@ -372,12 +372,6 @@ class VirtualMachine extends EventEmitter {
         return validationPromise
             .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1]))
             .then(() => this.runtime.emitProjectLoaded())
-            .then(() => {
-                console.log('Garbage collecting...');
-                this.runtime.renderer._allSkins.forEach(skin => {
-                    if (skin) this.runtime.renderer.destroySkin(skin._id);
-                });
-            })
             .catch(error => {
                 // Intentionally rejecting here (want errors to be handled by caller)
                 if (error.hasOwnProperty('validationError')) {

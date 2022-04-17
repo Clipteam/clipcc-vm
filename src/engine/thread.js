@@ -20,13 +20,6 @@ class _StackFrame {
         this.isLoop = false;
 
         /**
-         * Whether this level of the stack is calling a procedure.
-         */
-        this.isCalling = false;
-        
-        this.isExcuted = false;
-
-        /**
          * Whether this level is in warp mode.  Is set by some legacy blocks and
          * "turbo mode"
          * @type {boolean}
@@ -76,15 +69,15 @@ class _StackFrame {
      * @return {_StackFrame} this
      */
     reset () {
+
         this.isLoop = false;
-        this.isCalling = false;
-        this.isExcuted = false;
         this.warpMode = false;
         this.justReported = null;
         this.reported = null;
         this.waitingReporter = null;
         this.params = null;
         this.executionContext = null;
+
         return this;
     }
 
@@ -309,18 +302,15 @@ class Thread {
      * Pop back down the stack frame until we hit a procedure call or the stack frame is emptied
      */
     stopThisScript () {
-        // At least one stack should be poped to stop current script.
-        if (this.stack.length > 0) this.popStack();
         let blockID = this.peekStack();
-        let stackFrame = this.peekStackFrame();
         while (blockID !== null) {
             const block = this.target.blocks.getBlock(blockID);
-            if (typeof block !== 'undefined' && stackFrame.isCalling) {
+            if (typeof block !== 'undefined' &&
+                (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return')) {
                 break;
             }
             this.popStack();
             blockID = this.peekStack();
-            stackFrame = this.peekStackFrame();
         }
 
         if (this.stack.length === 0) {

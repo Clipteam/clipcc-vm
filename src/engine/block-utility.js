@@ -169,22 +169,6 @@ class BlockUtility {
     }
 
     /**
-     * Push stack and update stack frames appropriately.
-     * @param {string} blockId Block ID to push to stack.
-     */
-    pushThreadStack (blockId) {
-        this.thread.pushStack(blockId);
-    }
-    
-    /**
-     * Pop last block on the stack and its stack frame.
-     * @return {string} Block ID popped from the stack.
-     */
-    popThreadStack () {
-        return this.thread.popStack();
-    }
-
-    /**
      * Get names and ids of parameters for the given procedure.
      * @param {string} procedureCode Procedure code for procedure to query.
      * @param {string} isGlobal Whether the procedure global.

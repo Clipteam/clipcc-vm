@@ -272,7 +272,8 @@ class Sequencer {
                     // This level of the stack was waiting for a value.
                     // This means a reporter has just returned - so don't go
                     // to the next block for this level of the stack.
-                    return;
+                    // cc - modify return to continue
+                    continue;
                 }
                 // Get next block of existing block on the stack.
                 thread.goToNextBlock();
@@ -310,7 +311,7 @@ class Sequencer {
      * @param {!string} procedureCode Procedure code of procedure to step to.
      */
     stepToProcedure (thread, procedureCode, isGlobal) {
-        let target = 'THIS';
+        let target = null;
         let definition = null;
         if (isGlobal) {
             [target, definition] = this.runtime.getProcedureDefinition(procedureCode);
@@ -328,7 +329,7 @@ class Sequencer {
         // and on to the main definition of the procedure.
         // When that set of blocks finishes executing, it will be popped
         // from the stack by the sequencer, returning control to the caller.
-        if (target === thread.target || target === 'THIS') {
+        if (!isGlobal || target === thread.target) {
             thread.pushStack(definition);
         } else {
             thread.pushStack(definition, target);

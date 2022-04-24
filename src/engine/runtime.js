@@ -1885,7 +1885,6 @@ class Runtime extends EventEmitter {
         // @todo clear out extensions? turboMode? etc.
 
         // cc - Clear skins in renderer
-        console.log('destroy skins', this.renderer._allSkins.length, this.renderer._allSkins);
         this.renderer._allSkins.forEach(skin => {
             if (skin) this.renderer.destroySkin(skin._id);
         });

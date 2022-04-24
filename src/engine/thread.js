@@ -45,10 +45,10 @@ class _StackFrame {
         this.reported = null;
 
         /**
-         * Name of waiting reporter.
+         * Whether waiting a reporter.
          * @type {string}
          */
-        this.waitingReporter = null;
+        this.waitingReporter = false;
 
         /**
          * Procedure parameters.
@@ -73,8 +73,9 @@ class _StackFrame {
         this.isLoop = false;
         this.warpMode = false;
         this.justReported = null;
+        this.reporting = '';
         this.reported = null;
-        this.waitingReporter = null;
+        this.waitingReporter = false;
         this.params = null;
         this.executionContext = null;
 
@@ -305,8 +306,12 @@ class Thread {
         let blockID = this.peekStack();
         while (blockID !== null) {
             const block = this.target.blocks.getBlock(blockID);
-            if (typeof block !== 'undefined' &&
-                (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return')) {
+            if (this.peekStackFrame().waitingReporter) {
+                // cc - check if a reporter procedure is on the stack
+                break;
+            } else if (typeof block !== 'undefined' && block.opcode === 'procedures_call') {
+                // cc - prevent call command procedure repeatedly
+                this.goToNextBlock();
                 break;
             }
             this.popStack();
@@ -388,7 +393,7 @@ class Thread {
      * @return {*} value Value for parameter.
      */
     getParam (paramName) {
-        for (let i = this.stackFrames.length - 1; i >= 0; i--) {
+        for (let i = this.stackFrames.length - 2; i >= 0; i--) {
             const frame = this.stackFrames[i];
             if (frame.params === null) {
                 continue;
@@ -429,12 +434,22 @@ class Thread {
     isRecursiveCall (procedureCode) {
         let callCount = 5; // Max number of enclosing procedure calls to examine.
         const sp = this.stack.length - 1;
+        let flag = false;
         for (let i = sp - 1; i >= 0; i--) {
-            let block = this.target.blocks.getBlock(this.stack[i]);
+            let blockId = this.stack[i];
+            // cc - that the flag is set means the stack has been checked, otherwise it should be checked first.
+            if (!flag && this.stackFrames[i].waitingReporter) {
+                blockId = this.stackFrames[i].reporting;
+                flag = true;
+                ++i;
+            } else {
+                flag = false;
+            }
+            let block = this.target.blocks.getBlock(blockId);
             if (!block) { // This block is not in current sprite.
                 // todo: optimize iff the stack only be pushed when a procedure is called.
                 for (const target of this.runtime.targets) {
-                    block = target.blocks.getBlock(this.stack[i]);
+                    block = target.blocks.getBlock(blockId);
                     if (block) break;
                 }
             }

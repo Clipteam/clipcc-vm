@@ -135,7 +135,7 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
                 // Investigate the next block and if not in a loop,
                 // then repeat and pop the next item off the stack frame
                 stackFrame = thread.peekStackFrame();
-            } while (stackFrame !== null && !stackFrame.isLoop);
+            } while (stackFrame !== null && !stackFrame.isLoop && !stackFrame.waitingReporter);
 
             thread.pushStack(nextBlockId, target);
         }
@@ -466,16 +466,20 @@ const execute = function (sequencer, thread) {
         }
 
         // The reporting block must exist and must be the next one in the sequence of operations.
-        if (thread.justReported !== null && ops[i] && ops[i].id === currentStackFrame.reporting) {
+        if (ops[i] && ops[i].id === currentStackFrame.reporting) {
             const opCached = ops[i];
-            const inputValue = thread.justReported;
+            const inputValue = thread.justReported === null ? '' : thread.justReported;
 
             thread.justReported = null;
 
             const inputName = opCached._parentKey;
             const argValues = opCached._parentValues;
-
-            if (inputName === 'BROADCAST_INPUT') {
+            
+            // cc - if current call is the last operation, which means that it is called by clicking directly,
+            // then call handleReport
+            if (currentStackFrame.waitingReporter && i === length - 1) {
+                handleReport(inputValue, sequencer, thread, opCached, true);
+            } else if (inputName === 'BROADCAST_INPUT') {
                 // Something is plugged into the broadcast input.
                 // Cast it to a string. We don't need an id here.
                 argValues.BROADCAST_OPTION.id = null;
@@ -489,6 +493,7 @@ const execute = function (sequencer, thread) {
 
         currentStackFrame.reporting = null;
         currentStackFrame.reported = null;
+        currentStackFrame.waitingReporter = false;
     }
 
     const start = i;
@@ -517,13 +522,18 @@ const execute = function (sequencer, thread) {
         blockUtility.currentBlock = opCached;
         const primitiveReportedValue = blockFunction(argValues, blockUtility);
 
+        // cc - to preserve returned value
         if (opCached.opcode === 'procedures_return') {
             break;
         }
 
         // If it's a promise, wait until promise resolves.
-        if (isPromise(primitiveReportedValue)) {
-            handlePromise(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
+        // cc - if it's procedure_call_return, treat it as a promise.
+        const promise = isPromise(primitiveReportedValue);
+        if (promise || opCached.opcode === 'procedures_call_return') {
+            if (promise) {
+                handlePromise(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
+            }
 
             // Store the already reported values. They will be thawed into the
             // future versions of the same operations by block id. The reporting
@@ -531,6 +541,7 @@ const execute = function (sequencer, thread) {
             // that time.
             thread.justReported = null;
             currentStackFrame.reporting = ops[i].id;
+            currentStackFrame.waitingReporter = opCached.opcode === 'procedures_call_return';
             currentStackFrame.reported = ops.slice(0, i).map(reportedCached => {
                 const inputName = reportedCached._parentKey;
                 const reportedValues = reportedCached._parentValues;
@@ -552,11 +563,7 @@ const execute = function (sequencer, thread) {
             break;
         } else if (thread.status === Thread.STATUS_RUNNING) {
             if (lastOperation) {
-                if (opCached.opcode === 'procedures_call_return') {
-                    handleReport(thread.justReported, sequencer, thread, opCached, lastOperation);
-                } else {
-                    handleReport(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
-                }
+                handleReport(primitiveReportedValue, sequencer, thread, opCached, lastOperation);
             } else {
                 // By definition a block that is not last in the list has a
                 // parent.
@@ -572,28 +579,6 @@ const execute = function (sequencer, thread) {
                     parentValues[inputName] = primitiveReportedValue;
                 }
             }
-        }
-
-        // Waiting for a procedure call
-        if (opCached.opcode === 'procedures_call_return' && !lastOperation) {
-            thread.justReported = null;
-            currentStackFrame.reporting = ops[i].id;
-            currentStackFrame.reported = ops.slice(0, i).map(reportedCached => {
-                const inputName = reportedCached._parentKey;
-                const reportedValues = reportedCached._parentValues;
-
-                if (inputName === 'BROADCAST_INPUT') {
-                    return {
-                        opCached: reportedCached.id,
-                        inputValue: reportedValues[inputName].BROADCAST_OPTION.name
-                    };
-                }
-                return {
-                    opCached: reportedCached.id,
-                    inputValue: reportedValues[inputName]
-                };
-            });
-            break;
         }
     }
 

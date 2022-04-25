@@ -343,28 +343,22 @@ class BlockCached {
             }
         }
 
-        // Cache all input children blocks in the operation lists. The
-        // operations can later be run in the order they appear in correctly
-        // executing the operations quickly in a flat loop instead of needing to
-        // recursivly iterate them.
-        for (const inputName in this._inputs) {
-            const input = this._inputs[inputName];
-            if (input.block) {
-                const inputCached = BlocksExecuteCache.getCached(blockContainer, input.block, BlockCached);
-
-                if (inputCached._isHat) {
-                    continue;
-                }
-
-                this._ops.push(...inputCached._ops);
-                inputCached._parentKey = inputName;
-                inputCached._parentValues = this._argValues;
-
-                // Shadow values are static and do not change, go ahead and
-                // store their value on args.
-                if (inputCached._isShadowBlock) {
-                    this._argValues[inputName] = inputCached._shadowValue;
-                }
+        // cc - check if we need to use short circuit evaluation
+        if (opcode === 'operator_and' || opcode === 'operator_or') {
+            if (this._inputs.hasOwnProperty('OPERAND1')) {
+                this._pushInput('OPERAND1', blockContainer);
+            }
+            this._ops.push({id: '', opcode: `${opcode}_temp`, _parentValues: this._argValues});
+            if (this._inputs.hasOwnProperty('OPERAND2')) {
+                this._pushInput('OPERAND2', blockContainer);
+            }
+        } else {
+            // Cache all input children blocks in the operation lists. The
+            // operations can later be run in the order they appear in correctly
+            // executing the operations quickly in a flat loop instead of needing to
+            // recursivly iterate them.
+            for (const inputName in this._inputs) {
+                this._pushInput(inputName, blockContainer);
             }
         }
 
@@ -372,6 +366,27 @@ class BlockCached {
         // command block or a block that is being run as a monitor.
         if (this._definedBlockFunction) {
             this._ops.push(this);
+        }
+    }
+
+    _pushInput (inputName, blockContainer) {
+        const input = this._inputs[inputName];
+        if (input.block) {
+            const inputCached = BlocksExecuteCache.getCached(blockContainer, input.block, BlockCached);
+
+            if (inputCached._isHat) {
+                return;
+            }
+
+            this._ops.push(...inputCached._ops);
+            inputCached._parentKey = inputName;
+            inputCached._parentValues = this._argValues;
+
+            // Shadow values are static and do not change, go ahead and
+            // store their value on args.
+            if (inputCached._isShadowBlock) {
+                this._argValues[inputName] = inputCached._shadowValue;
+            }
         }
     }
 }
@@ -499,28 +514,46 @@ const execute = function (sequencer, thread) {
     const start = i;
 
     for (; i < length; i++) {
-        const lastOperation = i === length - 1;
-        const opCached = ops[i];
+        let lastOperation = i === length - 1;
+        let opCached = ops[i];
+        let primitiveReportedValue = '';
 
-        const blockFunction = opCached._blockFunction;
-
-        // Update values for arguments (inputs).
-        const argValues = opCached._argValues;
-
-        // Fields are set during opCached initialization.
-
-        // Blocks should glow when a script is starting,
-        // not after it has finished (see #1404).
-        // Only blocks in blockContainers that don't forceNoGlow
-        // should request a glow.
-        if (!blockContainer.forceNoGlow) {
-            thread.requestScriptGlowInFrame = true;
+        if (opCached.opcode === 'operator_and_temp') {
+            if (!cast.toBoolean(opCached._parentValues['OPERAND1'])) {
+                while (ops[i].opcode !== 'operator_and') ++i;
+                opCached = ops[i];
+                lastOperation = i === length - 1;
+                primitiveReportedValue = false;
+            }
+        } else if (opCached.opcode === 'operator_or_temp') {
+            if (cast.toBoolean(opCached._parentValues['OPERAND1'])) {
+                while (ops[i].opcode !== 'operator_or') ++i;
+                opCached = ops[i];
+                lastOperation = i === length - 1;
+                primitiveReportedValue = true;
+            }
         }
+        else {
+            const blockFunction = opCached._blockFunction;
 
-        // Inputs are set during previous steps in the loop.
+            // Update values for arguments (inputs).
+            const argValues = opCached._argValues;
 
-        blockUtility.currentBlock = opCached;
-        const primitiveReportedValue = blockFunction(argValues, blockUtility);
+            // Fields are set during opCached initialization.
+
+            // Blocks should glow when a script is starting,
+            // not after it has finished (see #1404).
+            // Only blocks in blockContainers that don't forceNoGlow
+            // should request a glow.
+            if (!blockContainer.forceNoGlow) {
+                thread.requestScriptGlowInFrame = true;
+            }
+
+            // Inputs are set during previous steps in the loop.
+
+            blockUtility.currentBlock = opCached;
+            primitiveReportedValue = blockFunction(argValues, blockUtility);
+        }
 
         // cc - to preserve returned value
         if (opCached.opcode === 'procedures_return') {

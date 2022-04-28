@@ -348,10 +348,11 @@ class BlockCached {
             if (this._inputs.hasOwnProperty('OPERAND1')) {
                 this._pushInput('OPERAND1', blockContainer);
             }
-            this._ops.push({id: '', opcode: `${opcode}_temp`, _parentValues: this._argValues});
+            const cur = this._ops.push({id: '', opcode: `${opcode}_temp`, _parentValues: this._argValues});
             if (this._inputs.hasOwnProperty('OPERAND2')) {
                 this._pushInput('OPERAND2', blockContainer);
             }
+            this._ops[cur - 1].offset = this._ops.push(this) - cur;
         } else {
             // Cache all input children blocks in the operation lists. The
             // operations can later be run in the order they appear in correctly
@@ -360,12 +361,12 @@ class BlockCached {
             for (const inputName in this._inputs) {
                 this._pushInput(inputName, blockContainer);
             }
-        }
 
-        // The final operation is this block itself. At the top most block is a
-        // command block or a block that is being run as a monitor.
-        if (this._definedBlockFunction) {
-            this._ops.push(this);
+            // The final operation is this block itself. At the top most block is a
+            // command block or a block that is being run as a monitor.
+            if (this._definedBlockFunction) {
+                this._ops.push(this);
+            }
         }
     }
 
@@ -520,14 +521,14 @@ const execute = function (sequencer, thread) {
 
         if (opCached.opcode === 'operator_and_temp') {
             if (!cast.toBoolean(opCached._parentValues['OPERAND1'])) {
-                while (ops[i].opcode !== 'operator_and') ++i;
+                i += opCached.offset;
                 opCached = ops[i];
                 lastOperation = i === length - 1;
                 primitiveReportedValue = false;
             }
         } else if (opCached.opcode === 'operator_or_temp') {
             if (cast.toBoolean(opCached._parentValues['OPERAND1'])) {
-                while (ops[i].opcode !== 'operator_or') ++i;
+                i += opCached.offset;
                 opCached = ops[i];
                 lastOperation = i === length - 1;
                 primitiveReportedValue = true;

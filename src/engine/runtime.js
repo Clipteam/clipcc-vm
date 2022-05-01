@@ -873,7 +873,6 @@ class Runtime extends EventEmitter {
                 });
             }
         }
-        console.log(categoryInfo);
 
         this.emit(Runtime.EXTENSION_ADDED, categoryInfo);
     }
@@ -1181,7 +1180,6 @@ class Runtime extends EventEmitter {
             if (inTextNum < blockText.length) {
                 context.outLineNum = outLineNum;
                 const lineText = maybeFormatMessage(blockText[inTextNum], extensionMessageContext);
-                console.log(2, blockText, lineText, new Error('debug'));
                 const convertedText = lineText.replace(/\[(.+?)]/g, convertPlaceholders);
                 if (blockJSON[`message${outLineNum}`]) {
                     blockJSON[`message${outLineNum}`] += convertedText;
@@ -2668,7 +2666,6 @@ class Runtime extends EventEmitter {
             const definition = target.blocks.getProcedureDefinition(name);
             if (definition) {
                 // TODO: check if it is global
-                console.log([target, definition]);
                 return [target, definition];
             }
         }

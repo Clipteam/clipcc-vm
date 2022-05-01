@@ -398,6 +398,7 @@ const serializeVariables = function (variables) {
     obj.broadcasts = Object.create(null);
     for (const varId in variables) {
         const v = variables[varId];
+        if (v.value === null) v.value = 0;
         if (v.type === Variable.BROADCAST_MESSAGE_TYPE) {
             obj.broadcasts[varId] = v.value; // name and value is the same for broadcast msgs
             continue;

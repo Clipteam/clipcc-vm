@@ -113,9 +113,9 @@ class HttpIO {
         });
     }
 
-    httpPost(args, util) {
+    httpPost (args) {
         return new Promise((resolve, reject) => {
-            const postData = args.JSON;
+            const postData = JSON.parse(args.JSON);
             /*
             const target = util.target;
             const keys = Object.keys(target.variables).filter(k => k.startsWith(args.PREFIX));

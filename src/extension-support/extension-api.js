@@ -181,164 +181,199 @@ class ExtensionAPI {
     }
 
     addBlock (block) {
-        if (!block.option) block.option = {};
-        try {
-            const category = this._getCategory(block.categoryId);
-            const blockJSON = {
-                type: block.opcode,
-                inputsInline: true,
-                category: category.name,
-                colour: category.color1,
-                colourSecondary: category.color2,
-                colourTertiary: category.color3
-            };
-            const blockInfo = this._generateBlockInfo(block);
-            const context = {
-                argsMap: {},
-                blockJSON,
-                categoryInfo: category,
-                blockInfo,
-                inputList: []
-            };
+        const category = this._addBlock(block);
+        this.vm.emit('BLOCKSINFO_UPDATE', category);
+    }
 
-            // Process input menus
-            for (const paramId in block.param) {
-                if (!block.param[paramId].menu || block.param[paramId].field) break;
-                const menuId = `${block.opcode}.menu_${paramId}`;
-                const menuItems = block.param[paramId].menu.map(item => ([
-                    formatMessage({
-                        id: item.messageId,
-                        default: item.messageId
-                    }),
-                    item.value
-                ]));
-                category.menus.push({
-                    json: {
-                        message0: '%1',
-                        type: menuId,
-                        inputsInline: true,
-                        output: 'String',
-                        colour: category.color1,
-                        colourSecondary: category.color2,
-                        colourTertiary: category.color3,
-                        outputShape: ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
-                        args0: [{
-                            type: 'field_dropdown',
-                            name: paramId,
-                            options: menuItems
-                        }]
-                    }
-                });
+    addBlocks (blocks) {
+        const updateList = new Map();
+        for (const block of blocks) {
+            const category = this._addBlock(block);
+            if (!updateList.has(category.id)) {
+                updateList.set(category.id, category);
             }
-
-            // TODO: Show icon before block
-
-            switch (block.type) {
-            case 1: // COMMAND
-                blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
-                blockJSON.previousStatement = null;
-                if (!block.option.terminal) {
-                    blockJSON.nextStatement = null;
-                }
-                break;
-            case 2: // REPORTER
-                blockJSON.output = 'String';
-                blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_ROUND;
-                break;
-            case 3: // BOOLEAN
-                blockJSON.output = 'Boolean';
-                blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_HEXAGONAL;
-                break;
-            case 4: // BRANCH
-                // TODO: Block with branch
-                break;
-            case 5: // HAT
-                // blockInfo.isEdgeActivated = block.isEdgeActivated;
-                if (!blockInfo.isEdgeActivated) {
-                    blockInfo.isEdgeActivated = true;
-                }
-                blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
-                blockJSON.nextStatement = null;
-                break;
-            default:
-            // TODO: Error, unknown
-                break;
-            }
-            // TODO: Alternate between a block "arm" with text on it and an open slot for a substack
-            // engine/runtime.js: line 1145-1167
-            const blockText = Array.isArray(blockInfo.text) ? blockInfo.text : [blockInfo.text];
-            const convertPlaceholders = this._convertPlaceholders.bind(this, context, block);
-            let inTextNum = 0;
-            let inBranchNum = 0;
-            let outLineNum = 0;
-            while (inTextNum < blockText.length || inBranchNum < blockInfo.branchCount) {
-                if (inTextNum < blockText.length) {
-                    context.outLineNum = outLineNum;
-                    const lineText = maybeFormatMessage(blockText[inTextNum]);
-                    const convertedText = lineText.replace(/\[(.+?)]/g, convertPlaceholders);
-                    if (blockJSON[`message${outLineNum}`]) {
-                        blockJSON[`message${outLineNum}`] += convertedText;
-                    } else {
-                        blockJSON[`message${outLineNum}`] = convertedText;
-                    }
-                    ++inTextNum;
-                    ++outLineNum;
-                }
-                if (inBranchNum < blockInfo.branchCount) {
-                    blockJSON[`message${outLineNum}`] = '%1';
-                    blockJSON[`args${outLineNum}`] = [{
-                        type: 'input_statement',
-                        name: `SUBSTACK${inBranchNum > 0 ? inBranchNum + 1 : ''}`
-                    }];
-                    ++inBranchNum;
-                    ++outLineNum;
-                }
-            }
-
-            // Monitor of a repoter
-            // add iff there is no input and hasMonitor is set
-            if (block.type == 2) { // REPORTER
-                if (context.inputList.length === 0 && block.option.monitor) {
-                    blockJSON.checkboxInFlyout = true;
-                }
-            }
-
-            // TODO: Icon of loop block
-            // engine/runtime.js: line 1173-1186
-
-            const mutation = blockInfo.isDynamic ? `<mutation blockInfo="${xmlEscape(JSON.stringify(blockInfo))}"/>` : '';
-            const inputs = context.inputList.join('');
-            const blockXML = `<block type="${block.opcode}">${mutation}${inputs}</block>`;
-
-            const convertedBlock = {
-                info: context.blockInfo,
-                json: context.blockJSON,
-                xml: blockXML
-            };
-
-            category.blocks.push(convertedBlock);
-            if (convertedBlock.json) {
-                const opcode = convertedBlock.json.type;
-                this.vm.runtime._primitives[opcode] = convertedBlock.info.func;
-                if (block.type === 5) {
-                    // TODO: shouldRestartExistingThreads ?
-                    // TODO: edgeActivated ?
-                    this.vm.runtime._hats[opcode] = {
-                        edgeActivated: blockInfo.isEdgeActivated
-                    };
-                }
-            }
-
-            this.blockInfo.push(blockInfo);
-            this.blocks.set(block.opcode, block);
+        }
+        for (const [_, category] of updateList) {
             this.vm.emit('BLOCKSINFO_UPDATE', category);
-        } catch (e) {
-            console.error(e);
-            return;
         }
     }
 
+    /**
+     * Helper for adding a block from prototype.
+     * @param {BlockPrototype} block the block prototype to add
+     * @returns {CategoryInfo} category info
+     */
+    _addBlock (block) {
+        if (!block.option) block.option = {};
+        const category = this._getCategory(block.categoryId);
+        const blockJSON = {
+            type: block.opcode,
+            inputsInline: true,
+            category: category.name,
+            colour: category.color1,
+            colourSecondary: category.color2,
+            colourTertiary: category.color3
+        };
+        const blockInfo = this._generateBlockInfo(block);
+        const context = {
+            argsMap: {},
+            blockJSON,
+            categoryInfo: category,
+            blockInfo,
+            inputList: []
+        };
+
+        // Process input menus
+        for (const paramId in block.param) {
+            if (!block.param[paramId].menu || block.param[paramId].field) break;
+            const menuId = `${block.opcode}.menu_${paramId}`;
+            const menuItems = block.param[paramId].menu.map(item => ([
+                formatMessage({
+                    id: item.messageId,
+                    default: item.messageId
+                }),
+                item.value
+            ]));
+            category.menus.push({
+                json: {
+                    message0: '%1',
+                    type: menuId,
+                    inputsInline: true,
+                    output: 'String',
+                    colour: category.color1,
+                    colourSecondary: category.color2,
+                    colourTertiary: category.color3,
+                    outputShape: ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
+                    args0: [{
+                        type: 'field_dropdown',
+                        name: paramId,
+                        options: menuItems
+                    }]
+                }
+            });
+        }
+
+        // TODO: Show icon before block
+
+        switch (block.type) {
+        case 1: // COMMAND
+            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
+            blockJSON.previousStatement = null;
+            if (!block.option.terminal) {
+                blockJSON.nextStatement = null;
+            }
+            break;
+        case 2: // REPORTER
+            blockJSON.output = 'String';
+            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_ROUND;
+            break;
+        case 3: // BOOLEAN
+            blockJSON.output = 'Boolean';
+            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_HEXAGONAL;
+            break;
+        case 4: // BRANCH
+            // TODO: Block with branch
+            break;
+        case 5: // HAT
+            // blockInfo.isEdgeActivated = block.isEdgeActivated;
+            if (!blockInfo.isEdgeActivated) {
+                blockInfo.isEdgeActivated = true;
+            }
+            blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_SQUARE;
+            blockJSON.nextStatement = null;
+            break;
+        default:
+        // TODO: Error, unknown
+            break;
+        }
+        // TODO: Alternate between a block "arm" with text on it and an open slot for a substack
+        // engine/runtime.js: line 1145-1167
+        const blockText = Array.isArray(blockInfo.text) ? blockInfo.text : [blockInfo.text];
+        const convertPlaceholders = this._convertPlaceholders.bind(this, context, block);
+        let inTextNum = 0;
+        let inBranchNum = 0;
+        let outLineNum = 0;
+        while (inTextNum < blockText.length || inBranchNum < blockInfo.branchCount) {
+            if (inTextNum < blockText.length) {
+                context.outLineNum = outLineNum;
+                const lineText = maybeFormatMessage(blockText[inTextNum]);
+                const convertedText = lineText.replace(/\[(.+?)]/g, convertPlaceholders);
+                if (blockJSON[`message${outLineNum}`]) {
+                    blockJSON[`message${outLineNum}`] += convertedText;
+                } else {
+                    blockJSON[`message${outLineNum}`] = convertedText;
+                }
+                ++inTextNum;
+                ++outLineNum;
+            }
+            if (inBranchNum < blockInfo.branchCount) {
+                blockJSON[`message${outLineNum}`] = '%1';
+                blockJSON[`args${outLineNum}`] = [{
+                    type: 'input_statement',
+                    name: `SUBSTACK${inBranchNum > 0 ? inBranchNum + 1 : ''}`
+                }];
+                ++inBranchNum;
+                ++outLineNum;
+            }
+        }
+
+        // Monitor of a repoter
+        // add iff there is no input and hasMonitor is set
+        if (block.type == 2) { // REPORTER
+            if (context.inputList.length === 0 && block.option.monitor) {
+                blockJSON.checkboxInFlyout = true;
+            }
+        }
+
+        // TODO: Icon of loop block
+        // engine/runtime.js: line 1173-1186
+
+        const mutation = blockInfo.isDynamic ? `<mutation blockInfo="${xmlEscape(JSON.stringify(blockInfo))}"/>` : '';
+        const inputs = context.inputList.join('');
+        const blockXML = `<block type="${block.opcode}">${mutation}${inputs}</block>`;
+
+        const convertedBlock = {
+            info: context.blockInfo,
+            json: context.blockJSON,
+            xml: blockXML
+        };
+
+        category.blocks.push(convertedBlock);
+        if (convertedBlock.json) {
+            const opcode = convertedBlock.json.type;
+            this.vm.runtime._primitives[opcode] = convertedBlock.info.func;
+            if (block.type === 5) {
+                // TODO: shouldRestartExistingThreads ?
+                // TODO: edgeActivated ?
+                this.vm.runtime._hats[opcode] = {
+                    edgeActivated: blockInfo.isEdgeActivated
+                };
+            }
+        }
+
+        this.blockInfo.push(blockInfo);
+        this.blocks.set(block.opcode, block);
+
+        return category;
+    }
+
+    removeBlocks (blockIds) {
+        for (const blockId of blockIds) {
+            this._removeBlock(blockId);
+        }
+        this.refreshBlocks();
+    }
+
     removeBlock (blockId) {
+        this._removeBlock(blockId);
+        this.refreshBlocks();
+    }
+
+    /**
+     * Helper for removing a block from its id.
+     * @param {string} blockId block id
+     */
+    _removeBlock (blockId) {
         for (const i in this.vm.runtime._blockInfo) {
             const category = this.vm.runtime._blockInfo[i];
             for (const j in category.blocks){
@@ -348,7 +383,6 @@ class ExtensionAPI {
                 }
             }
         }
-        this.refreshBlocks();
     }
 
     addCategory (category) {

@@ -327,7 +327,7 @@ class ClipBlocks {
 
     setVisibility (args, utils){
         const targets = utils.runtime.targets;
-        console.log(targets);
+        // console.log(targets);
         targets.forEach(target => {
             if (!target.isStage){
                 // console.log(target);

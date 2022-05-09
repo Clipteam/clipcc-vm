@@ -116,7 +116,7 @@ class VirtualMachine extends EventEmitter {
             this.emit(Runtime.BLOCK_DRAG_END, blocks, topBlockId);
         });
         this.runtime.on(Runtime.EXTENSION_ADDED, categoryInfo => {
-            console.log(categoryInfo);
+            // console.log(categoryInfo);
             this.emit(Runtime.EXTENSION_ADDED, categoryInfo);
         });
         this.runtime.on(Runtime.EXTENSION_FIELD_ADDED, (fieldName, fieldImplementation) => {
@@ -1233,7 +1233,7 @@ class VirtualMachine extends EventEmitter {
      *     updated for a new locale (or empty if locale hasn't changed.)
      */
     setLocale (locale, messages) {
-        console.log(locale, formatMessage.setup().locale);
+        // console.log(locale, formatMessage.setup().locale);
         if (locale !== formatMessage.setup().locale) {
             formatMessage.setup({locale: locale, translations: {[locale]: messages}});
         }

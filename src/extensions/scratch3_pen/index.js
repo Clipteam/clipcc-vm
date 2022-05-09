@@ -138,13 +138,6 @@ class Scratch3PenBlocks {
         );
     }
 
-    shouldCreatePenLayer () {
-        if (this._penSkinId < 0) return true; // 首次创建 PenLayer
-        if (!this.runtime.renderer._allSkins[this._penSkinId]) return true; // 已被不明原因清空
-        if (this.runtime.renderer._allSkins[this._penSkinId].constructor.name !== 'PenSkin') return true; // 被覆盖
-        return false;
-    }
-
     /**
      * Retrieve the ID of the renderer "Skin" corresponding to the pen layer. If
      * the pen Skin doesn't yet exist, create it.
@@ -152,7 +145,7 @@ class Scratch3PenBlocks {
      * @private
      */
     _getPenLayerID () {
-        if (this.shouldCreatePenLayer() && this.runtime.renderer) {
+        if (this._penSkinId < 0 && this.runtime.renderer) {
             this._penSkinId = this.runtime.renderer.createPenSkin();
             this._penDrawableId = this.runtime.renderer.createDrawable(StageLayering.PEN_LAYER);
             this.runtime.renderer.updateDrawableSkinId(this._penDrawableId, this._penSkinId);

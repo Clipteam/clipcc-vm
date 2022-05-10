@@ -490,6 +490,11 @@ const execute = function (sequencer, thread) {
 
             const inputName = opCached._parentKey;
             const argValues = opCached._parentValues;
+
+            // cc - clear params list on current stack frame when a reporter function was returned
+            if (currentStackFrame.waitingReporter) {
+                currentStackFrame.params = null;
+            }
             
             // cc - if current call is the last operation, which means that it is called by clicking directly,
             // then call handleReport

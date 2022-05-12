@@ -1,21 +1,38 @@
 /* eslint-disable no-console */
 class Compiler {
-    constructor (runtime, blocks) {
-        this.runtime = runtime;
-        this._blocks = blocks;
-        console.log('blocks:', blocks);
+    constructor (thread) {
+        this.thread = thread;
+        this.runtime = thread.runtime;
+        this._blocks = thread.blockContainer._blocks;
+        this._uniVarId = 0;
+        console.log('blocks:', this._blocks);
     }
-    generateStack (topId) {
+
+    get uniVar () {
+        return `var_${this._uniVarId}`;
+    }
+
+    generateStack (topId, isTopLevel = false) {
         console.log(`topId: ${topId}`); // debug
+        
         const compiledStack = [];
-        // 跳过编译 HAT
-        // eslint-disable-next-line max-len
-        let currentBlockId = this.runtime.getIsHat(this.getBlockById(topId).opcode) ? this.getBlockById(topId).next : topId;
-        while (currentBlockId !== null) {
-            console.log(`current block id is ${currentBlockId}`); // debug
-            compiledStack.push(this.generateBlock(this.getBlockById(currentBlockId)));
-            currentBlockId = this.getBlockById(currentBlockId).next;
+        // 检测是否为直接点击运行，并反馈给 visualReport
+        if (this.thread.stackClick) {
+            this._uniVarId++;
+            compiledStack.push(`const ${this.uniVar} = ${this.generateBlock(this.getBlockById(topId))};`);
+            compiledStack.push(`if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
+        } else {
+            // 跳过编译 HAT
+            // eslint-disable-next-line max-len
+            let currentBlockId = this.runtime.getIsHat(this.getBlockById(topId).opcode) ? this.getBlockById(topId).next : topId;
+            while (currentBlockId !== null) {
+                console.log(`current block id is ${currentBlockId}`); // debug
+                compiledStack.push(this.generateBlock(this.getBlockById(currentBlockId)));
+                currentBlockId = this.getBlockById(currentBlockId).next;
+            }
         }
+        // @todo 通过代码的方式让线程退休，而不应由sequencer进行判断。
+        if (isTopLevel) compiledStack.push(`util.runtime.sequencer.retireThread(util.thread)`);
         return compiledStack.join('\n');
     }
 
@@ -27,7 +44,7 @@ class Compiler {
         } catch (e) {
             // 提供没有对编译进行优化的积木的兼容性
             if (this.runtime._primitives.hasOwnProperty(block.opcode)) {
-                return `util.runtime.getOpcodeFunction("${block.opcode}")(${this.decodeInputs(block, true)}, util);`;
+                return `util.runtime.getOpcodeFunction("${block.opcode}")(${this.decodeInputs(block, true)}, util)`;
             }
             return `// cannot generate "${block.opcode}"`;
         }

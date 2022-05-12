@@ -485,7 +485,7 @@ class Thread {
     compile () {
         if (!this.isCompiled) {
             try {
-                const compiler = new Compiler(this.runtime, this.blockContainer._blocks);
+                const compiler = new Compiler(this);
                 this.compiledStack = compiler.generateStack(this.topBlock);
                 console.log(this.compiledStack);
                 this.isCompiled = true;

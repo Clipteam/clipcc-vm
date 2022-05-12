@@ -1,6 +1,5 @@
 const BlockUtility = require('../engine/block-utility');
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
-const Generator = Object.getPrototypeOf((new GeneratorFunction()()));
 
 class Runner {
     constructor (sequencer, thread) {

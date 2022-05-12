@@ -1634,6 +1634,7 @@ class Runtime extends EventEmitter {
 
         thread.pushStack(id);
         this.threads.push(thread);
+        thread.compile();
         return thread;
     }
 

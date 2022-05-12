@@ -1,3 +1,5 @@
+const Compiler = require('../compiler/compiler');
+
 /**
  * Recycle bin for empty stackFrame objects
  * @type Array<_StackFrame>
@@ -176,6 +178,18 @@ class Thread {
          * @type {Blocks}
          */
         this.blockContainer = null;
+
+        /**
+         * Compiled stack of thread.
+         * @type {GeneratorFunction}
+         */
+        this.compiledStack = null;
+
+        /**
+         * Whether the thread is compiled.
+         * @type {boolean}
+         */
+        this.isCompiled = false;
 
         /**
          * Whether the thread requests its script to glow during this frame.
@@ -465,6 +479,18 @@ class Thread {
             }
         }
         return false;
+    }
+
+    // --------------------------
+    compile () {
+        try {
+            const compiler = new Compiler(this.runtime, this.blockContainer._blocks);
+            this.compiledStack = compiler.generateStack(this.topBlock);
+            console.log(this.compiledStack);
+            this.isCompiled = true;
+        } catch (e) {
+            console.log(`Error occurred during compilation: ${e}`);
+        }
     }
 }
 

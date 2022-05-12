@@ -42,12 +42,28 @@ class Scratch3ControlBlocks {
         };
     }
 
+    getCompiledFragment () {
+        return {
+            control_repeat: this._repeat,
+            control_repeat_until: this._repeatUntil,
+            control_while: this._repeatWhile,
+            control_forever: this._forever
+        };
+    }
+
     getHats () {
         return {
             control_start_as_clone: {
                 restartExistingThreads: false
             }
         };
+    }
+
+    _repeat (args) {
+        return `for (let i = ${args.TIMES}; i >= 0.5; i--){\n` +
+        `${args.SUBSTACK}\n` +
+        `yield;\n` +
+        `}`;
     }
 
     repeat (args, util) {
@@ -67,12 +83,26 @@ class Scratch3ControlBlocks {
         }
     }
 
+    _repeatUntil (args) {
+        return `while(!(${args.CONDITION})){\n` +
+        `${args.SUBSTACK}\n` +
+        `yield;\n` +
+        `}`;
+    }
+
     repeatUntil (args, util) {
         const condition = Cast.toBoolean(args.CONDITION);
         // If the condition is false (repeat UNTIL), start the branch.
         if (!condition) {
             util.startBranch(1, true);
         }
+    }
+    
+    _repeatWhile (args) {
+        return `while(!!(${args.CONDITION})){\n` +
+        `${args.SUBSTACK}\n` +
+        `yield;\n` +
+        `}`;
     }
 
     repeatWhile (args, util) {
@@ -103,6 +133,13 @@ class Scratch3ControlBlocks {
         if (!condition) {
             util.yield();
         }
+    }
+
+    _forever (args) {
+        return `while(true) {\n` +
+        `${args.SUBSTACK}\n` +
+        `yield;\n` +
+        `}`;
     }
 
     forever (args, util) {

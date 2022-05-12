@@ -1,5 +1,6 @@
 const BlockUtility = require('../engine/block-utility');
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
+const Generator = Object.getPrototypeOf((new GeneratorFunction()()));
 
 class Runner {
     constructor (sequencer, thread) {
@@ -8,11 +9,12 @@ class Runner {
     }
 
     run () {
-        if (!(this.thread.compiledStack instanceof GeneratorFunction)) {
+        if (typeof this.thread.compiledStack !== 'object') {
+            console.log('Seems that it is not a generator function, let me convert it.');
             const generator = new GeneratorFunction('util', this.thread.compiledStack);
             this.thread.compiledStack = generator(new BlockUtility(this.sequencer, this.thread));
         }
-        this.thread.compiledStack.next();
+        return this.thread.compiledStack.next();
     }
 }
 

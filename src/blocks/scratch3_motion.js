@@ -44,6 +44,20 @@ class Scratch3MotionBlocks {
         };
     }
 
+    getCompiledFragment () {
+        return {
+            motion_gotoxy: this._goToXY,
+            motion_turnright: this._turnRight,
+            motion_turnleft: this._turnLeft,
+            motion_pointindirection: this._pointInDirection,
+            motion_changex: this._changeX,
+            motion_setx: this._setX,
+            motion_changey: this._changeY,
+            motion_sety: this._setY,
+            motion_direction: this._getDirection
+        };
+    }
+
     getMonitored () {
         return {
             motion_xposition: {
@@ -67,6 +81,10 @@ class Scratch3MotionBlocks {
         const dx = steps * Math.cos(radians);
         const dy = steps * Math.sin(radians);
         util.target.setXY(util.target.x + dx, util.target.y + dy);
+    }
+
+    _goToXY (args) {
+        return `util.target.setXY(${args.X}, ${args.Y});`;
     }
 
     goToXY (args, util) {
@@ -103,14 +121,26 @@ class Scratch3MotionBlocks {
         }
     }
 
+    _turnRight (args) {
+        return `util.target.setDirection(util.target.direction + ${args.DEGREES});`;
+    }
+
     turnRight (args, util) {
         const degrees = Cast.toNumber(args.DEGREES);
         util.target.setDirection(util.target.direction + degrees);
     }
 
+    _turnLeft (args) {;
+        return `util.target.setDirection(util.target.direction - ${args.DEGREES});`;
+    }
+
     turnLeft (args, util) {
         const degrees = Cast.toNumber(args.DEGREES);
         util.target.setDirection(util.target.direction - degrees);
+    }
+
+    _pointInDirection (args) {
+        return `util.target.setDirection(${args.DIRECTION});`;
     }
 
     pointInDirection (args, util) {
@@ -239,8 +269,16 @@ class Scratch3MotionBlocks {
         util.target.setXY(fencedPosition[0], fencedPosition[1]);
     }
 
+    _setRotationStyle (args) {
+        return `util.target.setRotationStyle(${args.STYLE});`;
+    }
+
     setRotationStyle (args, util) {
         util.target.setRotationStyle(args.STYLE);
+    }
+
+    _changeX (args) {
+        return `util.target.setXY(util.target.x + ${args.DX}, util.target.y);`;
     }
 
     changeX (args, util) {
@@ -248,14 +286,26 @@ class Scratch3MotionBlocks {
         util.target.setXY(util.target.x + dx, util.target.y);
     }
 
+    _setX (args) {
+        return `util.target.setXY(${args.X}, util.target.y);`;
+    }
+
     setX (args, util) {
         const x = Cast.toNumber(args.X);
         util.target.setXY(x, util.target.y);
     }
 
+    _changeY (args) {
+        return `util.target.setXY((util.target.x, util.target.y + ${args.DY});`;
+    }
+
     changeY (args, util) {
         const dy = Cast.toNumber(args.DY);
         util.target.setXY(util.target.x, util.target.y + dy);
+    }
+
+    _setY (args) {
+        return `util.target.y = ${args.Y};`;
     }
 
     setY (args, util) {
@@ -269,6 +319,10 @@ class Scratch3MotionBlocks {
 
     getY (args, util) {
         return this.limitPrecision(util.target.y);
+    }
+
+    _getDirection () {
+        return `util.target.direction`;
     }
 
     getDirection (args, util) {

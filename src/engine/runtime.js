@@ -237,6 +237,11 @@ class Runtime extends EventEmitter {
         this._primitives = {};
 
         /**
+         * Map to look up a block primitive's compiled fragment by its opcode.
+         */
+        this._compiledFragments = {};
+
+        /**
          * Map to look up all block information by extended opcode.
          * @type {Array.<CategoryInfo>}
          * @private
@@ -786,6 +791,16 @@ class Runtime extends EventEmitter {
                         if (packagePrimitives.hasOwnProperty(op)) {
                             this._primitives[op] =
                                 packagePrimitives[op].bind(packageObject);
+                        }
+                    }
+                }
+                // 获取编译优化片段
+                if (packageObject.getCompiledFragment) {
+                    const packageCompiledFragment = packageObject.getCompiledFragment();
+                    for (const op in packageCompiledFragment) {
+                        if (packageCompiledFragment.hasOwnProperty(op)) {
+                            this._compiledFragments[op] =
+                                packageCompiledFragment[op].bind(packageObject);
                         }
                     }
                 }
@@ -1555,6 +1570,19 @@ class Runtime extends EventEmitter {
      */
     getOpcodeFunction (opcode) {
         return this._primitives[opcode];
+    }
+
+    /**
+     * Get the compiled fragment by opcode.
+     * @param {!string} opcode The opcode to look up.
+     * @param {Array} args The arguments to pass to the opcode.
+     * @return {string} The compiled fragment of this block.
+     */
+    getCompiledFragmentByOpcode (opcode, args) {
+        if (this._compiledFragments[opcode]) {
+            return this._compiledFragments[opcode](args);
+        }
+        throw new Error(`block is not compilable: ${opcode}`);
     }
 
     /**

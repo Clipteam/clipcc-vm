@@ -181,8 +181,7 @@ class Sequencer {
         if (thread.isCompiled) {
             try {
                 const runner = new Runner(this, thread);
-                runner.run();
-                thread.status = Thread.STATUS_DONE;
+                if (runner.run().done) thread.status = Thread.STATUS_DONE;
                 return;
             } catch (e) {
                 console.log(`Error occurred while running compiled thread: ${e}, now back to original step method.`);

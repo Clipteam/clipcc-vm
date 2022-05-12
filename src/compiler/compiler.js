@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+const StringUtil = require('../util/string-util');
+
 class Compiler {
     constructor (thread) {
         this.thread = thread;
@@ -19,8 +21,15 @@ class Compiler {
         // 检测是否为直接点击运行，并反馈给 visualReport
         if (this.thread.stackClick) {
             this._uniVarId++;
-            compiledStack.push(`const ${this.uniVar} = ${this.generateBlock(this.getBlockById(topId))};`);
+            compiledStack.push(`let ${this.uniVar} = ${this.generateBlock(this.getBlockById(topId))};`);
+            // 如果积木返回为 Promise 的话，等待 Promise 完成 再进行 visualReport 判断
+            compiledStack.push(`if (${this.uniVar} instanceof Promise) {`);
+            compiledStack.push(`${this.uniVar}.then((value) => {`);
+            compiledStack.push(`${this.uniVar} = value`);
+            // eslint-disable-next-line max-len
             compiledStack.push(`if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
+            compiledStack.push(`}).catch((err) => {})`);
+            compiledStack.push(`} else if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
         } else {
             // 跳过编译 HAT
             // eslint-disable-next-line max-len
@@ -37,7 +46,7 @@ class Compiler {
     }
 
     generateBlock (block) {
-        if (!block) return '// null block';
+        if (!block) throw new Error('block is undefined');
         
         try {
             return this.runtime.getCompiledFragmentByOpcode(block.opcode, this.decodeInputs(block));
@@ -46,7 +55,7 @@ class Compiler {
             if (this.runtime._primitives.hasOwnProperty(block.opcode)) {
                 return `util.runtime.getOpcodeFunction("${block.opcode}")(${this.decodeInputs(block, true)}, util)`;
             }
-            return `// cannot generate "${block.opcode}"`;
+            throw new Error(`cannot generate "${block.opcode}"`);
         }
     }
 
@@ -56,6 +65,7 @@ class Compiler {
             const input = block.inputs[name];
             const inputBlock = this.getBlockById(input.block);
             switch (inputBlock.opcode) {
+            // 基本类型
             case 'colour_picker': {
                 if (isInCLayer) inputs.push(`${name}: "${inputBlock.fields.COLOR.value}"`);
                 else inputs.name = `"${inputBlock.fields.COLOR.value}"`;
@@ -74,6 +84,19 @@ class Compiler {
             case 'text': {
                 if (isInCLayer) inputs.push(`${name}: "${inputBlock.fields.TEXT.value}"`);
                 else inputs.name = `"${inputBlock.fields.TEXT.value}"`;
+                break;
+            }
+            // 菜单
+            case 'sound_sounds_menu': {
+                if (isInCLayer) inputs.push(`${name}: "${inputBlock.fields.SOUND_MENU.value}"`);
+                else inputs.name = `"${inputBlock.fields.SOUND_MENU.value}"`;
+                break;
+            }
+            case 'event_broadcast_menu': {
+                const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
+                const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
+                if (isInCLayer) inputs.push(`${name}: "${broadcastVariable ? broadcastVariable.name : ''}"`);
+                else inputs.name = `"${broadcastVariable ? broadcastVariable.name : ''}"`;
                 break;
             }
             default: {
@@ -106,6 +129,22 @@ class Compiler {
         if (opcode === 'control_if_else') return true;
         if (opcode === 'control_all_at_once') return true;
         return false;
+    }
+
+    getBlockInfo (fullOpcode) {
+        const [category, opcode] = StringUtil.splitFirst(fullOpcode, '_');
+        if (!category || !opcode) {
+            return null;
+        }
+        const categoryInfo = this.runtime._blockInfo.find(ci => ci.id === category);
+        if (!categoryInfo) {
+            return null;
+        }
+        const blockInfo = categoryInfo.blocks.find(b => b.info.opcode === opcode);
+        if (!blockInfo) {
+            return null;
+        }
+        return blockInfo;
     }
 }
 

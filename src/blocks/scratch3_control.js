@@ -136,6 +136,7 @@ class Scratch3ControlBlocks {
     }
 
     _forever (args) {
+        console.log(args.SUBSTACK);
         return `while(true) {\n` +
         `${args.SUBSTACK}\n` +
         `yield;\n` +

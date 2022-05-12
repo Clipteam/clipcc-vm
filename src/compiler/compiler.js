@@ -6,11 +6,13 @@ class Compiler {
         console.log('blocks:', blocks);
     }
     generateStack (topId) {
-        console.log(topId); // debug
+        console.log(`topId: ${topId}`); // debug
         const compiledStack = [];
         // 跳过编译 HAT
+        // eslint-disable-next-line max-len
         let currentBlockId = this.runtime.getIsHat(this.getBlockById(topId).opcode) ? this.getBlockById(topId).next : topId;
         while (currentBlockId !== null) {
+            console.log(`current block id is ${currentBlockId}`); // debug
             compiledStack.push(this.generateBlock(this.getBlockById(currentBlockId)));
             currentBlockId = this.getBlockById(currentBlockId).next;
         }
@@ -62,8 +64,7 @@ class Compiler {
                 if (this.isBranch(block.opcode)) {
                     // Branch 就不需要考虑兼容层了吧
                     inputs[name] = this.generateStack(inputBlock.id);
-                }
-                if (isInCLayer) inputs.push(`${name}: ${this.generateBlock(inputBlock)}`);
+                } else if (isInCLayer) inputs.push(`${name}: ${this.generateBlock(inputBlock)}`);
                 else inputs[name] = this.generateBlock(inputBlock);
             }
             }

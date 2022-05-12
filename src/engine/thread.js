@@ -483,13 +483,15 @@ class Thread {
 
     // --------------------------
     compile () {
-        try {
-            const compiler = new Compiler(this.runtime, this.blockContainer._blocks);
-            this.compiledStack = compiler.generateStack(this.topBlock);
-            console.log(this.compiledStack);
-            this.isCompiled = true;
-        } catch (e) {
-            console.log(`Error occurred during compilation: ${e}`);
+        if (!this.isCompiled) {
+            try {
+                const compiler = new Compiler(this.runtime, this.blockContainer._blocks);
+                this.compiledStack = compiler.generateStack(this.topBlock);
+                console.log(this.compiledStack);
+                this.isCompiled = true;
+            } catch (e) {
+                console.log(`Error occurred during compilation: ${e}`);
+            }
         }
     }
 }

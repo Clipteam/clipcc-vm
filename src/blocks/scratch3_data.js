@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const Cast = require('../util/cast');
 
 class Scratch3DataBlocks {
@@ -35,10 +36,33 @@ class Scratch3DataBlocks {
         };
     }
 
+    getCompiledFragment () {
+        return {
+            data_variable: this._getVariable,
+            data_setvariableto: this._setVariableTo,
+            data_changevariableby: this._changeVariableBy,
+            data_showvariable: this._showVariable,
+            data_hidevariable: this._hideVariable
+        };
+    }
+
+    _getVariableRef (args) {
+        return `(util.target.variables.hasOwnProperty('${args.VARIABLE.id}') ? util.target.variables['${args.VARIABLE.id}'].value : util.runtime.getTargetForStage().variables['${args.VARIABLE.id}'])`;
+    }
+
+    _getVariable (args) {
+        return `${this._getVariableRef(args)}.value`;
+    }
+
     getVariable (args, util) {
         const variable = util.target.lookupOrCreateVariable(
             args.VARIABLE.id, args.VARIABLE.name);
         return variable.value;
+    }
+
+    _setVariableTo (args) {
+        return `${this._getVariable(args)} = ${args.VALUE}\n` +
+        `if (${this._getVariableRef(args)}.isCloud)) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
     }
 
     setVariableTo (args, util) {
@@ -49,6 +73,11 @@ class Scratch3DataBlocks {
         if (variable.isCloud) {
             util.ioQuery('cloud', 'requestUpdateVariable', [variable.name, args.VALUE]);
         }
+    }
+
+    _changeVariableBy (args) {
+        return `${this._getVariable(args)} += ${args.VALUE}\n` +
+        `if (${this._getVariableRef(args)}.isCloud)) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
     }
 
     changeVariableBy (args, util) {
@@ -74,8 +103,16 @@ class Scratch3DataBlocks {
         }, this.runtime);
     }
 
+    _showVariable (args) {
+        return `util.runtime.monitorBlocks.changeBlock({ id: ${this._getVariableRef(args)}.id, element: "checkbox", value: true }, util.runtime)`;
+    }
+
     showVariable (args) {
         this.changeMonitorVisibility(args.VARIABLE.id, true);
+    }
+
+    _hideVariable (args) {
+        return `util.runtime.monitorBlocks.changeBlock({ id: ${this._getVariableRef(args)}.id, element: "checkbox", value: false }, util.runtime)`;
     }
 
     hideVariable (args) {

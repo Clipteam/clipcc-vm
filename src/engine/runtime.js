@@ -1579,7 +1579,7 @@ class Runtime extends EventEmitter {
      * @return {string} The compiled fragment of this block.
      */
     getCompiledFragmentByOpcode (opcode, args) {
-        if (this._compiledFragments[opcode]) {
+        if (this._compiledFragments.hasOwnProperty(opcode)) {
             return this._compiledFragments[opcode](args);
         }
         throw new Error(`block is not compilable: ${opcode}`);

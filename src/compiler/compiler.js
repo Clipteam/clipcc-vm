@@ -51,16 +51,20 @@ class Compiler {
         try {
             return this.runtime.getCompiledFragmentByOpcode(block.opcode, this.decodeInputs(block));
         } catch (e) {
-            // 提供没有对编译进行优化的积木的兼容性
-            if (this.runtime._primitives.hasOwnProperty(block.opcode)) {
-                return `util.runtime.getOpcodeFunction("${block.opcode}")(${this.decodeInputs(block, true)}, util)`;
+            if (e.message.startsWith('block is not compilable')) {
+                // 提供没有对编译进行优化的积木的兼容性
+                if (this.runtime._primitives.hasOwnProperty(block.opcode)) {
+                    return `util.runtime.getOpcodeFunction("${block.opcode}")(${this.decodeInputs(block, true)}, util)`;
+                }
+                throw new Error(`cannot generate "${block.opcode}"`);
             }
-            throw new Error(`cannot generate "${block.opcode}"`);
+            throw new Error(`failed to generate "${block.opcode}":\n ${e.message}`);
         }
     }
 
     decodeInputs (block, isInCLayer = false) {
         const inputs = isInCLayer ? [] : {};
+        // 解析可输入内容
         for (const name in block.inputs) {
             const input = block.inputs[name];
             const inputBlock = this.getBlockById(input.block);
@@ -109,7 +113,13 @@ class Compiler {
             }
             }
         }
+        // 解析常量类型输入
+        for (const name in block.fields) {
+            // 没想好兼容输出咋做，暂时搁置
+            inputs[name] = block.fields[name];
+        }
         if (isInCLayer) return `{${inputs.join(', ')}}`;
+        console.log(inputs);
         return inputs;
     }
     

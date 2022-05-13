@@ -490,7 +490,7 @@ class Thread {
                 console.log(this.compiledStack);
                 this.isCompiled = true;
             } catch (e) {
-                console.log(`Error occurred during compilation: ${e}`);
+                console.log(`Error occurred during compilation:\n ${e}`);
             }
         }
     }

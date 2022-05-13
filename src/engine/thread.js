@@ -192,6 +192,12 @@ class Thread {
         this.isCompiled = false;
 
         /**
+         * Store the compiled fragment of procedures.
+         * @type {object}
+         */
+        this.procedures = {};
+
+        /**
          * Whether the thread requests its script to glow during this frame.
          * @type {boolean}
          */
@@ -486,7 +492,7 @@ class Thread {
         if (!this.isCompiled) {
             try {
                 const compiler = new Compiler(this);
-                this.compiledStack = compiler.generateStack(this.topBlock);
+                this.compiledStack = compiler.generate(this.topBlock);
                 console.log(this.compiledStack);
                 this.isCompiled = true;
             } catch (e) {

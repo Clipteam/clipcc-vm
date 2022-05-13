@@ -13,11 +13,10 @@ class Compiler {
         return `var_${this._uniVarId}`;
     }
 
-    generateStack (topId, isTopLevel = false) {
-        console.log(this.getBlockById(topId).opcode);
-        const compiledStack = [];
+    generate (topId) {
         // 检测是否为直接点击运行，并反馈给 visualReport
         if (this.thread.stackClick) {
+            const compiledStack = [];
             this._uniVarId++;
             compiledStack.push(`let ${this.uniVar} = ${this.generateBlock(this.getBlockById(topId))};`);
             // 如果积木返回为 Promise 的话，等待 Promise 完成 再进行 visualReport 判断
@@ -29,25 +28,43 @@ class Compiler {
             compiledStack.push(`}).catch((err) => {})`);
             // eslint-disable-next-line max-len
             compiledStack.push(`} else if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
-        } else {
-            // 跳过编译 HAT
-            // eslint-disable-next-line max-len
-            let currentBlockId = this.runtime.getIsHat(this.getBlockById(topId).opcode) ? this.getBlockById(topId).next : topId;
-            while (currentBlockId !== null) {
-                compiledStack.push(this.generateBlock(this.getBlockById(currentBlockId)));
-                currentBlockId = this.getBlockById(currentBlockId).next;
-            }
+            return compiledStack.join('\n');
         }
         // @todo 通过代码的方式让线程退休，而不应由sequencer进行判断。
-        if (isTopLevel) compiledStack.push(`util.runtime.sequencer.retireThread(util.thread)`);
+        // if (isTopLevel) compiledStack.push(`util.runtime.sequencer.retireThread(util.thread)`);
+        return this.generateStack(topId);
+    }
+
+    generateStack (topId, isWarp = false) {
+        const compiledStack = [];
+        // 跳过编译 HAT 和 函数定义
+        // eslint-disable-next-line max-len
+        let currentBlockId = (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.getBlockById(topId).opcode === 'procedures_definition') ? this.getBlockById(topId).next : topId;
+        while (currentBlockId !== null) {
+            compiledStack.push(this.generateBlock(this.getBlockById(currentBlockId), isWarp));
+            currentBlockId = this.getBlockById(currentBlockId).next;
+        }
         return compiledStack.join('\n');
     }
 
-    generateBlock (block) {
+    generateBlock (block, isWarp) {
         if (!block) throw new Error('block is undefined');
+        console.log(block);
         
         try {
-            return this.runtime.getCompiledFragmentByOpcode(block.opcode, this.decodeInputs(block));
+            // 如果为自定义积木，则开始生成自定义积木，并通过yield * 移交执行权
+            // 我还没想好自定义返回值和全局怎么写，走一步看一步吧
+            if (block.opcode === 'procedures_call') {
+                const defId = this.thread.target.blocks.getProcedureDefinition(block.mutation.proccode);
+                if (defId) {
+                    this._uniVarId++;
+                    this.generateProcedure(block, defId, this.uniVar);
+                    return `yield* procedures["${this.uniVar}"]`;
+                }
+                // 无头积木直接忽视执行
+                return `// headless procedures call "${block.id}", ignore it.`;
+            }
+            return this.runtime.getCompiledFragmentByOpcode(block.opcode, this.decodeInputs(block), isWarp);
         } catch (e) {
             if (e.message.startsWith('block is not compilable')) {
                 // 提供没有对编译进行优化的积木的兼容性
@@ -58,6 +75,16 @@ class Compiler {
             }
             throw new Error(`failed to generate "${block.opcode}":\n ${e.message}`);
         }
+    }
+
+    generateProcedure (block, defId, generationId) {
+        const procedureInfo = {
+            id: block.id,
+            isGlobal: JSON.parse(block.mutation.global),
+            isWarp: JSON.parse(block.mutation.warp),
+            isReturn: JSON.parse(block.mutation.return)
+        };
+        this.thread.procedures[generationId] = this.generateStack(defId, procedureInfo.isWarp);
     }
 
     decodeInputs (block, isInCLayer = false) {

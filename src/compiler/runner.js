@@ -12,6 +12,7 @@ class Runner {
             const procedure = this.thread.procedures[procedureId];
             if (typeof procedure !== 'object') {
                 const generator = new GeneratorFunction('util', 'procedures', procedure);
+                // eslint-disable-next-line max-len
                 this.thread.procedures[procedureId] = generator(new BlockUtility(this.sequencer, this.thread), this.thread.procedures);
             }
         }
@@ -27,6 +28,7 @@ class Runner {
             this.thread.blockGlowInFrame = this.thread.topBlock;
             this.thread.requestScriptGlowInFrame = true;
         }
+        console.log(this.thread.compiledStack);
         return this.thread.compiledStack.next();
     }
 }

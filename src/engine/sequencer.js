@@ -184,6 +184,7 @@ class Sequencer {
                 if (runner.run().done) this.retireThread(thread);
                 return;
             } catch (e) {
+                // eslint-disable-next-line no-console
                 console.log(`Error occurred while running compiled thread: ${e}, now back to original step method.`);
                 thread.isCompiled = false;
             }

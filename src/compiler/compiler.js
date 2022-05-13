@@ -1,6 +1,6 @@
 /* eslint-disable no-warning-comments */
 /* eslint-disable no-console */
-
+const StringUtil = require('../util/string-util');
 class Compiler {
     constructor (thread) {
         this.thread = thread;
@@ -9,10 +9,19 @@ class Compiler {
         this._uniVarId = 0;
     }
 
+    /**
+     * @returns {string[]} the unique variable name.
+     */
     get uniVar () {
         return `var_${this._uniVarId}`;
     }
 
+    /**
+     * 为某个线程生成代码
+     * @param {string} topId - 线程的顶部积木的 id
+     * @param {boolean} isWarp - 是否不使用 yield，用于确认是否不刷新
+     * @returns {string} 生成的代码
+     */
     generate (topId) {
         // 检测是否为直接点击运行，并反馈给 visualReport
         if (this.thread.stackClick) {
@@ -35,6 +44,12 @@ class Compiler {
         return this.generateStack(topId);
     }
 
+    /**
+     * 生成某个代码栈的代码
+     * @param {string} topId - 线程的顶部积木的 id
+     * @param {boolean} isWarp - 是否不使用 yield，用于确认是否不刷新
+     * @returns {string} 生成的代码
+     */
     generateStack (topId, isWarp = false) {
         const compiledStack = [];
         // 跳过编译 HAT 和 函数定义
@@ -47,7 +62,13 @@ class Compiler {
         return compiledStack.join('\n');
     }
 
-    generateBlock (block, isWarp) {
+    /**
+     * 生成某个积木的代码
+     * @param {object} block - 积木对象
+     * @param {boolean} isWarp - 是否不使用 yield，用于确认是否不刷新
+     * @returns {string} 生成的代码
+     */
+    generateBlock (block, isWarp = false) {
         if (!block) throw new Error('block is undefined');
         console.log(block);
         
@@ -56,10 +77,17 @@ class Compiler {
             // 我还没想好自定义返回值和全局怎么写，走一步看一步吧
             if (block.opcode === 'procedures_call') {
                 const defId = this.thread.target.blocks.getProcedureDefinition(block.mutation.proccode);
+                const generationId = StringUtil.md5(block.mutation.proccode);
                 if (defId) {
-                    this._uniVarId++;
-                    this.generateProcedure(block, defId, this.uniVar);
-                    return `yield* procedures["${this.uniVar}"]`;
+                    this.generateProcedure(block, defId, generationId);
+                    let fragment = `yield* procedures["${generationId}"](`;
+                    const args = this.decodeInputs(block);
+                    for (const arg of args) {
+                        fragment += `${arg}`;
+                        if (arg !== args[args.length - 1]) fragment += ', ';
+                    }
+                    fragment += `)`;
+                    return fragment;
                 }
                 // 无头积木直接忽视执行
                 return `// headless procedures call "${block.id}", ignore it.`;
@@ -77,7 +105,18 @@ class Compiler {
         }
     }
 
+    /**
+     * 生成自定义积木的代码，并存入线程内
+     * @param {object} block - 积木对象
+     * @param {string} defId - 积木定义的 id
+     * @param {string} generationId - 积木的生成 id, 每一个积木的定义必须都是唯一的
+     */
     generateProcedure (block, defId, generationId) {
+        if (this.thread.procedures.hasOwnProperty(generationId)) {
+            console.warn('try to generate a procedure that has been generated before');
+            return;
+        }
+        this.thread.procedures[generationId] = {}; // 占个位，反正最后能够敲定
         const procedureInfo = {
             id: block.id,
             isGlobal: JSON.parse(block.mutation.global),
@@ -85,58 +124,38 @@ class Compiler {
             isReturn: JSON.parse(block.mutation.return)
         };
         this.thread.procedures[generationId] = this.generateStack(defId, procedureInfo.isWarp);
+        console.log(`generated procedures ${generationId} :\n ${this.thread.procedures[generationId]}`);
     }
 
+    /**
+     * 解码积木的所有输入
+     * @param {object} block - 积木对象
+     * @param {boolean} isInCLayer - 是否使用兼容层
+     * @returns {string[]} 解码后的输入
+     */
     decodeInputs (block, isInCLayer = false) {
+        if (block.opcode === 'procedures_call') {
+            // 自定义积木没有参数名，因此使用数组
+            const args = [];
+            const mapping = JSON.parse(block.mutation.argumentids);
+            console.log('mapping', mapping);
+            for (const item of mapping) {
+                const input = block.inputs[item];
+                if (input.block === input.shadow) { // 非嵌套reporter模块，开始获取值
+                    args.push(this.decodeConstant(this.getBlockById(input.block)));
+                } else {
+                    const inputBlock = this.thread.target.blocks.getBlock(input.block);
+                    args.push(this.generateBlock(inputBlock));
+                }
+            }
+            return args;
+        }
         const inputs = isInCLayer ? [] : {};
         // 解析可输入内容
         for (const name in block.inputs) {
-            const input = block.inputs[name];
-            const inputBlock = this.getBlockById(input.block);
-            switch (inputBlock.opcode) {
-            // 基本类型
-            case 'colour_picker': {
-                if (isInCLayer) inputs.push(`${name}: "${inputBlock.fields.COLOR.value}"`);
-                else inputs.name = `"${inputBlock.fields.COLOR.value}"`;
-                break;
-            }
-            case 'math_angle':
-            case 'math_integer':
-            case 'math_number':
-            case 'math_positive_number':
-            case 'math_whole_number': {
-                const value = inputBlock.fields.NUM.value;
-                if (isInCLayer) inputs.push(`${name}: (${value ? value : 0})`);
-                else inputs[name] = `(${value ? value : 0})`;
-                break;
-            }
-            case 'text': {
-                if (isInCLayer) inputs.push(`${name}: "${inputBlock.fields.TEXT.value}"`);
-                else inputs.name = `"${inputBlock.fields.TEXT.value}"`;
-                break;
-            }
-            // 菜单
-            case 'sound_sounds_menu': {
-                if (isInCLayer) inputs.push(`${name}: "${inputBlock.fields.SOUND_MENU.value}"`);
-                else inputs.name = `"${inputBlock.fields.SOUND_MENU.value}"`;
-                break;
-            }
-            case 'event_broadcast_menu': {
-                const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
-                const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
-                if (isInCLayer) inputs.push(`${name}: "${broadcastVariable ? broadcastVariable.name : ''}"`);
-                else inputs.name = `"${broadcastVariable ? broadcastVariable.name : ''}"`;
-                break;
-            }
-            default: {
-                // 非常量类型，换用generateBlock进行生成。
-                if (this.isBranch(block.opcode)) {
-                    // Branch 就不需要考虑兼容层了吧
-                    inputs[name] = this.generateStack(inputBlock.id);
-                } else if (isInCLayer) inputs.push(`${name}: ${this.generateBlock(inputBlock)}`);
-                else inputs[name] = this.generateBlock(inputBlock);
-            }
-            }
+            const unit = this.decodeInput(block, name);
+            if (isInCLayer) inputs.push(`${name}: "${unit.value}"`);
+            else inputs[name] = unit.value;
         }
         // 解析常量类型输入
         for (const name in block.fields) {
@@ -146,13 +165,124 @@ class Compiler {
         if (isInCLayer) return `{${inputs.join(', ')}}`;
         return inputs;
     }
+
+    /**
+     * 解析单个输入
+     * @param {object} block - 积木对象
+     * @param {string} name - 输入名称
+     * @returns {object} 解析后的输入
+     */
+    decodeInput (block, name) {
+        const input = block.inputs[name];
+        const inputBlock = this.getBlockById(input.block);
+        switch (inputBlock.opcode) {
+        // 基本类型
+        case 'colour_picker': {
+            return {
+                name: input.name,
+                value: inputBlock.fields.COLOR.value
+            };
+        }
+        case 'math_angle':
+        case 'math_integer':
+        case 'math_number':
+        case 'math_positive_number':
+        case 'math_whole_number': {
+            const value = inputBlock.fields.NUM.value;
+            return {
+                name: input.name,
+                value: value ? value : 0
+            };
+        }
+        case 'text': {
+            return {
+                name: input.name,
+                value: inputBlock.fields.TEXT.value
+            };
+        }
+        // 菜单
+        case 'sound_sounds_menu': {
+            return {
+                name: input.name,
+                value: inputBlock.fields.SOUND_MENU.value
+            };
+        }
+        case 'event_broadcast_menu': {
+            const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
+            const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
+            return {
+                name: input.name,
+                value: broadcastVariable ? broadcastVariable.name : ''
+            };
+        }
+        default: {
+            // 非常量类型，换用 generateBlock 进行生成。
+            if (this.isBranch(block.opcode)) {
+                // Branch 就不需要考虑兼容层了吧
+                return {
+                    name: input.name,
+                    value: this.generateStack(inputBlock.id)
+                };
+            }
+            return {
+                name: input.name,
+                value: this.generateBlock(inputBlock)
+            };
+        }
+        }
+    }
+
+    /**
+     * 解析常量输入，仅用在解析自定义积木的常量输入内
+     * @param {object} inputBlock - 输入积木对象
+     * @returns {string} 解析后的常量值
+     * @private
+     * @todo 迁移到 decodeInput 内
+     */
+    decodeConstant (inputBlock) {
+        switch (inputBlock.opcode) {
+        case 'math_number':
+        case 'math_integer':
+        case 'math_positive_number':
+        case 'math_whole_number': {
+            return inputBlock.fields.NUM.value;
+        }
+        case 'text': {
+            return inputBlock.fields.TEXT.value;
+        }
+        case 'colour_picker': {
+            return inputBlock.fields.COLOR.value;
+        }
+        case 'sound_sounds_menu': {
+            return inputBlock.fields.SOUND_MENU.value;
+        }
+        case 'event_broadcast_menu': {
+            const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
+            const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
+            return broadcastVariable ? broadcastVariable.name : '';
+        }
+        default: {
+            return '';
+        }
+        }
+    }
     
+    /**
+     * 在积木容器内获取对应的积木
+     * @param {string} id - 积木id
+     * @returns {object} 积木对象
+     */
     getBlockById (id) {
         const block = this._blocks[id];
-        if (!block) return this.runtime.flyoutBlocks._blocks[id];
+        if (!block) return this.runtime.flyoutBlocks._blocks[id]; // 也许积木存在 flyout 里
         return block;
     }
 
+    /**
+     * 判断积木是否是 BRANCH 类型积木
+     * @param {string} opcode - 积木类型
+     * @returns {boolean} 是否是 BRANCH 类型
+     */
     isBranch (opcode) {
         if (opcode === 'control_repeat') return true;
         if (opcode === 'control_repeat_until') return true;

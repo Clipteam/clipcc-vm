@@ -9,9 +9,12 @@ class Runner {
 
     run () {
         if (typeof this.thread.compiledStack !== 'object') {
-            console.log('Seems that it is not a generator function, let me convert it.');
             const generator = new GeneratorFunction('util', this.thread.compiledStack);
             this.thread.compiledStack = generator(new BlockUtility(this.sequencer, this.thread));
+        }
+        if (!this.thread.blockContainer.forceNoGlow) {
+            this.thread.blockGlowInFrame = this.thread.topBlock;
+            this.thread.requestScriptGlowInFrame = true;
         }
         return this.thread.compiledStack.next();
     }

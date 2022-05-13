@@ -1,5 +1,5 @@
+/* eslint-disable no-warning-comments */
 /* eslint-disable no-console */
-const StringUtil = require('../util/string-util');
 
 class Compiler {
     constructor (thread) {
@@ -7,7 +7,6 @@ class Compiler {
         this.runtime = thread.runtime;
         this._blocks = thread.blockContainer._blocks;
         this._uniVarId = 0;
-        console.log('blocks:', this._blocks);
     }
 
     get uniVar () {
@@ -15,8 +14,7 @@ class Compiler {
     }
 
     generateStack (topId, isTopLevel = false) {
-        console.log(`topId: ${topId}`); // debug
-        
+        console.log(this.getBlockById(topId).opcode);
         const compiledStack = [];
         // 检测是否为直接点击运行，并反馈给 visualReport
         if (this.thread.stackClick) {
@@ -29,13 +27,13 @@ class Compiler {
             // eslint-disable-next-line max-len
             compiledStack.push(`if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
             compiledStack.push(`}).catch((err) => {})`);
+            // eslint-disable-next-line max-len
             compiledStack.push(`} else if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
         } else {
             // 跳过编译 HAT
             // eslint-disable-next-line max-len
             let currentBlockId = this.runtime.getIsHat(this.getBlockById(topId).opcode) ? this.getBlockById(topId).next : topId;
             while (currentBlockId !== null) {
-                console.log(`current block id is ${currentBlockId}`); // debug
                 compiledStack.push(this.generateBlock(this.getBlockById(currentBlockId)));
                 currentBlockId = this.getBlockById(currentBlockId).next;
             }
@@ -119,7 +117,6 @@ class Compiler {
             inputs[name] = block.fields[name];
         }
         if (isInCLayer) return `{${inputs.join(', ')}}`;
-        console.log(inputs);
         return inputs;
     }
     
@@ -139,22 +136,6 @@ class Compiler {
         if (opcode === 'control_if_else') return true;
         if (opcode === 'control_all_at_once') return true;
         return false;
-    }
-
-    getBlockInfo (fullOpcode) {
-        const [category, opcode] = StringUtil.splitFirst(fullOpcode, '_');
-        if (!category || !opcode) {
-            return null;
-        }
-        const categoryInfo = this.runtime._blockInfo.find(ci => ci.id === category);
-        if (!categoryInfo) {
-            return null;
-        }
-        const blockInfo = categoryInfo.blocks.find(b => b.info.opcode === opcode);
-        if (!blockInfo) {
-            return null;
-        }
-        return blockInfo;
     }
 }
 

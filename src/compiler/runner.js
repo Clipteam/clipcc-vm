@@ -1,5 +1,4 @@
 const BlockUtility = require('../engine/block-utility');
-const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 
 class Runner {
     constructor (sequencer, thread) {
@@ -7,29 +6,17 @@ class Runner {
         this.thread = thread;
     }
 
-    initializeProcedures () {
-        for (const procedureId in this.thread.procedures) {
-            const procedure = this.thread.procedures[procedureId];
-            if (typeof procedure !== 'object') {
-                const generator = new GeneratorFunction('util', 'procedures', procedure);
-                // eslint-disable-next-line max-len
-                this.thread.procedures[procedureId] = generator(new BlockUtility(this.sequencer, this.thread), this.thread.procedures);
-            }
-        }
-    }
-
     run () {
-        this.initializeProcedures();
-        if (typeof this.thread.compiledStack !== 'object') {
-            const generator = new GeneratorFunction('util', 'procedures', this.thread.compiledStack);
-            this.thread.compiledStack = generator(new BlockUtility(this.sequencer, this.thread), this.thread.procedures);
+        if (typeof this.thread.compiledStack.main.generator !== 'object') {
+            const blockUtility = new BlockUtility(this.sequencer, this.thread);
+            this.thread.compiledStack.main.generator = this.thread.compiledStack.main.generator(blockUtility);
         }
         if (!this.thread.blockContainer.forceNoGlow) {
             this.thread.blockGlowInFrame = this.thread.topBlock;
             this.thread.requestScriptGlowInFrame = true;
         }
         console.log(this.thread.compiledStack);
-        return this.thread.compiledStack.next();
+        return this.thread.compiledStack.main.generator.next();
     }
 }
 

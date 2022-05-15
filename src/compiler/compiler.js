@@ -1,6 +1,8 @@
 /* eslint-disable no-warning-comments */
 /* eslint-disable no-console */
 const StringUtil = require('../util/string-util');
+const CompiledScript = require('./compiled-script');
+
 class Compiler {
     constructor (thread) {
         this.thread = thread;
@@ -41,7 +43,7 @@ class Compiler {
         }
         // @todo 通过代码的方式让线程退休，而不应由sequencer进行判断。
         // if (isTopLevel) compiledStack.push(`util.runtime.sequencer.retireThread(util.thread)`);
-        return this.generateStack(topId);
+        return new CompiledScript('script', this.generateStack(topId));
     }
 
     /**
@@ -80,11 +82,12 @@ class Compiler {
                 const generationId = StringUtil.md5(block.mutation.proccode);
                 if (defId) {
                     this.generateProcedure(block, defId, generationId);
-                    let fragment = `yield* procedures["${generationId}"](`;
+                    let fragment = `yield* util.thread.compiledStack["${generationId}"].generator(util,`;
                     const args = this.decodeInputs(block);
+                    console.log(args);
                     for (const arg of args) {
                         fragment += `${arg}`;
-                        if (arg !== args[args.length - 1]) fragment += ', ';
+                        if (arg !== args[args.length - 1]) fragment += ',';
                     }
                     fragment += `)`;
                     return fragment;
@@ -123,8 +126,9 @@ class Compiler {
             isWarp: JSON.parse(block.mutation.warp),
             isReturn: JSON.parse(block.mutation.return)
         };
-        this.thread.procedures[generationId] = this.generateStack(defId, procedureInfo.isWarp);
-        console.log(`generated procedures ${generationId} :\n ${this.thread.procedures[generationId]}`);
+        const source = this.generateStack(defId, procedureInfo.isWarp);
+        // eslint-disable-next-line max-len
+        this.thread.compiledStack[generationId] = new CompiledScript('procedure', source, JSON.parse(block.mutation.argumentids));
     }
 
     /**

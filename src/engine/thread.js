@@ -184,7 +184,7 @@ class Thread {
          * Compiled stack of thread.
          * @type {GeneratorFunction}
          */
-        this.compiledStack = null;
+        this.compiledStack = {};
 
         /**
          * Whether the thread is compiled.
@@ -493,7 +493,7 @@ class Thread {
         if (!this.isCompiled) {
             try {
                 const compiler = new Compiler(this);
-                this.compiledStack = compiler.generate(this.topBlock);
+                this.compiledStack.main = compiler.generate(this.topBlock);
                 console.log(this.compiledStack);
                 this.isCompiled = true;
             } catch (e) {

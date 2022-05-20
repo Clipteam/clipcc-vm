@@ -27,7 +27,10 @@ class Compiler {
     generate (topId) {
         // 检测是否为直接点击运行，并反馈给 visualReport
         if (this.thread.stackClick) {
-            if (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.isBranch(this.getBlockById(topId).opcode)) return new CompiledScript('script', this.generateStack(topId));
+            // eslint-disable-next-line max-len
+            if (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.isBranch(this.getBlockById(topId).opcode)) {
+                return new CompiledScript('script', this.generateStack(topId));
+            }
             const compiledStack = [];
             this._uniVarId++;
             compiledStack.push(`let ${this.uniVar} = ${this.generateBlock(this.getBlockById(topId))};`);
@@ -40,7 +43,7 @@ class Compiler {
             compiledStack.push(`}).catch((err) => {})`);
             // eslint-disable-next-line max-len
             compiledStack.push(`} else if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
-            return compiledStack.join('\n');
+            return new CompiledScript('script', compiledStack.join('\n'));
         }
         // @todo 通过代码的方式让线程退休，而不应由sequencer进行判断。
         // if (isTopLevel) compiledStack.push(`util.runtime.sequencer.retireThread(util.thread)`);
@@ -81,6 +84,7 @@ class Compiler {
             // 我还没想好自定义返回值和全局怎么写，走一步看一步吧
             if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
                 // 获取自定义函数信息
+                // eslint-disable-next-line max-len
                 const paramNamesIdsAndDefaults = this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(block.mutation.proccode);
                 const [_paramNames, _paramIds, _paramDefaults] = paramNamesIdsAndDefaults;
                 const procedureInfo = {
@@ -114,7 +118,8 @@ class Compiler {
                 // 提供没有对编译进行优化的积木的兼容性
                 if (this.runtime._primitives.hasOwnProperty(block.opcode)) {
                     // 无法确认返回的是否为 Promise, 因此将其返回的结果传入PromiseLayer内进行调度
-                    return `yield* waitPromise(util.runtime.getOpcodeFunction("${block.opcode}")(${this.decodeInputs(block, true, paramNames)}, util))`;
+                    const inputs = this.decodeInputs(block, true, paramNames);
+                    return `yield* waitPromise(util.runtime.getOpcodeFunction("${block.opcode}")(${inputs}, util))`;
                 }
                 console.log(block);
                 throw new Error(`cannot generate "${block.opcode}"`);
@@ -168,7 +173,7 @@ class Compiler {
         // 解析可输入内容
         for (const name in block.inputs) {
             const unit = this.decodeInput(block, name, paramNames);
-            if (isInCLayer) inputs.push(`${name}: "${unit.value}"`);
+            if (isInCLayer) inputs.push(`${name}: ${unit.value}`);
             else inputs[name] = unit.value;
         }
         // 解析常量类型输入
@@ -221,14 +226,14 @@ class Compiler {
         case 'text': {
             return {
                 name: input.name,
-                value: inputBlock.fields.TEXT.value
+                value: `"inputBlock.fields.TEXT.value"`
             };
         }
         // 菜单
         case 'sound_sounds_menu': {
             return {
                 name: input.name,
-                value: inputBlock.fields.SOUND_MENU.value
+                value: `"inputBlock.fields.SOUND_MENU.value"`
             };
         }
         case 'event_broadcast_menu': {
@@ -236,7 +241,7 @@ class Compiler {
             const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
             return {
                 name: input.name,
-                value: broadcastVariable ? broadcastVariable.name : ''
+                value: broadcastVariable ? `"broadcastVariable.name"` : ''
             };
         }
         default: {

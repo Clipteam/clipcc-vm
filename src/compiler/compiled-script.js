@@ -1,10 +1,9 @@
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 
 class CompiledScript {
-    constructor (name = 'script', source, parameters = []) {
-        this.name = name;
+    constructor (type = 'script', source) {
+        this.type = type;
         this.source = source;
-        this.parameters = parameters;
         this.isGenerated = false;
         this.convert();
     }
@@ -12,8 +11,7 @@ class CompiledScript {
     convert () {
         console.log('Converting script...', this);
         if (!this.isGenerated) {
-            console.log(...this.parameters);
-            this.generator = new GeneratorFunction('util', ...this.parameters, this.source);
+            this.generator = new GeneratorFunction('util', 'parameter', this.source);
             this.isGenerated = true;
         }
     }

@@ -98,8 +98,8 @@ class Compiler {
                     this.generateProcedure(defId, generationId, procedureInfo);
                     const args = this.decodeInputs(block, false, _paramNames);
                     let fragment = block.opcode === 'procedures_call' ?
-                        `yield* util.thread.compiledStack["${generationId}"].generator(util` :
-                        `(yield* util.thread.compiledStack["${generationId}"].generator(util`;
+                        `yield* util.thread.compiledStack["${generationId}"].generator(util, globalState` :
+                        `(yield* util.thread.compiledStack["${generationId}"].generator(util, globalState`;
                     if (Object.keys(args).length > 0) fragment += `, ${JSON.stringify(args)}`;
                     fragment += block.opcode === 'procedures_call' ? `)` : `))`;
                     return fragment;
@@ -107,7 +107,8 @@ class Compiler {
                 // 无头积木直接忽视执行
                 return `// headless procedures call "${block.id}", ignore it.`;
             }
-            return this.runtime.getCompiledFragmentByOpcode(block.opcode, this.decodeInputs(block, false, paramNames), isWarp);
+            const inputs = this.decodeInputs(block, false, paramNames);
+            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, this._uniVarId);
         } catch (e) {
             if (e.message.startsWith('block is not compilable')) {
                 // 提供没有对编译进行优化的积木的兼容性

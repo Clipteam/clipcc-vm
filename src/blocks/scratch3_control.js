@@ -47,7 +47,11 @@ class Scratch3ControlBlocks {
             control_repeat: this._repeat,
             control_repeat_until: this._repeatUntil,
             control_while: this._repeatWhile,
-            control_forever: this._forever
+            control_forever: this._forever,
+            control_wait: this._wait,
+            control_if: this._if,
+            control_if_else: this._ifElse,
+            control_stop: this._stop
         };
     }
 
@@ -136,7 +140,6 @@ class Scratch3ControlBlocks {
     }
 
     _forever (args) {
-        console.log(args.SUBSTACK);
         return `while(true) {\n` +
         `${args.SUBSTACK}\n` +
         `yield;\n` +
@@ -145,6 +148,17 @@ class Scratch3ControlBlocks {
 
     forever (args, util) {
         util.startBranch(1, true);
+    }
+
+    _wait (args, isWarp, uniVar) {
+        uniVar++;
+        const base = `util.thread.timer = timer()\n` +
+        `const ${`var_${uniVar}`} = Math.max(0, 1000 * ${args.DURATION})\n` +
+        `util.runtime.requestRedraw()\n` +
+        `yield\n` +
+        `while (util.thread.timer.timeElapsed() < ${`var_${uniVar}`}) {\n`;
+        if (isWarp) return `${base}// wrap, no yield\n}\nutil.thread.timer = null`;
+        return `${base}yield\n}\nutil.thread.timer = null`;
     }
 
     wait (args, util) {
@@ -159,11 +173,25 @@ class Scratch3ControlBlocks {
         }
     }
 
+    _if (args) {
+        return `if (${args.CONDITION}) {\n` +
+        `${args.SUBSTACK}\n` +
+        `}`;
+    }
+
     if (args, util) {
         const condition = Cast.toBoolean(args.CONDITION);
         if (condition) {
             util.startBranch(1, false);
         }
+    }
+
+    _ifElse (args) {
+        return `if (${args.CONDITION}) {\n` +
+        `${args.SUBSTACK}\n` +
+        `} else {\n` +
+        `${args.SUBSTACK2}\n` +
+        `}`;
     }
 
     ifElse (args, util) {
@@ -173,6 +201,13 @@ class Scratch3ControlBlocks {
         } else {
             util.startBranch(2, false);
         }
+    }
+
+    _stop (args) {
+        const option = args.STOP_OPTION;
+        if (option === 'all') return `util.stopAll()`;
+        if (option === 'this script') return `return`;
+        if (option === 'other scripts in sprite' || option === 'other scripts in stage') return `util.runtime.stopForTarget(util.target, util.thread)`;
     }
 
     stop (args, util) {

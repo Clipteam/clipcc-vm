@@ -1,5 +1,13 @@
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 
+const timerSnippet = `const timer = () => {
+    const t = new globalState.Timer({
+        now: () => util.thread.target.runtime.currentMSecs
+    });
+    t.start();
+    return t;
+}
+`;
 class CompiledScript {
     constructor (type = 'script', source) {
         this.type = type;
@@ -11,7 +19,7 @@ class CompiledScript {
     convert () {
         console.log('Converting script...', this);
         if (!this.isGenerated) {
-            this.generator = new GeneratorFunction('util', 'parameter', this.source);
+            this.generator = new GeneratorFunction('util', 'globalState', 'parameter', timerSnippet + this.source);
             this.isGenerated = true;
         }
     }

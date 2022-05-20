@@ -150,13 +150,13 @@ class Scratch3ControlBlocks {
         util.startBranch(1, true);
     }
 
-    _wait (args, isWarp, uniVar) {
-        uniVar++;
+    _wait (args, isWarp, compiler) {
+        compiler._uniVarId++;
         const base = `util.thread.timer = timer()\n` +
-        `const ${`var_${uniVar}`} = Math.max(0, 1000 * ${args.DURATION})\n` +
+        `const ${`var_${compiler._uniVarId}`} = Math.max(0, 1000 * ${args.DURATION})\n` +
         `util.runtime.requestRedraw()\n` +
         `yield\n` +
-        `while (util.thread.timer.timeElapsed() < ${`var_${uniVar}`}) {\n`;
+        `while (util.thread.timer.timeElapsed() < ${`var_${compiler._uniVarId}`}) {\n`;
         if (isWarp) return `${base}// wrap, no yield\n}\nutil.thread.timer = null`;
         return `${base}yield\n}\nutil.thread.timer = null`;
     }

@@ -108,13 +108,15 @@ class Compiler {
                 return `// headless procedures call "${block.id}", ignore it.`;
             }
             const inputs = this.decodeInputs(block, false, paramNames);
-            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, this._uniVarId);
+            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, this);
         } catch (e) {
             if (e.message.startsWith('block is not compilable')) {
                 // 提供没有对编译进行优化的积木的兼容性
                 if (this.runtime._primitives.hasOwnProperty(block.opcode)) {
-                    return `util.runtime.getOpcodeFunction("${block.opcode}")(${this.decodeInputs(block, true, paramNames)}, util)`;
+                    // 无法确认返回的是否为 Promise, 因此将其返回的结果传入PromiseLayer内进行调度
+                    return `yield* waitPromise(util.runtime.getOpcodeFunction("${block.opcode}")(${this.decodeInputs(block, true, paramNames)}, util))`;
                 }
+                console.log(block);
                 throw new Error(`cannot generate "${block.opcode}"`);
             }
             console.log(block);
@@ -246,10 +248,25 @@ class Compiler {
                     value: this.generateStack(inputBlock.id)
                 };
             }
-            return {
-                name: input.name,
-                value: this.generateBlock(inputBlock)
-            };
+
+            // 也许是菜单
+            const inputs = Object.keys(inputBlock.inputs);
+            const fields = Object.keys(inputBlock.fields);
+            if (inputs.length === 0 && fields.length === 1) {
+                return {
+                    name: input.name,
+                    value: inputBlock.fields[fields[0]].value
+                };
+            }
+
+            try {
+                return {
+                    name: input.name,
+                    value: `(${this.generateBlock(inputBlock)})`
+                };
+            } catch (e) {
+                throw new Error(`cannot generate input ${input.name}:\n ${e.message}`);
+            }
         }
         }
     }

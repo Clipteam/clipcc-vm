@@ -27,6 +27,7 @@ class Compiler {
     generate (topId) {
         // 检测是否为直接点击运行，并反馈给 visualReport
         if (this.thread.stackClick) {
+            if (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.isBranch(this.getBlockById(topId).opcode)) return new CompiledScript('script', this.generateStack(topId));
             const compiledStack = [];
             this._uniVarId++;
             compiledStack.push(`let ${this.uniVar} = ${this.generateBlock(this.getBlockById(topId))};`);
@@ -57,7 +58,7 @@ class Compiler {
         const compiledStack = [];
         // 跳过编译 HAT 和 函数定义
         // eslint-disable-next-line max-len
-        let currentBlockId = (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.getBlockById(topId).opcode === 'procedures_definition') ? this.getBlockById(topId).next : topId;
+        let currentBlockId = (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.getBlockById(topId).opcode === 'procedures_definition' || this.getBlockById(topId).opcode === 'procedures_definition_return') ? this.getBlockById(topId).next : topId;
         while (currentBlockId !== null) {
             compiledStack.push(this.generateBlock(this.getBlockById(currentBlockId), isWarp, paramNames));
             currentBlockId = this.getBlockById(currentBlockId).next;
@@ -78,20 +79,29 @@ class Compiler {
         try {
             // 如果为自定义积木，则开始生成自定义积木，并通过yield * 移交执行权
             // 我还没想好自定义返回值和全局怎么写，走一步看一步吧
-            if (block.opcode === 'procedures_call') {
+            if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
                 // 获取自定义函数信息
                 const paramNamesIdsAndDefaults = this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(block.mutation.proccode);
                 const [_paramNames, _paramIds, _paramDefaults] = paramNamesIdsAndDefaults;
+                const procedureInfo = {
+                    id: block.id,
+                    isGlobal: JSON.parse(block.mutation.global),
+                    isWarp: JSON.parse(block.mutation.warp),
+                    isReturn: JSON.parse(block.mutation.return),
+                    paramNames: _paramNames
+                };
                 const defId = this.thread.target.blocks.getProcedureDefinition(block.mutation.proccode);
                 const generationId = StringUtil.md5(block.mutation.proccode);
-                
+
                 if (defId) {
                     // 把自定义积木对应的东西在线程中的编译池内
-                    this.generateProcedure(block, defId, generationId, _paramNames);
+                    this.generateProcedure(defId, generationId, procedureInfo);
                     const args = this.decodeInputs(block, false, _paramNames);
-                    let fragment = `yield* util.thread.compiledStack["${generationId}"].generator(util`;
+                    let fragment = block.opcode === 'procedures_call' ?
+                        `yield* util.thread.compiledStack["${generationId}"].generator(util` :
+                        `(yield* util.thread.compiledStack["${generationId}"].generator(util`;
                     if (Object.keys(args).length > 0) fragment += `, ${JSON.stringify(args)}`;
-                    fragment += `)`;
+                    fragment += block.opcode === 'procedures_call' ? `)` : `))`;
                     return fragment;
                 }
                 // 无头积木直接忽视执行
@@ -113,24 +123,17 @@ class Compiler {
 
     /**
      * 生成自定义积木的代码，并存入线程内
-     * @param {object} block - 积木对象
      * @param {string} defId - 积木定义的 id
      * @param {string} generationId - 积木的生成 id, 每一个积木的定义必须都是唯一的
-     * @param {string[]} paramNames - 积木的参数名称列表
+     * @param {pbject} procedureInfo - 自定义积木的信息
      */
-    generateProcedure (block, defId, generationId, paramNames) {
+    generateProcedure (defId, generationId, procedureInfo) {
         if (this.thread.compiledStack.hasOwnProperty(generationId)) {
             console.warn('try to generate a procedure that has been generated before');
             return;
         }
         this.thread.compiledStack[generationId] = {}; // 占个位，反正最后能够敲定
-        const procedureInfo = {
-            id: block.id,
-            isGlobal: JSON.parse(block.mutation.global),
-            isWarp: JSON.parse(block.mutation.warp),
-            isReturn: JSON.parse(block.mutation.return)
-        };
-        const source = this.generateStack(defId, procedureInfo.isWarp, paramNames);
+        const source = this.generateStack(defId, procedureInfo.isWarp, procedureInfo.paramNames);
         // eslint-disable-next-line max-len
         this.thread.compiledStack[generationId] = new CompiledScript('procedure', source);
     }
@@ -185,6 +188,8 @@ class Compiler {
         const input = block.inputs[name];
         const inputBlock = this.getBlockById(input.block);
         switch (inputBlock.opcode) {
+        // 函数类型
+        case 'argument_reporter_boolean':
         case 'argument_reporter_string_number': {
             const index = paramNames.lastIndexOf(inputBlock.fields.VALUE.value);
             return {

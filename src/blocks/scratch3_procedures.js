@@ -24,6 +24,12 @@ class Scratch3ProcedureBlocks {
         };
     }
 
+    getCompiledFragment () {
+        return {
+            procedures_return: this._return
+        };
+    }
+
     definition () {
         // No-op: execute the blocks.
     }
@@ -58,6 +64,10 @@ class Scratch3ProcedureBlocks {
     return (args, util) {
         util.pushReportedValue(args.VALUE);
         util.stopThisScript();
+    }
+
+    _return (args) {
+        return `return ${args.VALUE}`;
     }
 
     argumentReporterStringNumber (args, util) {

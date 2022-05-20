@@ -342,6 +342,8 @@ class ExtensionAPI {
         if (convertedBlock.json) {
             const opcode = convertedBlock.json.type;
             this.vm.runtime._primitives[opcode] = convertedBlock.info.func;
+            // 为该积木启用自定义生成器，不使用兼容层
+            if (block.compile) this.vm.runtime._compiledFragments[opcode] = block.compile;
             if (block.type === 5) {
                 // TODO: shouldRestartExistingThreads ?
                 // TODO: edgeActivated ?

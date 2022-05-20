@@ -310,9 +310,16 @@ class Runtime extends EventEmitter {
          */
         this.turboMode = false;
 
-        // the framerate of clipcc-vm
-        // 60 to match default of compatibility mode off
+        /**
+        * the framerate of clipcc-vm
+        * 60 to match default of compatibility mode off
+        */
         this.frameRate = 60;
+
+        /**
+         * Whether use compiler to optimize blocks running, It may cause some problems.
+         */
+        this.useCompiler = false;
 
         /**
          * Whether the project is in "compatibility mode" (30 TPS).
@@ -1662,7 +1669,8 @@ class Runtime extends EventEmitter {
 
         thread.pushStack(id);
         this.threads.push(thread);
-        thread.compile();
+        // 不编译 monitor
+        if (!(opts && opts.updateMonitor) && this.useCompiler) thread.compile();
         return thread;
     }
 
@@ -2202,6 +2210,10 @@ class Runtime extends EventEmitter {
         */
         if (compatibilityModeOn) this.setFramerate(30);
         else this.setFramerate(60);
+    }
+
+    setCompiler (status) {
+        this.useCompiler = !!status;
     }
 
     setFramerate (framerate) {

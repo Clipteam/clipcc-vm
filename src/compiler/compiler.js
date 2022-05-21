@@ -1,6 +1,7 @@
 /* eslint-disable no-warning-comments */
 /* eslint-disable no-console */
 const StringUtil = require('../util/string-util');
+const VariablePool = require('./variable-pool');
 const CompiledScript = require('./compiled-script');
 
 class Compiler {
@@ -8,14 +9,7 @@ class Compiler {
         this.thread = thread;
         this.runtime = thread.runtime;
         this._blocks = thread.blockContainer._blocks;
-        this._uniVarId = 0;
-    }
-
-    /**
-     * @returns {string[]} the unique variable name.
-     */
-    get uniVar () {
-        return `var_${this._uniVarId}`;
+        this.varPool = new VariablePool('compiler');
     }
 
     /**
@@ -32,17 +26,12 @@ class Compiler {
                 return new CompiledScript('script', this.generateStack(topId));
             }
             const compiledStack = [];
-            this._uniVarId++;
-            compiledStack.push(`let ${this.uniVar} = ${this.generateBlock(this.getBlockById(topId))};`);
-            // 如果积木返回为 Promise 的话，等待 Promise 完成 再进行 visualReport 判断
-            compiledStack.push(`if (${this.uniVar} instanceof Promise) {`);
-            compiledStack.push(`${this.uniVar}.then((value) => {`);
-            compiledStack.push(`${this.uniVar} = value`);
+            const varName = this.varPool.add();
             // eslint-disable-next-line max-len
-            compiledStack.push(`if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
-            compiledStack.push(`}).catch((err) => {})`);
+            compiledStack.push(`const reported = yield* function* () {\n${this.generateBlock(this.getBlockById(topId))}\n}()`);
+            compiledStack.push(`const ${varName} = yield* waitPromise(reported);`);
             // eslint-disable-next-line max-len
-            compiledStack.push(`} else if (${this.uniVar} !== undefined) util.runtime.visualReport("${topId}", ${this.uniVar})`);
+            compiledStack.push(`if (${varName} !== undefined) util.runtime.visualReport("${topId}", ${varName})`);
             return new CompiledScript('script', compiledStack.join('\n'));
         }
         // @todo 通过代码的方式让线程退休，而不应由sequencer进行判断。
@@ -60,6 +49,8 @@ class Compiler {
     generateStack (topId, isWarp = false, paramNames) {
         const compiledStack = [];
         // 跳过编译 HAT 和 函数定义
+        // eslint-disable-next-line max-len
+        if (!topId) return;
         // eslint-disable-next-line max-len
         let currentBlockId = (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.getBlockById(topId).opcode === 'procedures_definition' || this.getBlockById(topId).opcode === 'procedures_definition_return') ? this.getBlockById(topId).next : topId;
         while (currentBlockId !== null) {
@@ -112,7 +103,7 @@ class Compiler {
                 return `// headless procedures call "${block.id}", ignore it.`;
             }
             const inputs = this.decodeInputs(block, false, paramNames);
-            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, this);
+            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, new VariablePool(block.opcode));
         } catch (e) {
             if (e.message.startsWith('block is not compilable')) {
                 // 提供没有对编译进行优化的积木的兼容性

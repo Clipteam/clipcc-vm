@@ -34,7 +34,7 @@ class Compiler {
             const compiledStack = [];
             const varName = this.varPool.add();
             // eslint-disable-next-line max-len
-            compiledStack.push(`const reported = yield* function* () {\n${this.generateBlock(this.getBlockById(topId))}\n}()`);
+            compiledStack.push(`const reported = ${this.generateBlock(this.getBlockById(topId))}`);
             compiledStack.push(`const ${varName} = yield* waitPromise(reported);`);
             // eslint-disable-next-line max-len
             compiledStack.push(`if (${varName} !== undefined) util.runtime.visualReport("${topId}", ${varName})`);

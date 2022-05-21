@@ -89,6 +89,26 @@ class Scratch3SensingBlocks {
         };
     }
 
+    getCompiledFragment () {
+        return {
+            sensing_touchingobject: this._touchingObject,
+            sensing_turnonturbomode: this._turboModeOn,
+            sensing_turnoffturbomode: this._turboModeOff,
+            sensing_isturbomode: () => `util.runtime.turboMode`,
+            sensing_setdragmode: this._setDragMode,
+            sensing_mousedown: this._getMouseDown,
+            sensing_timer: this._getTimer,
+            sensing_resettimer: this._resetTimer,
+            sensing_mousex: this._getMouseX,
+            sensing_mousey: this._getMouseY,
+            sensing_current: this._current,
+            sensing_keypressed: this._getKeyPressed,
+            sensing_username: this._getUsername,
+            sensing_clipcc_version: this._getVersion,
+            sensing_operatingsystem: () => `"${this.getOS()}"`
+        };
+    }
+
     getMonitored () {
         return {
             sensing_answer: {
@@ -181,6 +201,10 @@ class Scratch3SensingBlocks {
         return this._answer;
     }
 
+    _touchingObject (args) {
+        return `util.target.isTouchingObject(${args.TOUCHINGOBJECTMENU})`;
+    }
+
     touchingObject (args, util) {
         return util.target.isTouchingObject(args.TOUCHINGOBJECTMENU);
     }
@@ -236,6 +260,16 @@ class Scratch3SensingBlocks {
         return d;
     }
 
+    _turboModeOn () {
+        return `this.runtime.turboMode = true\n` +
+            `this.runtime.emit('TURBOMODE_ON')`;
+    }
+
+    _turboModeOff () {
+        return `this.runtime.turboMode = false\n` +
+            `this.runtime.emit('TURBOMODE_OFF')`;
+    }
+
     setTurboMode (turboModeOn) {
         this.runtime.turboMode = !!turboModeOn;
         if (this.runtime.turboMode) {
@@ -245,24 +279,49 @@ class Scratch3SensingBlocks {
         }
     }
 
+    _setDragMode (args) {
+        // It's a field menu, let's optimize it.
+        const isDraggable = args.DRAG_MODE === 'draggable';
+        return `util.target.setDraggable(${isDraggable})`;
+    }
+
     setDragMode (args, util) {
         util.target.setDraggable(args.DRAG_MODE === 'draggable');
+    }
+    _getTimer () {
+        return `!!util.ioQuery('clock', 'projectTimer')`;
     }
 
     getTimer (args, util) {
         return util.ioQuery('clock', 'projectTimer');
     }
 
+    _resetTimer () {
+        return `util.ioQuery('clock', 'resetProjectTimer')`;
+    }
+
     resetTimer (args, util) {
         util.ioQuery('clock', 'resetProjectTimer');
+    }
+
+    _getMouseX () {
+        return `+(util.ioQuery('mouse', 'getScratchX'))`;
     }
 
     getMouseX (args, util) {
         return util.ioQuery('mouse', 'getScratchX');
     }
 
+    _getMouseY () {
+        return `+(util.ioQuery('mouse', 'getScratchY'))`;
+    }
+
     getMouseY (args, util) {
         return util.ioQuery('mouse', 'getScratchY');
+    }
+    
+    _getMouseDown () {
+        return `!!util.ioQuery('mouse', 'isDown')`;
     }
 
     getMouseDown (args, util) {
@@ -271,6 +330,20 @@ class Scratch3SensingBlocks {
 
     getMousePressed (args, util) {
         return util.ioQuery('mouse', 'getMousePressed', [Number(args.MOUSE_OPTION)]);
+    }
+
+    _current (args) {
+        // it's a field, let's optimize it!
+        const menuOption = Cast.toString(args.CURRENTMENU).toLowerCase();
+        switch (menuOption) {
+        case 'year': return `new Date().getFullYear()`;
+        case 'month': return `new Date().getMonth() + 1`;
+        case 'date': return `new Date().getDate()`;
+        case 'dayofweek': return `new Date().getDay() + 1`;
+        case 'hour': return `new Date().getHours()`;
+        case 'minute': return `new Date().getMinutes()`;
+        case 'second': return `new Date().getSeconds()`;
+        }
     }
 
     current (args) {
@@ -286,6 +359,10 @@ class Scratch3SensingBlocks {
         case 'second': return date.getSeconds();
         }
         return 0;
+    }
+
+    _getKeyPressed (args) {
+        return `util.ioQuery('keyboard', 'getKeyPressed', [${args.KEY_OPTION}])`;
     }
 
     getKeyPressed (args, util) {
@@ -371,6 +448,10 @@ class Scratch3SensingBlocks {
         return 0;
     }
 
+    _getUsername () {
+        return `util.ioQuery('user', 'getUsername')`;
+    }
+
     getUsername (args, util) {
         return util.ioQuery('userData', 'getUsername');
     }
@@ -399,6 +480,10 @@ class Scratch3SensingBlocks {
             if (isWin10) return 'Win10';
         }
         return 'Other';
+    }
+
+    _getVersion () {
+        return `util.runtime.version`;
     }
 
     getVersion () {

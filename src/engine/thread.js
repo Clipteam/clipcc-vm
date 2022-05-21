@@ -501,6 +501,8 @@ class Thread {
                     this.isCompiled = true;
                 } catch (e) {
                     console.log(`Error occurred during compilation:\n ${e}`);
+                    // 仍然标注为编译已完成，这样会在运行的时候报错然后换回原始执行方案
+                    this.isCompiled = true;
                 }
             }
             this.compiledStack.main = blocks._cache.compiledFragment[this.topBlock];

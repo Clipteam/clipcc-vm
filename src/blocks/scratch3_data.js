@@ -62,7 +62,7 @@ class Scratch3DataBlocks {
 
     _setVariableTo (args) {
         return `${this._getVariable(args)} = ${args.VALUE}\n` +
-        `if (${this._getVariableRef(args)}.isCloud)) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
+        `if (${this._getVariableRef(args)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
     }
 
     setVariableTo (args, util) {
@@ -77,7 +77,7 @@ class Scratch3DataBlocks {
 
     _changeVariableBy (args) {
         return `${this._getVariable(args)} += ${args.VALUE}\n` +
-        `if (${this._getVariableRef(args)}.isCloud)) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
+        `if (${this._getVariableRef(args)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
     }
 
     changeVariableBy (args, util) {

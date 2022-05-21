@@ -41,8 +41,12 @@ class CompiledScript {
 
     convert () {
         if (!this.isGenerated) {
-            this.generator = new GeneratorFunction('util', 'globalState', 'parameter', timerSnippet + promiseLayerSnippet + this.source);
-            this.isGenerated = true;
+            try {
+                this.generator = new GeneratorFunction('util', 'globalState', 'parameter', timerSnippet + promiseLayerSnippet + this.source);
+                this.isGenerated = true;
+            } catch (e) {
+                throw new Error(`error occured while generating script:\n${e}`);
+            }
         }
     }
 }

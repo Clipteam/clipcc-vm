@@ -83,7 +83,6 @@ class Compiler {
             // 如果为自定义积木，则开始生成自定义积木，并通过yield * 移交执行权
             // 我还没想好自定义返回值和全局怎么写，走一步看一步吧
             if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
-                console.log(block);
                 // 获取自定义函数信息
                 // eslint-disable-next-line max-len
                 const paramNamesIdsAndDefaults = this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(block.mutation.proccode);
@@ -227,14 +226,14 @@ class Compiler {
         case 'text': {
             return {
                 name: input.name,
-                value: `"inputBlock.fields.TEXT.value"`
+                value: `"${inputBlock.fields.TEXT.value}"`
             };
         }
         // 菜单
         case 'sound_sounds_menu': {
             return {
                 name: input.name,
-                value: `"inputBlock.fields.SOUND_MENU.value"`
+                value: `"${inputBlock.fields.SOUND_MENU.value}"`
             };
         }
         case 'event_broadcast_menu': {
@@ -242,7 +241,7 @@ class Compiler {
             const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
             return {
                 name: input.name,
-                value: broadcastVariable ? `"broadcastVariable.name"` : ''
+                value: broadcastVariable ? `"${broadcastVariable.name}"` : ''
             };
         }
         default: {
@@ -255,22 +254,21 @@ class Compiler {
                 };
             }
 
-            // 也许是菜单
-            const inputs = Object.keys(inputBlock.inputs);
-            const fields = Object.keys(inputBlock.fields);
-            if (inputs.length === 0 && fields.length === 1) {
-                return {
-                    name: input.name,
-                    value: inputBlock.fields[fields[0]].value
-                };
-            }
-
             try {
                 return {
                     name: input.name,
                     value: `(${this.generateBlock(inputBlock)})`
                 };
             } catch (e) {
+                // 也许是菜单
+                const inputs = Object.keys(inputBlock.inputs);
+                const fields = Object.keys(inputBlock.fields);
+                if (inputs.length === 0 && fields.length === 1) {
+                    return {
+                        name: input.name,
+                        value: `"${inputBlock.fields[fields[0]].value}"`
+                    };
+                }
                 throw new Error(`cannot generate input ${input.name}:\n ${e.message}`);
             }
         }

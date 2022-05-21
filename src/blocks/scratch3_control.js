@@ -29,6 +29,8 @@ class Scratch3ControlBlocks {
             control_for_each: this.forEach,
             control_forever: this.forever,
             control_wait: this.wait,
+            control_suspend: this.suspend,
+            control_breakpoint: this.breakpoint,
             control_wait_until: this.waitUntil,
             control_if: this.if,
             control_if_else: this.ifElse,
@@ -49,6 +51,8 @@ class Scratch3ControlBlocks {
             control_while: this._repeatWhile,
             control_forever: this._forever,
             control_wait: this._wait,
+            control_suspend: this._suspend,
+            control_breakpoint: this._breakpoint,
             control_if: this._if,
             control_if_else: this._ifElse,
             control_stop: this._stop
@@ -171,6 +175,24 @@ class Scratch3ControlBlocks {
         } else if (!util.stackTimerFinished()) {
             util.yield();
         }
+    }
+
+    _suspend () {
+        return `yield`;
+    }
+
+    suspend (args, util) {
+        util.yield();
+    }
+
+    _breakpoint () {
+        // todo: implement breakpoint
+        return `debugger`;
+    }
+
+    breakpoint () {
+        // todo: implement breakpoint
+        debugger;
     }
 
     _if (args) {

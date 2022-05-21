@@ -289,7 +289,7 @@ class Scratch3SensingBlocks {
         util.target.setDraggable(args.DRAG_MODE === 'draggable');
     }
     _getTimer () {
-        return `!!util.ioQuery('clock', 'projectTimer')`;
+        return `+(util.ioQuery('clock', 'projectTimer'))`;
     }
 
     getTimer (args, util) {

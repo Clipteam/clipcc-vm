@@ -10,6 +10,12 @@ class Compiler {
         this.runtime = thread.runtime;
         this._blocks = thread.blockContainer._blocks;
         this.varPool = new VariablePool('compiler');
+        this.blockPool = {};
+    }
+
+    getVariablePool (opcode) {
+        if (!this.blockPool.hasOwnProperty(opcode)) this.blockPool[opcode] = new VariablePool(opcode);
+        return this.blockPool[opcode];
     }
 
     /**
@@ -103,7 +109,7 @@ class Compiler {
                 return `// headless procedures call "${block.id}", ignore it.`;
             }
             const inputs = this.decodeInputs(block, false, paramNames);
-            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, new VariablePool(block.opcode));
+            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, this.getVariablePool(block.opcode));
         } catch (e) {
             if (e.message.startsWith('block is not compilable')) {
                 // 提供没有对编译进行优化的积木的兼容性

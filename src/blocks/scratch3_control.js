@@ -66,7 +66,7 @@ class Scratch3ControlBlocks {
     _repeat (args) {
         return `for (let i = ${args.TIMES}; i >= 0.5; i--){\n` +
         `${args.SUBSTACK}\n` +
-        `yield;\n` +
+        `yield\n` +
         `}`;
     }
 
@@ -90,7 +90,7 @@ class Scratch3ControlBlocks {
     _repeatUntil (args) {
         return `while(!(${args.CONDITION})){\n` +
         `${args.SUBSTACK}\n` +
-        `yield;\n` +
+        `yield\n` +
         `}`;
     }
 
@@ -105,7 +105,7 @@ class Scratch3ControlBlocks {
     _repeatWhile (args) {
         return `while(!!(${args.CONDITION})){\n` +
         `${args.SUBSTACK}\n` +
-        `yield;\n` +
+        `yield\n` +
         `}`;
     }
 
@@ -142,7 +142,7 @@ class Scratch3ControlBlocks {
     _forever (args) {
         return `while(true) {\n` +
         `${args.SUBSTACK}\n` +
-        `yield;\n` +
+        `yield\n` +
         `}`;
     }
 

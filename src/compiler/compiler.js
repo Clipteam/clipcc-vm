@@ -101,7 +101,7 @@ class Compiler {
                     let fragment = block.opcode === 'procedures_call' ?
                         `yield* util.thread.compiledStack["${generationId}"].generator(util, globalState` :
                         `(yield* util.thread.compiledStack["${generationId}"].generator(util, globalState`;
-                    if (Object.keys(args).length > 0) fragment += `, ${JSON.stringify(args)}`;
+                    if (Object.keys(args).length > 0) fragment += `, [${args.join(', ')}]`;
                     fragment += block.opcode === 'procedures_call' ? `)` : `))`;
                     return fragment;
                 }
@@ -140,7 +140,7 @@ class Compiler {
         this.thread.compiledStack[generationId] = {}; // 占个位，反正最后能够敲定
         const source = this.generateStack(defId, procedureInfo.isWarp, procedureInfo.paramNames);
         // eslint-disable-next-line max-len
-        this.thread.compiledStack[generationId] = new CompiledScript('procedure', source);
+        this.thread.blockContainer._cache.compiledFragment[generationId] = new CompiledScript('procedure', `${source}\n`);
     }
 
     /**
@@ -199,7 +199,7 @@ class Compiler {
             const index = paramNames.lastIndexOf(inputBlock.fields.VALUE.value);
             return {
                 name: input.name,
-                value: `(parameter['${index}'] || 0)`
+                value: `(parameter[${index}] || 0)`
             };
         }
         // 基本类型
@@ -247,7 +247,7 @@ class Compiler {
                 // Branch 就不需要考虑兼容层了吧
                 return {
                     name: input.name,
-                    value: this.generateStack(inputBlock.id)
+                    value: this.generateStack(inputBlock.id, false, paramNames)
                 };
             }
 

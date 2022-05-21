@@ -1,5 +1,9 @@
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 
+const debugSnippet = `// Debugger statement
+console.log(parameter, util.thread.compiledStack);
+`;
+
 const timerSnippet = `const timer = () => {
     const t = new globalState.Timer({
         now: () => util.thread.target.runtime.currentMSecs
@@ -42,10 +46,10 @@ class CompiledScript {
     convert () {
         if (!this.isGenerated) {
             try {
-                this.generator = new GeneratorFunction('util', 'globalState', 'parameter', timerSnippet + promiseLayerSnippet + this.source);
+                this.generator = new GeneratorFunction('util', 'globalState', 'parameter', debugSnippet + timerSnippet + promiseLayerSnippet + this.source);
                 this.isGenerated = true;
             } catch (e) {
-                throw new Error(`error occured while generating script:\n${e}`);
+                throw new Error(`Error occured while generating script:\n${e}`);
             }
         }
     }

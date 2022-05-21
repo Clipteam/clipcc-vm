@@ -83,15 +83,16 @@ class Compiler {
             // 如果为自定义积木，则开始生成自定义积木，并通过yield * 移交执行权
             // 我还没想好自定义返回值和全局怎么写，走一步看一步吧
             if (block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') {
+                console.log(block);
                 // 获取自定义函数信息
                 // eslint-disable-next-line max-len
                 const paramNamesIdsAndDefaults = this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(block.mutation.proccode);
                 const [_paramNames, _paramIds, _paramDefaults] = paramNamesIdsAndDefaults;
                 const procedureInfo = {
                     id: block.id,
-                    isGlobal: JSON.parse(block.mutation.global),
-                    isWarp: JSON.parse(block.mutation.warp),
-                    isReturn: JSON.parse(block.mutation.return),
+                    isGlobal: block.mutation.global ? JSON.parse(block.mutation.global) : false,
+                    isWarp: block.mutation.warp ? JSON.parse(block.mutation.warp) : false,
+                    isReturn: block.mutation.return ? JSON.parse(block.mutation.return) : false,
                     paramNames: _paramNames
                 };
                 const defId = this.thread.target.blocks.getProcedureDefinition(block.mutation.proccode);

@@ -491,14 +491,20 @@ class Thread {
     // --------------------------
     compile () {
         if (!this.isCompiled) {
-            try {
-                const compiler = new Compiler(this);
-                this.compiledStack.main = compiler.generate(this.topBlock);
-                console.log(this.compiledStack);
-                this.isCompiled = true;
-            } catch (e) {
-                console.log(`Error occurred during compilation:\n ${e}`);
+            const blocks = this.blockContainer.getBlock(this.topBlock) ? this.blockContainer : this.target.runtime.flyoutBlocks;
+            // 检查是否有缓存，如果有则使用缓存
+            if (!blocks._cache.compiledFragment.hasOwnProperty(this.topBlock)) {
+                console.log(`generating new cache ${this.topBlock}`);
+                try {
+                    const compiler = new Compiler(this);
+                    blocks._cache.compiledFragment[this.topBlock] = compiler.generate(this.topBlock);
+                    this.isCompiled = true;
+                } catch (e) {
+                    console.log(`Error occurred during compilation:\n ${e}`);
+                }
             }
+            this.compiledStack.main = blocks._cache.compiledFragment[this.topBlock];
+            return;
         }
     }
 }

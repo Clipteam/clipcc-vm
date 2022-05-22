@@ -89,7 +89,9 @@ const timerSnippet = `const timer = () => {
 };
 `;
 
-const promiseLayerSnippet = `const waitPromise = function* (promise) {
+const promiseLayerSnippet = `let hasResumedFromPromise = false;
+
+const waitPromise = function* (promise, flag) {
     const isPromise = value => (
         value !== null &&
         typeof value === 'object' &&
@@ -102,9 +104,8 @@ const promiseLayerSnippet = `const waitPromise = function* (promise) {
         }).catch(error => {
             console.error('Promise rejected:', error);
         });
-        while (result === '') {
-            yield;
-        }
+        while (result === '') yield;
+        if (flag) hasResumedFromPromise = true;
         return result;
     }
     return promise;

@@ -4,6 +4,7 @@ const StringUtil = require('../util/string-util');
 const VariablePool = require('./variable-pool');
 const CompiledInput = require('./compiled-input');
 const CompiledScript = require('./compiled-script');
+const Frame = require('./frame');
 
 class Compiler {
     constructor (thread) {
@@ -12,8 +13,43 @@ class Compiler {
         this._blocks = thread.blockContainer._blocks;
         this.varPool = new VariablePool('compiler');
         this.blockPool = {};
+        this.frames = [];
     }
 
+    /**
+     * 压入一个新的 Frame
+     * @param {Frame} frame - 新的 Frame
+     */
+    pushFrame (frame) {
+        this.frames.push(frame);
+    }
+
+    /**
+     * 退出当前 Frame
+     */
+    popFrame () {
+        this.frames.pop();
+    }
+
+    /**
+     * 该函数用于检测是否需要消除不必要的 yield 来防止在兼容层内运行的积木重复 yield
+     * @returns {boolean} 在检测到该积木是该 Frame 的最后一个积木时，返回 true
+     */
+    isLastBlockInLoop () {
+        console.log(this.frames);
+        for (let i = this.frames.length - 1; i >= 0; i--) {
+            const frame = this.frames[i];
+            if (!frame.isLastBlock) return false;
+            if (frame.isLoop) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取积木生成所需的线程池
+     * @param {string} opcode - 积木类型
+     * @returns {VariablePool} 线程池
+     */
     getVariablePool (opcode) {
         if (!this.blockPool.hasOwnProperty(opcode)) this.blockPool[opcode] = new VariablePool(opcode);
         return this.blockPool[opcode];
@@ -30,7 +66,7 @@ class Compiler {
         if (this.thread.stackClick) {
             // eslint-disable-next-line max-len
             if (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.isBranch(this.getBlockById(topId).opcode)) {
-                return new CompiledScript('script', this.generateStack(topId));
+                return new CompiledScript('script', this.generateStack(topId, false, [], new Frame(false)));
             }
             const compiledStack = [];
             const varName = this.varPool.add();
@@ -43,7 +79,22 @@ class Compiler {
         }
         // @todo 通过代码的方式让线程退休，而不应由sequencer进行判断。
         // if (isTopLevel) compiledStack.push(`util.runtime.sequencer.retireThread(util.thread)`);
-        return new CompiledScript('script', this.generateStack(topId));
+        return new CompiledScript('script', this.generateStack(topId, false, [], new Frame(false)));
+    }
+
+    /**
+     * 统计积木栈的长度
+     * @param {string} topId - 顶部积木 ID
+     * @returns {number} 该积木栈的长度
+     */
+    analyzeStackLength (topId) {
+        let length = 0;
+        let block = this.getBlockById(topId);
+        while (block) {
+            length++;
+            block = this.getBlockById(block.next);
+        }
+        return length;
     }
 
     /**
@@ -51,19 +102,25 @@ class Compiler {
      * @param {string} topId - 线程的顶部积木的 id
      * @param {boolean} isWarp - 是否不使用 yield，用于确认是否不刷新
      * @param {string[]} paramNames - 积木的参数名称列表
+     * @param {Frame} frame - 当前 Frame
      * @returns {string} 生成的代码
      */
-    generateStack (topId, isWarp = false, paramNames) {
+    generateStack (topId, isWarp = false, paramNames, frame) {
+        // eslint-disable-next-line max-len
+        if (!topId) return;
+
+        this.pushFrame(frame);
         const compiledStack = [];
         // 跳过编译 HAT 和 函数定义
         // eslint-disable-next-line max-len
-        if (!topId) return;
-        // eslint-disable-next-line max-len
         let currentBlockId = (this.runtime.getIsHat(this.getBlockById(topId).opcode) || this.getBlockById(topId).opcode === 'procedures_definition' || this.getBlockById(topId).opcode === 'procedures_definition_return') ? this.getBlockById(topId).next : topId;
-        while (currentBlockId !== null) {
+        const length = this.analyzeStackLength(currentBlockId);
+        for (let i = 0; i < length; i++) {
+            frame.isLastBlock = i === length - 1;
             compiledStack.push(this.generateBlock(this.getBlockById(currentBlockId), isWarp, paramNames));
             currentBlockId = this.getBlockById(currentBlockId).next;
         }
+        this.popFrame();
         return compiledStack.join('\n');
     }
 
@@ -117,7 +174,14 @@ class Compiler {
                 if (this.runtime._primitives.hasOwnProperty(block.opcode)) {
                     // 无法确认返回的是否为 Promise, 因此将其返回的结果传入PromiseLayer内进行调度
                     const inputs = this.decodeInputs(block, true, paramNames);
-                    return `yield* waitPromise(util.runtime.getOpcodeFunction("${block.opcode}")(${inputs}, util))`;
+                    const isLastBlockInLoop = this.isLastBlockInLoop();
+                    const base = `yield* waitPromise(util.runtime.getOpcodeFunction("${block.opcode}")(${inputs}, util), ${isLastBlockInLoop})`;
+                    // 如果循环中的最后一条命令返回一个 Promise，立即继续下一个迭代。
+                    // 如果不这样做，循环在每次迭代中都会产生两次，并将以半速运行。
+                    if (isLastBlockInLoop) {
+                        return `${base}\nif(hasResumedFromPromise){hasResumedFromPromise = false;continue;}`;
+                    }
+                    return base;
                 }
                 console.log(block);
                 throw new Error(`cannot generate "${block.opcode}"`);
@@ -139,7 +203,7 @@ class Compiler {
             return;
         }
         this.thread.compiledStack[generationId] = {}; // 占个位，反正最后能够敲定
-        const source = this.generateStack(defId, procedureInfo.isWarp, procedureInfo.paramNames);
+        const source = this.generateStack(defId, procedureInfo.isWarp, procedureInfo.paramNames, new Frame(false));
         // eslint-disable-next-line max-len
         this.thread.blockContainer._cache.compiledFragment[generationId] = new CompiledScript('procedure', `${source}\n`);
     }
@@ -251,9 +315,16 @@ class Compiler {
             // 非常量类型，换用 generateBlock 进行生成。
             if (this.isBranch(block.opcode)) {
                 // Branch 就不需要考虑兼容层了吧
+                // 判断是否为 loop
+                if (this.isLoop(block.opcode)) {
+                    return {
+                        name: input.name,
+                        unit: new CompiledInput(this.generateStack(inputBlock.id, false, paramNames, new Frame(true)), CompiledScript.TYPE_STRING, false)
+                    };
+                }
                 return {
                     name: input.name,
-                    unit: new CompiledInput(this.generateStack(inputBlock.id, false, paramNames), CompiledScript.TYPE_STRING, false)
+                    unit: new CompiledInput(this.generateStack(inputBlock.id, false, paramNames, new Frame(false)), CompiledScript.TYPE_STRING, false)
                 };
             }
 
@@ -338,6 +409,15 @@ class Compiler {
         if (opcode === 'control_if') return true;
         if (opcode === 'control_if_else') return true;
         if (opcode === 'control_all_at_once') return true;
+        return false;
+    }
+
+    isLoop (opcode) {
+        if (opcode === 'control_repeat') return true;
+        if (opcode === 'control_repeat_until') return true;
+        if (opcode === 'control_while') return true;
+        if (opcode === 'control_for_each') return true;
+        if (opcode === 'control_forever') return true;
         return false;
     }
 }

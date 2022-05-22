@@ -366,7 +366,7 @@ class Scratch3SensingBlocks {
     }
 
     getKeyPressed (args, util) {
-        return util.ioQuery('keyboard', 'getKeyIsDown', [args.KEY_OPTION.asString()]);
+        return util.ioQuery('keyboard', 'getKeyIsDown', [args.KEY_OPTION]);
     }
 
     daysSince2000 () {

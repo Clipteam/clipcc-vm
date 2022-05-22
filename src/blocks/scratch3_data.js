@@ -61,7 +61,7 @@ class Scratch3DataBlocks {
     }
 
     _setVariableTo (args) {
-        return `${this._getVariable(args)} = ${args.VALUE.asNumber()}\n` +
+        return `${this._getVariable(args)} = ${args.VALUE.asString()}\n` +
         `if (${this._getVariableRef(args)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
     }
 

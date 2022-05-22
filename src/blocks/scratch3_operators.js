@@ -124,7 +124,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _equals (args) {
-        return `eq(${args.OPERAND1.raw()}, ${args.OPERAND2.raw()})`;
+        return `eq(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
     }
 
     equals (args) {
@@ -132,7 +132,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _gt (args) {
-        return `gt(${args.OPERAND1.raw()}, ${args.OPERAND2.raw()})`;
+        return `gt(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
     }
 
     gt (args) {
@@ -340,7 +340,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _ge (args) {
-        return `ge(${args.NUM1.raw()}, ${args.NUM2.raw()})`;
+        return `ge(${args.NUM1.asString()}, ${args.NUM2.asString()})`;
     }
 
     ge (args) {
@@ -348,7 +348,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _le (args) {
-        return `le(${args.NUM1.raw()}, ${args.NUM2.raw()})`;
+        return `le(${args.NUM1.asString()}, ${args.NUM2.asString()})`;
     }
 
     le (args) {
@@ -356,7 +356,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _nequals (args) {
-        return `${args.NUM1} !== ${args.NUM2}`;
+        return `${args.NUM1.asString()} !== ${args.NUM2.asString()}`;
     }
 
     nequals (args) {

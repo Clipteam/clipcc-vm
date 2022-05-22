@@ -2,6 +2,7 @@
 /* eslint-disable no-console */
 const StringUtil = require('../util/string-util');
 const VariablePool = require('./variable-pool');
+const CompiledInput = require('./compiled-input');
 const CompiledScript = require('./compiled-script');
 
 class Compiler {
@@ -169,14 +170,14 @@ class Compiler {
         const inputs = isInCLayer ? [] : {};
         // 解析可输入内容
         for (const name in block.inputs) {
-            const unit = this.decodeInput(block, name, paramNames);
-            if (isInCLayer) inputs.push(`${name}: ${unit.value}`);
-            else inputs[name] = unit.value;
+            const input = this.decodeInput(block, name, paramNames);
+            if (isInCLayer) inputs.push(`${name}: ${input.unit.asString()}`);
+            else inputs[name] = input.unit;
         }
         // 解析常量类型输入
         for (const name in block.fields) {
             // 没想好兼容输出咋做，暂时搁置
-            inputs[name] = block.fields[name];
+            inputs[name] = new CompiledInput(block.fields[name].value, CompiledInput.TYPE_STRING, true);
         }
         if (isInCLayer) return `{${inputs.join(', ')}}`;
         return inputs;
@@ -199,14 +200,14 @@ class Compiler {
             const index = paramNames.lastIndexOf(inputBlock.fields.VALUE.value);
             return {
                 name: input.name,
-                value: `(parameter[${index}] || 0)`
+                unit: new CompiledInput(`(parameter[${index}] || 0)`, CompiledInput.TYPE_STRING, false)
             };
         }
         // 基本类型
         case 'colour_picker': {
             return {
                 name: input.name,
-                value: inputBlock.fields.COLOR.value
+                unit: new CompiledInput(inputBlock.fields.COLOR.value, CompiledScript.TYPE_ALWAYS_NUMBER, true)
             };
         }
         case 'math_angle':
@@ -217,28 +218,29 @@ class Compiler {
             const value = inputBlock.fields.NUM.value;
             return {
                 name: input.name,
-                value: value ? value : 0
+                unit: new CompiledInput(value, CompiledScript.TYPE_NUMBER, true)
             };
         }
         case 'text': {
             return {
                 name: input.name,
-                value: `"${inputBlock.fields.TEXT.value}"`
+                unit: new CompiledInput(inputBlock.fields.TEXT.value, CompiledScript.TYPE_STRING, true)
             };
         }
         // 菜单
         case 'sound_sounds_menu': {
             return {
                 name: input.name,
-                value: `"${inputBlock.fields.SOUND_MENU.value}"`
+                unit: new CompiledInput(inputBlock.fields.SOUND_MENU.value, CompiledScript.TYPE_STRING, true)
             };
         }
         case 'event_broadcast_menu': {
             const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
             const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
+            const result = broadcastVariable ? `"${broadcastVariable.name}"` : '';
             return {
                 name: input.name,
-                value: broadcastVariable ? `"${broadcastVariable.name}"` : ''
+                unit: new CompiledInput(result, CompiledScript.TYPE_STRING, true)
             };
         }
         default: {
@@ -247,14 +249,14 @@ class Compiler {
                 // Branch 就不需要考虑兼容层了吧
                 return {
                     name: input.name,
-                    value: this.generateStack(inputBlock.id, false, paramNames)
+                    unit: new CompiledInput(this.generateStack(inputBlock.id, false, paramNames), CompiledScript.TYPE_STRING, false)
                 };
             }
 
             try {
                 return {
                     name: input.name,
-                    value: `(${this.generateBlock(inputBlock)})`
+                    unit: new CompiledInput(this.generateBlock(inputBlock), CompiledScript.TYPE_STRING, false)
                 };
             } catch (e) {
                 // 也许是菜单
@@ -263,7 +265,7 @@ class Compiler {
                 if (inputs.length === 0 && fields.length === 1) {
                     return {
                         name: input.name,
-                        value: `"${inputBlock.fields[fields[0]].value}"`
+                        unit: new CompiledInput(inputBlock.fields[fields[0]].value, CompiledScript.TYPE_STRING, true)
                     };
                 }
                 throw new Error(`cannot generate input ${input.name}:\n ${e.message}`);

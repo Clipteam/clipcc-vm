@@ -202,7 +202,7 @@ class Scratch3SensingBlocks {
     }
 
     _touchingObject (args) {
-        return `util.target.isTouchingObject(${args.TOUCHINGOBJECTMENU})`;
+        return `util.target.isTouchingObject(${args.TOUCHINGOBJECTMENU.raw()})`;
     }
 
     touchingObject (args, util) {
@@ -281,7 +281,7 @@ class Scratch3SensingBlocks {
 
     _setDragMode (args) {
         // It's a field menu, let's optimize it.
-        const isDraggable = args.DRAG_MODE === 'draggable';
+        const isDraggable = args.DRAG_MODE.raw() === 'draggable';
         return `util.target.setDraggable(${isDraggable})`;
     }
 
@@ -334,7 +334,7 @@ class Scratch3SensingBlocks {
 
     _current (args) {
         // it's a field, let's optimize it!
-        const menuOption = Cast.toString(args.CURRENTMENU).toLowerCase();
+        const menuOption = args.CURRENTMENU.raw().toLowerCase();
         switch (menuOption) {
         case 'year': return `new Date().getFullYear()`;
         case 'month': return `new Date().getMonth() + 1`;
@@ -362,11 +362,11 @@ class Scratch3SensingBlocks {
     }
 
     _getKeyPressed (args) {
-        return `util.ioQuery('keyboard', 'getKeyPressed', [${args.KEY_OPTION}])`;
+        return `util.ioQuery('keyboard', 'getKeyPressed', [${args.KEY_OPTION.asString()}])`;
     }
 
     getKeyPressed (args, util) {
-        return util.ioQuery('keyboard', 'getKeyIsDown', [args.KEY_OPTION]);
+        return util.ioQuery('keyboard', 'getKeyIsDown', [args.KEY_OPTION.asString()]);
     }
 
     daysSince2000 () {

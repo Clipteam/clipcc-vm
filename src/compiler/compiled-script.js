@@ -1,7 +1,83 @@
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 
-const debugSnippet = `// Debugger statement
-console.log(parameter, util.thread.compiledStack);
+const castSnippet = `const isWhiteSpace = val => typeof val === 'string' && val.trim().length === 0;
+
+const toBoolean = (value) => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+        if (value === '' || value === '0' || value.toLowerCase() === 'false') {
+            return false;
+        }
+        return true;
+    }
+    return !!value;
+};
+
+const lt = (v1, v2) => {
+    let n1 = +v1;
+    let n2 = +v2;
+    if (n1 === 0 && isWhiteSpace(v1)) n1 = NaN;
+    else if (n2 === 0 && isWhiteSpace(v2)) n2 = NaN;
+    if (isNaN(n1) || isNaN(n2)) {
+        const s1 = ('' + v1).toLowerCase();
+        const s2 = ('' + v2).toLowerCase();
+        return s1 < s2;
+    }
+    return n1 < n2;
+};
+
+const le = (v1, v2) => {
+    let n1 = +v1;
+    let n2 = +v2;
+    if (n1 === 0 && isWhiteSpace(v1)) n1 = NaN;
+    else if (n2 === 0 && isWhiteSpace(v2)) n2 = NaN;
+    if (isNaN(n1) || isNaN(n2)) {
+        const s1 = ('' + v1).toLowerCase();
+        const s2 = ('' + v2).toLowerCase();
+        return s1 <= s2;
+    }
+    return n1 <= n2;
+};
+
+const gt = (v1, v2) => {
+    let n1 = +v1;
+    let n2 = +v2;
+    if (n1 === 0 && isWhiteSpace(v1)) {
+        n1 = NaN;
+    } else if (n2 === 0 && isWhiteSpace(v2)) {
+        n2 = NaN;
+    }
+    if (isNaN(n1) || isNaN(n2)) {
+        const s1 = ('' + v1).toLowerCase();
+        const s2 = ('' + v2).toLowerCase();
+        return s1 > s2;
+    }
+    return n1 > n2;
+};
+
+const ge = (v1, v2) => {
+    let n1 = +v1;
+    let n2 = +v2;
+    if (n1 === 0 && isWhiteSpace(v1)) {
+        n1 = NaN;
+    } else if (n2 === 0 && isWhiteSpace(v2)) {
+        n2 = NaN;
+    }
+    if (isNaN(n1) || isNaN(n2)) {
+        const s1 = ('' + v1).toLowerCase();
+        const s2 = ('' + v2).toLowerCase();
+        return s1 >= s2;
+    }
+    return n1 >= n2;
+};
+
+const eq = (v1, v2) => {
+    const n1 = +v1;
+    if (isNaN(n1) || (n1 === 0 && isWhiteSpace(v1))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
+    const n2 = +v2;
+    if (isNaN(n2) || (n2 === 0 && isWhiteSpace(v2))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
+    return n1 === n2;
+};
 `;
 
 const timerSnippet = `const timer = () => {
@@ -10,7 +86,7 @@ const timerSnippet = `const timer = () => {
     });
     t.start();
     return t;
-}
+};
 `;
 
 const promiseLayerSnippet = `const waitPromise = function* (promise) {
@@ -46,7 +122,7 @@ class CompiledScript {
     convert () {
         if (!this.isGenerated) {
             try {
-                this.generator = new GeneratorFunction('util', 'globalState', 'parameter', timerSnippet + promiseLayerSnippet + this.source);
+                this.generator = new GeneratorFunction('util', 'globalState', 'parameter', castSnippet + timerSnippet + promiseLayerSnippet + this.source);
                 this.isGenerated = true;
             } catch (e) {
                 throw new Error(`Error occured while generating script:\n${e}`);

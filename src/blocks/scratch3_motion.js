@@ -84,7 +84,7 @@ class Scratch3MotionBlocks {
     }
 
     _goToXY (args) {
-        return `util.target.setXY(${args.X}, ${args.Y});`;
+        return `util.target.setXY(${args.X.asPureNumber()}, ${args.Y.asPureNumber()});`;
     }
 
     goToXY (args, util) {
@@ -122,7 +122,7 @@ class Scratch3MotionBlocks {
     }
 
     _turnRight (args) {
-        return `util.target.setDirection(util.target.direction + ${args.DEGREES});`;
+        return `util.target.setDirection(util.target.direction + ${args.DEGREES.asPureNumber()});`;
     }
 
     turnRight (args, util) {
@@ -131,7 +131,7 @@ class Scratch3MotionBlocks {
     }
 
     _turnLeft (args) {;
-        return `util.target.setDirection(util.target.direction - ${args.DEGREES});`;
+        return `util.target.setDirection(util.target.direction - ${args.DEGREES.asPureNumber()});`;
     }
 
     turnLeft (args, util) {
@@ -140,7 +140,7 @@ class Scratch3MotionBlocks {
     }
 
     _pointInDirection (args) {
-        return `util.target.setDirection(${args.DIRECTION});`;
+        return `util.target.setDirection(${args.DIRECTION.asPureNumber()});`;
     }
 
     pointInDirection (args, util) {
@@ -270,7 +270,7 @@ class Scratch3MotionBlocks {
     }
 
     _setRotationStyle (args) {
-        return `util.target.setRotationStyle(${args.STYLE});`;
+        return `util.target.setRotationStyle(${args.STYLE.raw()});`;
     }
 
     setRotationStyle (args, util) {
@@ -278,7 +278,7 @@ class Scratch3MotionBlocks {
     }
 
     _changeX (args) {
-        return `util.target.setXY(util.target.x + ${args.DX}, util.target.y);`;
+        return `util.target.setXY(util.target.x + ${args.DX.asPureNumber()}, util.target.y);`;
     }
 
     changeX (args, util) {
@@ -287,7 +287,7 @@ class Scratch3MotionBlocks {
     }
 
     _setX (args) {
-        return `util.target.setXY(${args.X}, util.target.y);`;
+        return `util.target.setXY(${args.X.asPureNumber()}, util.target.y);`;
     }
 
     setX (args, util) {
@@ -296,7 +296,7 @@ class Scratch3MotionBlocks {
     }
 
     _changeY (args) {
-        return `util.target.setXY((util.target.x, util.target.y + ${args.DY});`;
+        return `util.target.setXY((util.target.x, util.target.y + ${args.DY.asPureNumber()});`;
     }
 
     changeY (args, util) {
@@ -305,7 +305,7 @@ class Scratch3MotionBlocks {
     }
 
     _setY (args) {
-        return `util.target.y = ${args.Y};`;
+        return `util.target.y = ${args.Y.asPureNumber()};`;
     }
 
     setY (args, util) {

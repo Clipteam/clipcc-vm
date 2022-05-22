@@ -80,16 +80,17 @@ class Scratch3OperatorsBlocks {
     }
 
     _add (args) {
-        return `(${args.NUM1} || 0) + (${args.NUM2} || 0)`;
+        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.value + args.NUM2.value}`;
+        return `${args.NUM1.asNumber()} + ${args.NUM2.asNumber()}`;
     }
 
     add (args) {
-        // TODO: 还得实现对字符串相关情况的判断，不过那就得等到 args 支持返回 TYPE 了
         return Cast.toNumber(args.NUM1) + Cast.toNumber(args.NUM2);
     }
     
     _subtract (args) {
-        return `(${args.NUM1} || 0) - (${args.NUM2} || 0)`;
+        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.value - args.NUM2.value}`;
+        return `${args.NUM1.asNumber()} - ${args.NUM2.asNumber()}`;
     }
 
     subtract (args) {
@@ -97,7 +98,8 @@ class Scratch3OperatorsBlocks {
     }
 
     _multiply (args) {
-        return `(${args.NUM1} || 0) * (${args.NUM2} || 0)`;
+        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.value * args.NUM2.value}`;
+        return `${args.NUM1.asNumber()} * ${args.NUM2.asNumber()}`;
     }
 
     multiply (args) {
@@ -105,7 +107,8 @@ class Scratch3OperatorsBlocks {
     }
 
     _divide (args) {
-        return `(${args.NUM1} || 0) / (${args.NUM2} || 0)`;
+        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.value / args.NUM2.value}`;
+        return `${args.NUM1.asNumber()} / ${args.NUM2.asNumber()}`;
     }
 
     divide (args) {
@@ -113,16 +116,15 @@ class Scratch3OperatorsBlocks {
     }
 
     _lt (args) {
-        return `(${args.NUM1} || 0) < (${args.NUM2} || 0)`;
+        return `lt(${args.OPERAND1.raw()}, ${args.OPERAND2.raw()})`;
     }
 
     lt (args) {
-        // TODO: 还得实现对字符串相关情况的判断，不过那就得等到 args 支持返回 TYPE 了
         return Cast.compare(args.OPERAND1, args.OPERAND2) < 0;
     }
 
     _equals (args) {
-        return `(${args.OPERAND1} == ${args.OPERAND2})`;
+        return `eq(${args.OPERAND1.raw()}, ${args.OPERAND2.raw()})`;
     }
 
     equals (args) {
@@ -130,8 +132,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _gt (args) {
-        // TODO: 还得实现对字符串相关情况的判断，不过那就得等到 args 支持返回 TYPE 了
-        return `(${args.NUM1} || 0) > (${args.NUM2} || 0)`;
+        return `gt(${args.OPERAND1.raw()}, ${args.OPERAND2.raw()})`;
     }
 
     gt (args) {
@@ -139,7 +140,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _and (args) {
-        return `${args.OPERAND1} && ${args.OPERAND2}`;
+        return `${args.OPERAND1.asBoolean()} && ${args.OPERAND2.asBoolean()}`;
     }
 
     and (args) {
@@ -147,7 +148,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _or (args) {
-        return `${args.OPERAND1} || ${args.OPERAND2}`;
+        return `${args.OPERAND1.asBoolean()} || ${args.OPERAND2.asBoolean()}`;
     }
 
     or (args) {
@@ -155,7 +156,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _not (args) {
-        return `!(${args.OPERAND})`;
+        return `!${args.OPERAND.asBoolean()}`;
     }
 
     not (args) {
@@ -176,7 +177,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _join (args) {
-        return `${args.STRING1} + ${args.STRING2}`;
+        return `${args.STRING1.asString()} + ${args.STRING2.asString()}`;
     }
 
     join (args) {
@@ -205,7 +206,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _length (args) {
-        return `${args.STRING}.length`;
+        return `(${args.STRING.asString()}).length`;
     }
 
     length (args) {
@@ -233,22 +234,22 @@ class Scratch3OperatorsBlocks {
     }
 
     _mathop (args) {
-        const operator = Cast.toString(args.OPERATOR).toLowerCase();
+        const operator = args.OPERATOR.raw().toLowerCase();
         switch (operator) {
-        case 'abs': return `Math.abs(${args.NUM})`;
-        case 'ceiling': return `Math.ceil(${args.NUM})`;
-        case 'floor': return `Math.floor(${args.NUM})`;
-        case 'sqrt': return `Math.sqrt(${args.NUM})`;
-        case 'sin': return `Math.sin(${args.NUM})`;
-        case 'cos': return `Math.cos(${args.NUM})`;
-        case 'tan': return `Math.tan(${args.NUM})`;
-        case 'asin': return `Math.asin(${args.NUM})`;
-        case 'acos': return `Math.acos(${args.NUM})`;
-        case 'atan': return `Math.atan(${args.NUM})`;
-        case 'ln': return `Math.log(${args.NUM})`;
-        case 'log': return `Math.log(${args.NUM})/Math.log(10)`;
-        case 'e ^': return `Math.exp(${args.NUM})`;
-        case '10 ^': return `Math.pow(10, ${args.NUM})`;
+        case 'abs': return `Math.abs(${args.NUM.asNumber()})`;
+        case 'ceiling': return `Math.ceil(${args.NUM.asNumber()})`;
+        case 'floor': return `Math.floor(${args.NUM.asNumber()})`;
+        case 'sqrt': return `Math.sqrt(${args.NUM.asNumber()})`;
+        case 'sin': return `Math.sin(${args.NUM.asNumber()})`;
+        case 'cos': return `Math.cos(${args.NUM.asNumber()})`;
+        case 'tan': return `Math.tan(${args.NUM.asNumber()})`;
+        case 'asin': return `Math.asin(${args.NUM.asNumber()})`;
+        case 'acos': return `Math.acos(${args.NUM.asNumber()})`;
+        case 'atan': return `Math.atan(${args.NUM.asNumber()})`;
+        case 'ln': return `Math.log(${args.NUM.asNumber()})`;
+        case 'log': return `Math.log(${args.NUM.asNumber()})/Math.log(10)`;
+        case 'e ^': return `Math.exp(${args.NUM.asNumber()})`;
+        case '10 ^': return `Math.pow(10, ${args.NUM.asNumber()})`;
         }
     }
 
@@ -275,7 +276,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _power (args) {
-        return `Math.pow(${args.NUM1}, ${args.NUM2})`;
+        return `Math.pow(${args.NUM1.asNumber()}, ${args.NUM2.asNumber()})`;
     }
 
     power (args) {
@@ -283,7 +284,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _bitand (args) {
-        return `${args.NUM1} & ${args.NUM2}`;
+        return `${args.NUM1.asNumber()} & ${args.NUM2.asNumber()}`;
     }
 
     bitand (args) {
@@ -291,7 +292,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _bitor (args) {
-        return `${args.NUM1} | ${args.NUM2}`;
+        return `${args.NUM1.asNumber()} | ${args.NUM2.asNumber()}`;
     }
 
     bitor (args) {
@@ -299,7 +300,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _bitxor (args) {
-        return `${args.NUM1} ^ ${args.NUM2}`;
+        return `${args.NUM1.asNumber()} ^ ${args.NUM2.asNumber()}`;
     }
 
     bitxor (args) {
@@ -307,7 +308,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _bitlsh (args) {
-        return `${args.NUM1} << ${args.NUM2}`;
+        return `${args.NUM1.asNumber()} << ${args.NUM2.asNumber()}`;
     }
 
     bitlsh (args) {
@@ -315,7 +316,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _bitrsh (args) {
-        return `${args.NUM1} >> ${args.NUM2}`;
+        return `${args.NUM1.asNumber()} >> ${args.NUM2.asNumber()}`;
     }
 
     bitrsh (args) {
@@ -323,7 +324,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _bitursh (args) {
-        return `${args.NUM1} >>> ${args.NUM2}`;
+        return `${args.NUM1.asNumber()} >>> ${args.NUM2.asNumber()}`;
     }
 
     bitursh (args) {
@@ -331,7 +332,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _bitnot (args) {
-        return `~${args.NUM}`;
+        return `~${args.NUM.asNumber()}`;
     }
 
     bitnot (args) {
@@ -339,17 +340,15 @@ class Scratch3OperatorsBlocks {
     }
 
     _ge (args) {
-        return `${args.NUM1} >= ${args.NUM2}`;
+        return `ge(${args.NUM1.raw()}, ${args.NUM2.raw()})`;
     }
 
     ge (args) {
-        // TODO: 还得实现对字符串相关情况的判断，不过那就得等到 args 支持返回 TYPE 了
         return Cast.compare(args.OPERAND1, args.OPERAND2) >= 0;
     }
 
     _le (args) {
-        // TODO: 还得实现对字符串相关情况的判断，不过那就得等到 args 支持返回 TYPE 了
-        return `${args.NUM1} <= ${args.NUM2}`;
+        return `le(${args.NUM1.raw()}, ${args.NUM2.raw()})`;
     }
 
     le (args) {

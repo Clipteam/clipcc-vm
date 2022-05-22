@@ -68,8 +68,8 @@ class Scratch3ControlBlocks {
     }
 
     _repeat (args) {
-        return `for (let i = ${args.TIMES}; i >= 0.5; i--){\n` +
-        `${args.SUBSTACK}\n` +
+        return `for (let i = ${args.TIMES.asPureNumber()}; i >= 0.5; i--){\n` +
+        `${args.SUBSTACK.raw()}\n` +
         `yield\n` +
         `}`;
     }
@@ -92,7 +92,7 @@ class Scratch3ControlBlocks {
     }
 
     _repeatUntil (args) {
-        return `while(!(${args.CONDITION})){\n` +
+        return `while(!${args.CONDITION.asBoolean()}){\n` +
         `${args.SUBSTACK}\n` +
         `yield\n` +
         `}`;
@@ -107,7 +107,7 @@ class Scratch3ControlBlocks {
     }
     
     _repeatWhile (args) {
-        return `while(!!(${args.CONDITION})){\n` +
+        return `while(${args.CONDITION.asBoolean()}){\n` +
         `${args.SUBSTACK}\n` +
         `yield\n` +
         `}`;
@@ -145,7 +145,7 @@ class Scratch3ControlBlocks {
 
     _forever (args) {
         return `while(true) {\n` +
-        `${args.SUBSTACK}\n` +
+        `${args.SUBSTACK.raw()}\n` +
         `yield\n` +
         `}`;
     }
@@ -157,7 +157,7 @@ class Scratch3ControlBlocks {
     _wait (args, isWarp, varPool) {
         const varName = varPool.add();
         const base = `util.thread.timer = timer()\n` +
-        `const ${`var_${varName}`} = Math.max(0, 1000 * ${args.DURATION})\n` +
+        `const ${`var_${varName}`} = Math.max(0, 1000 * ${args.DURATION.asPureNumber()})\n` +
         `util.runtime.requestRedraw()\n` +
         `yield\n` +
         `while (util.thread.timer.timeElapsed() < ${`var_${varName}`}) {\n`;
@@ -196,8 +196,8 @@ class Scratch3ControlBlocks {
     }
 
     _if (args) {
-        return `if (${args.CONDITION}) {\n` +
-        `${args.SUBSTACK}\n` +
+        return `if (${args.CONDITION.asBoolean()}) {\n` +
+        `${args.SUBSTACK.raw()}\n` +
         `}`;
     }
 
@@ -209,10 +209,10 @@ class Scratch3ControlBlocks {
     }
 
     _ifElse (args) {
-        return `if (${args.CONDITION}) {\n` +
-        `${args.SUBSTACK}\n` +
+        return `if (${args.CONDITION.asBoolean()}) {\n` +
+        `${args.SUBSTACK.raw()}\n` +
         `} else {\n` +
-        `${args.SUBSTACK2}\n` +
+        `${args.SUBSTACK2.raw()}\n` +
         `}`;
     }
 
@@ -226,7 +226,7 @@ class Scratch3ControlBlocks {
     }
 
     _stop (args) {
-        const option = args.STOP_OPTION;
+        const option = args.STOP_OPTION.raw();
         if (option === 'all') return `util.stopAll()`;
         if (option === 'this script') return `return`;
         if (option === 'other scripts in sprite' || option === 'other scripts in stage') return `util.runtime.stopForTarget(util.target, util.thread)`;

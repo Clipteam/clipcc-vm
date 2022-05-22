@@ -50,9 +50,9 @@ class Scratch3MotionBlocks {
             motion_turnright: this._turnRight,
             motion_turnleft: this._turnLeft,
             motion_pointindirection: this._pointInDirection,
-            motion_changex: this._changeX,
+            motion_changexby: this._changeX,
             motion_setx: this._setX,
-            motion_changey: this._changeY,
+            motion_changeyby: this._changeY,
             motion_sety: this._setY,
             motion_direction: this._getDirection
         };

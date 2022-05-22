@@ -36,7 +36,6 @@ class Compiler {
      * @returns {boolean} 在检测到该积木是该 Frame 的最后一个积木时，返回 true
      */
     isLastBlockInLoop () {
-        console.log(this.frames);
         for (let i = this.frames.length - 1; i >= 0; i--) {
             const frame = this.frames[i];
             if (!frame.isLastBlock) return false;
@@ -275,7 +274,7 @@ class Compiler {
         case 'colour_picker': {
             return {
                 name: input.name,
-                unit: new CompiledInput(inputBlock.fields.COLOR.value, CompiledScript.TYPE_ALWAYS_NUMBER, true)
+                unit: new CompiledInput(inputBlock.fields.COLOR.value, CompiledInput.TYPE_ALWAYS_NUMBER, true)
             };
         }
         case 'math_angle':
@@ -286,20 +285,20 @@ class Compiler {
             const value = inputBlock.fields.NUM.value;
             return {
                 name: input.name,
-                unit: new CompiledInput(value, CompiledScript.TYPE_NUMBER, true)
+                unit: new CompiledInput(value, CompiledInput.TYPE_NUMBER, true)
             };
         }
         case 'text': {
             return {
                 name: input.name,
-                unit: new CompiledInput(inputBlock.fields.TEXT.value, CompiledScript.TYPE_STRING, true)
+                unit: new CompiledInput(inputBlock.fields.TEXT.value, CompiledInput.TYPE_STRING, true)
             };
         }
         // 菜单
         case 'sound_sounds_menu': {
             return {
                 name: input.name,
-                unit: new CompiledInput(inputBlock.fields.SOUND_MENU.value, CompiledScript.TYPE_STRING, true)
+                unit: new CompiledInput(inputBlock.fields.SOUND_MENU.value, CompiledInput.TYPE_STRING, true)
             };
         }
         case 'event_broadcast_menu': {
@@ -308,7 +307,7 @@ class Compiler {
             const result = broadcastVariable ? `"${broadcastVariable.name}"` : '';
             return {
                 name: input.name,
-                unit: new CompiledInput(result, CompiledScript.TYPE_STRING, true)
+                unit: new CompiledInput(result, CompiledInput.TYPE_STRING, true)
             };
         }
         default: {
@@ -319,19 +318,19 @@ class Compiler {
                 if (this.isLoop(block.opcode)) {
                     return {
                         name: input.name,
-                        unit: new CompiledInput(this.generateStack(inputBlock.id, false, paramNames, new Frame(true)), CompiledScript.TYPE_STRING, false)
+                        unit: new CompiledInput(this.generateStack(inputBlock.id, false, paramNames, new Frame(true)), CompiledInput.TYPE_DYNAMIC, false)
                     };
                 }
                 return {
                     name: input.name,
-                    unit: new CompiledInput(this.generateStack(inputBlock.id, false, paramNames, new Frame(false)), CompiledScript.TYPE_STRING, false)
+                    unit: new CompiledInput(this.generateStack(inputBlock.id, false, paramNames, new Frame(false)), CompiledInput.TYPE_DYNAMIC, false)
                 };
             }
 
             try {
                 return {
                     name: input.name,
-                    unit: new CompiledInput(this.generateBlock(inputBlock), CompiledScript.TYPE_STRING, false)
+                    unit: new CompiledInput(this.generateBlock(inputBlock), CompiledInput.TYPE_DYNAMIC, false)
                 };
             } catch (e) {
                 // 也许是菜单
@@ -340,7 +339,7 @@ class Compiler {
                 if (inputs.length === 0 && fields.length === 1) {
                     return {
                         name: input.name,
-                        unit: new CompiledInput(inputBlock.fields[fields[0]].value, CompiledScript.TYPE_STRING, true)
+                        unit: new CompiledInput(inputBlock.fields[fields[0]].value, CompiledInput.TYPE_STRING, true)
                     };
                 }
                 throw new Error(`cannot generate input ${input.name}:\n ${e.message}`);

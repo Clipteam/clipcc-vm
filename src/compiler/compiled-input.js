@@ -32,6 +32,10 @@ class CompiledInput {
         return '3';
     }
 
+    static get TYPE_DYNAMIC () {
+        return '4';
+    }
+
     raw () {
         return this.value;
     }
@@ -50,13 +54,13 @@ class CompiledInput {
             return '0';
         }
         if (this.type === CompiledInput.TYPE_ALWAYS_NUMBER) return this.value;
-        return `(+${this.value} || 0)`;
+        return `(+(${this.value}) || 0)`;
     }
 
     asNumber () {
         if (this.constant) return this.asPureNumber();
         if (this.type === CompiledInput.TYPE_NUMBER) return this.value;
-        return `(+${this.value})`;
+        return `(+(${this.value}))`;
     }
 
     asBoolean () {

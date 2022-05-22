@@ -202,7 +202,7 @@ class Scratch3SensingBlocks {
     }
 
     _touchingObject (args) {
-        return `util.target.isTouchingObject(${args.TOUCHINGOBJECTMENU.raw()})`;
+        return `util.target.isTouchingObject(${args.TOUCHINGOBJECTMENU.asString()})`;
     }
 
     touchingObject (args, util) {

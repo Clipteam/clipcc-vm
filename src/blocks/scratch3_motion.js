@@ -296,7 +296,7 @@ class Scratch3MotionBlocks {
     }
 
     _changeY (args) {
-        return `util.target.setXY((util.target.x, util.target.y + ${args.DY.asPureNumber()});`;
+        return `util.target.setXY(util.target.x, util.target.y + ${args.DY.asPureNumber()});`;
     }
 
     changeY (args, util) {

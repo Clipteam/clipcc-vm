@@ -311,6 +311,18 @@ class Scratch3LooksBlocks {
         };
     }
 
+    getCompiledFragment () {
+        return {
+            looks_goforwardbackwardlayers: this._goForwardBackwardLayers,
+            looks_cleargraphiceffects: this._clearEffects,
+            looks_changesizeby: this._changeSize,
+            looks_setsizeto: this._setSize,
+            looks_size: this._getSize,
+            looks_gotofrontback: this._goToFrontBack,
+            looks_nextcostume: this._nextCostume
+        };
+    }
+
     getMonitored () {
         return {
             looks_size: {
@@ -465,6 +477,10 @@ class Scratch3LooksBlocks {
         this._setCostume(util.target, args.COSTUME);
     }
 
+    _nextCostume () {
+        return `util.target.setCostume(util.target.currentCostume + 1);`;
+    }
+
     nextCostume (args, util) {
         this._setCostume(
             util.target, util.target.currentCostume + 1, true
@@ -553,8 +569,16 @@ class Scratch3LooksBlocks {
         util.target.setEffect(effect, value);
     }
 
+    _clearEffects () {
+        return `util.target.clearEffects()`;
+    }
+
     clearEffects (args, util) {
         util.target.clearEffects();
+    }
+
+    _changeSize (args) {
+        return `util.target.setSize(util.target.size + ${args.SIZE.asPureNumber()})`;
     }
 
     changeSize (args, util) {
@@ -562,9 +586,19 @@ class Scratch3LooksBlocks {
         util.target.setSize(util.target.size + change);
     }
 
+    _setSize (args) {
+        return `util.target.setSize(${args.SIZE.asPureNumber()})`;
+    }
+
     setSize (args, util) {
         const size = Cast.toNumber(args.SIZE);
         util.target.setSize(size);
+    }
+
+    _goToFrontBack (args) {
+        const option = args.FRONT_BACK.raw();
+        if (option === 'front') return 'util.target.goToFront()';
+        return 'util.target.goToBack()';
     }
 
     goToFrontBack (args, util) {
@@ -577,6 +611,12 @@ class Scratch3LooksBlocks {
         }
     }
 
+    _goForwardBackwardLayers (args) {
+        const option = args.FORWARD_BACKWARD.raw();
+        if (option === 'forward') return `util.target.goForwardLayers(${args.NUM.asPureNumber()})`;
+        return `util.target.goBackwardLayers(${args.NUM.asPureNumber()})`;
+    }
+
     goForwardBackwardLayers (args, util) {
         if (!util.target.isStage) {
             if (args.FORWARD_BACKWARD === 'forward') {
@@ -585,6 +625,10 @@ class Scratch3LooksBlocks {
                 util.target.goBackwardLayers(Cast.toNumber(args.NUM));
             }
         }
+    }
+
+    _getSize () {
+        return 'Math.round(util.target.size)';
     }
 
     getSize (args, util) {

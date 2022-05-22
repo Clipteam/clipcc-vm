@@ -76,7 +76,7 @@ class Compiler {
      */
     generateBlock (block, isWarp = false, paramNames) {
         if (!block) throw new Error('block is undefined');
-        
+        if (block.opcode === 'looks_changeeffectby') console.log(block);
         try {
             // 如果为自定义积木，则开始生成自定义积木，并通过yield * 移交执行权
             // 我还没想好自定义返回值和全局怎么写，走一步看一步吧
@@ -177,7 +177,11 @@ class Compiler {
         // 解析常量类型输入
         for (const name in block.fields) {
             // 没想好兼容输出咋做，暂时搁置
-            inputs[name] = new CompiledInput(block.fields[name].value, CompiledInput.TYPE_STRING, true);
+            if (name === 'VARIABLE') {
+                if (isInCLayer) inputs.push(`${name}: "${block.fields[name].id}"`);
+                else inputs[name] = new CompiledInput(block.fields[name].id, CompiledInput.TYPE_STRING, true);
+            } else if (isInCLayer) inputs.push(`${name}: "${block.fields[name].value}"`);
+            else inputs[name] = new CompiledInput(block.fields[name].value, CompiledInput.TYPE_STRING, true);
         }
         if (isInCLayer) return `{${inputs.join(', ')}}`;
         return inputs;

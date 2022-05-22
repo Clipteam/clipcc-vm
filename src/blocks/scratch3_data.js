@@ -47,7 +47,7 @@ class Scratch3DataBlocks {
     }
 
     _getVariableRef (args) {
-        return `(util.target.variables.hasOwnProperty('${args.VARIABLE.id}') ? util.target.variables['${args.VARIABLE.id}'].value : util.runtime.getTargetForStage().variables['${args.VARIABLE.id}'])`;
+        return `(util.target.variables.hasOwnProperty('${args.VARIABLE.raw()}') ? util.target.variables['${args.VARIABLE.raw()}'].value : util.runtime.getTargetForStage().variables['${args.VARIABLE.raw()}'])`;
     }
 
     _getVariable (args) {
@@ -61,7 +61,7 @@ class Scratch3DataBlocks {
     }
 
     _setVariableTo (args) {
-        return `${this._getVariable(args)} = ${args.VALUE}\n` +
+        return `${this._getVariable(args)} = ${args.VALUE.asNumber()}\n` +
         `if (${this._getVariableRef(args)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
     }
 
@@ -76,7 +76,7 @@ class Scratch3DataBlocks {
     }
 
     _changeVariableBy (args) {
-        return `${this._getVariable(args)} += ${args.VALUE}\n` +
+        return `${this._getVariable(args)} += ${args.VALUE.asNumber()}\n` +
         `if (${this._getVariableRef(args)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
     }
 

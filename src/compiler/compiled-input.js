@@ -54,7 +54,7 @@ class CompiledInput {
     }
 
     asNumber () {
-        if (this.constant) return this.toPureNumber();
+        if (this.constant) return this.asPureNumber();
         if (this.type === CompiledInput.TYPE_NUMBER) return this.value;
         return `(+${this.value})`;
     }

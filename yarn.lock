@@ -2308,10 +2308,10 @@ cli-width@^2.0.0:
   resolved "https://registry.yarnpkg.com/cli-width/-/cli-width-2.2.1.tgz#b0433d0b4e9c847ef18868a4ef16fd5fc8271c48"
   integrity sha512-GRMWDxpOB6Dgk2E5Uo+3eEBvtOOlimMmpbFiKuLFnQzYDavtLFY3K5ona41jgN/WdRZtG7utuVSVTL4HbZHGkw==
 
-clipcc-block@3.1.4:
-  version "3.1.4"
-  resolved "https://registry.yarnpkg.com/clipcc-block/-/clipcc-block-3.1.4.tgz#838809b3a44c17e540609672d85a6072b633081f"
-  integrity sha512-mRqSSat59DXDTEAKphvJcy/5V9cHQqRRbBWV3IpPtKAFviqJ8pC/alKEI1E6bhkknwfu8lU4yGL6bpq6cpXmZA==
+clipcc-block@3.1.6:
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/clipcc-block/-/clipcc-block-3.1.6.tgz#b28c3b2ab11fcdb1324c969f7dcbd5283ec0435d"
+  integrity sha512-EgAdPNvAzwVAM9zAEHl3AxL+sV+irWy6zhLMFGy2L7rVZXfWVYdpE9bdddER2AQfyZoYedMorx5BWtY6ItfoZg==
   dependencies:
     exports-loader "0.6.3"
     imports-loader "0.6.5"
@@ -2323,10 +2323,10 @@ clipcc-block@3.1.4:
     google-closure-compiler-osx "^20200112.0.0"
     google-closure-compiler-windows "^20200112.0.0"
 
-clipcc-l10n@3.1.5:
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/clipcc-l10n/-/clipcc-l10n-3.1.5.tgz#c011b5d730b9ee85616ffbb8afbb61485fe206c0"
-  integrity sha512-pnGbDqDWcwYsQUgEMlri7E/92Nyt5jlMxdbCJXYExs5k8v59mvW0EoabnYKzX4bImfdZdlgpwZ77ijRlBkMd9w==
+clipcc-l10n@3.1.7:
+  version "3.1.7"
+  resolved "https://registry.yarnpkg.com/clipcc-l10n/-/clipcc-l10n-3.1.7.tgz#82de27f6275b5117ea4056aed65bf5a4cae6dcdd"
+  integrity sha512-xgbhqcWKYlAENzmCmTHxS3eUP7OfdT5YU2DGM0EG06VPgkH3TurchAcjWjhOBPZlaFCwb678cAbWSFn1d7nD2g==
   dependencies:
     "@babel/cli" "^7.1.2"
     "@babel/core" "^7.1.2"
@@ -3510,9 +3510,9 @@ events@^3.0.0:
   integrity sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==
 
 eventsource@^1.0.7:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/eventsource/-/eventsource-1.1.0.tgz#00e8ca7c92109e94b0ddf32dac677d841028cfaf"
-  integrity sha512-VSJjT5oCNrFvCS6igjzPAt5hBzQ2qPBFIbJ03zLI9SE0mxwZpMw6BfJrbFHm1a141AavMEB8JHmBhWAd66PfCg==
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/eventsource/-/eventsource-1.1.1.tgz#4544a35a57d7120fba4fa4c86cb4023b2c09df2f"
+  integrity sha512-qV5ZC0h7jYIAOhArFJgSfdyz6rALJyb270714o7ZtNnw2WSJ+eexhKtE0O8LYPRsHZHf2osHKZBxGPvm3kPkCA==
   dependencies:
     original "^1.0.0"
 

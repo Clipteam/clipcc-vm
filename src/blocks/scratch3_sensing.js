@@ -65,7 +65,7 @@ class Scratch3SensingBlocks {
             sensing_mousey: this.getMouseY,
             sensing_joystickx: this.getJoystickX,
             sensing_joysticky: this.getJoystickY,
-            sensing_joystick_direction: this.getJoystickDirection,
+            sensing_joystick_distance: this.getJoystickDistance,
             sensing_setdragmode: this.setDragMode,
             sensing_mousedown: this.getMouseDown,
             sensing_mousepressed: this.getMousePressed,

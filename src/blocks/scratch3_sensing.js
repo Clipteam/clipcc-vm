@@ -276,8 +276,8 @@ class Scratch3SensingBlocks {
         return util.ioQuery('joystick', 'getY');
     }
     
-    getJoystickDirection (args, util) {
-        return util.ioQuery('joystick', 'getDirection');
+    getJoystickDistance (args, util) {
+        return util.ioQuery('joystick', 'getDistance');
     }
 
     getMouseDown (args, util) {

@@ -25,8 +25,8 @@ class Joystick {
         return this._y;
     }
 
-    getDirection () {
-        return this._direction;
+    getDistance () {
+        return this._distance;
     }
 }
 

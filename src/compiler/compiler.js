@@ -166,7 +166,7 @@ class Compiler {
                 return `// headless procedures call "${block.id}", ignore it.`;
             }
             const inputs = this.decodeInputs(block, false, paramNames);
-            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, this.getVariablePool(block.opcode));
+            return this.runtime.getCompiledFragmentByOpcode(block.opcode, inputs, isWarp, this.getVariablePool(block.opcode), this.thread);
         } catch (e) {
             if (e.message.startsWith('block is not compilable')) {
                 // 提供没有对编译进行优化的积木的兼容性

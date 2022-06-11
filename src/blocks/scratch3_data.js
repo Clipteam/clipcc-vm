@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 const Cast = require('../util/cast');
+const Variable = require('../engine/variable');
 
 class Scratch3DataBlocks {
     constructor (runtime) {
@@ -46,12 +47,24 @@ class Scratch3DataBlocks {
         };
     }
 
-    _getVariableRef (args) {
-        return `(util.target.variables.hasOwnProperty('${args.VARIABLE.raw()}') ? util.target.variables['${args.VARIABLE.raw()}'].value : util.runtime.getTargetForStage().variables['${args.VARIABLE.raw()}'])`;
+    // 变量引用在生成阶段即可确定
+    _getVariableRef (args, thread) {
+        const target = thread.target;
+        const stage = thread.runtime.getTargetForStage();
+        const varId = args.VARIABLE.raw();
+        
+        if (target.variables.hasOwnProperty(varId)) {
+            return `util.target.variables['${varId}']`;
+        }
+        if (!target.isStage) {
+            if (stage && stage.variables.hasOwnProperty(varId)) {
+                return `util.runtime.getTargetForStage().variables['${varId}']`;
+            }
+        }
     }
 
-    _getVariable (args) {
-        return `${this._getVariableRef(args)}.value`;
+    _getVariable (args, isWarp, varPool, thread) {
+        return `${this._getVariableRef(args, thread)}.value`;
     }
 
     getVariable (args, util) {
@@ -60,9 +73,9 @@ class Scratch3DataBlocks {
         return variable.value;
     }
 
-    _setVariableTo (args) {
-        return `${this._getVariable(args)} = ${args.VALUE.asString()}\n` +
-        `if (${this._getVariableRef(args)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
+    _setVariableTo (args, isWarp, varPool, thread) {
+        return `${this._getVariable(args, isWarp, varPool, thread)} = ${args.VALUE.asString()}\n` +
+        `if (${this._getVariableRef(args, thread)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args, thread)}.name, ${this._getVariable(args, isWarp, varPool, thread)}])`;
     }
 
     setVariableTo (args, util) {
@@ -75,9 +88,9 @@ class Scratch3DataBlocks {
         }
     }
 
-    _changeVariableBy (args) {
-        return `${this._getVariable(args)} += ${args.VALUE.asNumber()}\n` +
-        `if (${this._getVariableRef(args)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args)}.name, ${this._getVariable(args)}])`;
+    _changeVariableBy (args, isWarp, varPool, thread) {
+        return `${this._getVariable(args, isWarp, varPool, thread)} = +(${this._getVariable(args, isWarp, varPool, thread)}) + ${args.VALUE.asNumber()}\n` +
+        `if (${this._getVariableRef(args, thread)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args, thread)}.name, ${this._getVariable(args, isWarp, varPool, thread)}])`;
     }
 
     changeVariableBy (args, util) {
@@ -103,16 +116,16 @@ class Scratch3DataBlocks {
         }, this.runtime);
     }
 
-    _showVariable (args) {
-        return `util.runtime.monitorBlocks.changeBlock({ id: ${this._getVariableRef(args)}.id, element: "checkbox", value: true }, util.runtime)`;
+    _showVariable (args, isWarp, varPool, thread) {
+        return `util.runtime.monitorBlocks.changeBlock({ id: ${this._getVariableRef(args, thread)}.id, element: "checkbox", value: true }, util.runtime)`;
     }
 
     showVariable (args) {
         this.changeMonitorVisibility(args.VARIABLE.id, true);
     }
 
-    _hideVariable (args) {
-        return `util.runtime.monitorBlocks.changeBlock({ id: ${this._getVariableRef(args)}.id, element: "checkbox", value: false }, util.runtime)`;
+    _hideVariable (args, isWarp, varPool, thread) {
+        return `util.runtime.monitorBlocks.changeBlock({ id: ${this._getVariableRef(args, thread)}.id, element: "checkbox", value: false }, util.runtime)`;
     }
 
     hideVariable (args) {

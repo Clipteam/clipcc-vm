@@ -1587,9 +1587,9 @@ class Runtime extends EventEmitter {
      * @param {object} compiler The compiler to use.
      * @return {string} The compiled fragment of this block.
      */
-    getCompiledFragmentByOpcode (opcode, args, isWarp, compiler) {
+    getCompiledFragmentByOpcode (opcode, args, isWarp, varPool, thread) {
         if (this._compiledFragments.hasOwnProperty(opcode)) {
-            return this._compiledFragments[opcode](args, isWarp, compiler);
+            return this._compiledFragments[opcode](args, isWarp, varPool, thread);
         }
         throw new Error(`block is not compilable: ${opcode}`);
     }

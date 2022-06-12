@@ -43,7 +43,7 @@ class CompiledInput {
     asString () {
         if (this.constant) return `"${JSON.stringify(`${this.value}`).slice(1, -1)}"`;
         if (this.type === CompiledInput.TYPE_STRING) return this.value;
-        return `("" + ${this.value})`;
+        return `("" + (${this.value}))`;
     }
 
     asPureNumber () {
@@ -67,7 +67,7 @@ class CompiledInput {
         if (this.constant) return Cast.toBoolean(this.value).toString();
         if (this.type === CompiledInput.TYPE_BOOLEAN) return this.value;
         // 由于 Scratch 3 类型转换较为复杂，因此在非常量的情况下抛给运行时处理
-        return `toBoolean(${this.value})`;
+        return ` toBoolean(${this.value})`;
     }
 }
 

@@ -75,7 +75,7 @@ class Scratch3DataBlocks {
 
     _setVariableTo (args, isWarp, varPool, thread) {
         return `${this._getVariable(args, isWarp, varPool, thread)} = ${args.VALUE.asString()}\n` +
-        `if (${this._getVariableRef(args, thread)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args, thread)}.name, ${this._getVariable(args, isWarp, varPool, thread)}])`;
+        `if (${this._getVariableRef(args, thread)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args, thread)}.name, ${args.VALUE.asString()}])`;
     }
 
     setVariableTo (args, util) {
@@ -90,7 +90,7 @@ class Scratch3DataBlocks {
 
     _changeVariableBy (args, isWarp, varPool, thread) {
         return `${this._getVariable(args, isWarp, varPool, thread)} = +(${this._getVariable(args, isWarp, varPool, thread)}) + ${args.VALUE.asNumber()}\n` +
-        `if (${this._getVariableRef(args, thread)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args, thread)}.name, ${this._getVariable(args, isWarp, varPool, thread)}])`;
+        `if (${this._getVariableRef(args, thread)}.isCloud) util.ioQuery('cloud', 'requestUpdateVariable', [${this._getVariableRef(args, thread)}.name, ${args.VALUE.asString()}])`;
     }
 
     changeVariableBy (args, util) {

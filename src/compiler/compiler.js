@@ -42,8 +42,8 @@ class Compiler {
     isLastBlockInLoop () {
         for (let i = this.frames.length - 1; i >= 0; i--) {
             const frame = this.frames[i];
-            if (!frame.isLastBlock) return false;
-            if (frame.isLoop) return true;
+            if (!frame.isLoop) return false;
+            if (frame.isLastBlock) return true;
         }
         return false;
     }
@@ -177,7 +177,7 @@ class Compiler {
                     // 无法确认返回的是否为 Promise, 因此将其返回的结果传入PromiseLayer内进行调度
                     const inputs = this.decodeInputs(block, true, paramNames);
                     const isLastBlockInLoop = this.isLastBlockInLoop();
-                    const base = `yield* waitPromise(util.runtime.getOpcodeFunction("${block.opcode}")(${inputs}, util), ${isLastBlockInLoop})`;
+                    const base = `yield* waitPromise(util.runtime.getOpcodeFunction("${block.opcode}")(${inputs}, util), ${isLastBlockInLoop}, ${isWarp})`;
                     // 如果循环中的最后一条命令返回一个 Promise，立即继续下一个迭代。
                     // 如果不这样做，循环在每次迭代中都会产生两次，并将以半速运行。
                     if (isLastBlockInLoop) {

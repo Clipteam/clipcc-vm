@@ -185,7 +185,7 @@ class Sequencer {
                 return;
             } catch (e) {
                 // eslint-disable-next-line no-console
-                console.log(`Error occurred while running compiled thread:\n ${e}\nnow back to original step method.`);
+                console.error(`Error occurred while running compiled thread`, e, `code:\n${thread.compiledStack[thread.topBlock].source}\nnow back to original step method.`);
                 thread.isCompiled = false;
             }
         }

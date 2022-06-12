@@ -513,8 +513,13 @@ class Thread {
                     this.isCompiled = true;
                 } catch (e) {
                     console.error(`Error occurred during compilation:\n ${e}`);
+                    blocks._cache.compiledFragment[this.topBlock] = {status: 'failed'};
                     this.failedToCompile = true;
                 }
+            }
+            if (blocks._cache.compiledFragment[this.topBlock].status === 'failed') {
+                this.failedToCompile = true;
+                return;
             }
             this.compiledStack = blocks._cache.compiledFragment;
             this.isCompiled = true;

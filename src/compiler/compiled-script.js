@@ -91,20 +91,36 @@ const timerSnippet = `const timer = () => {
 
 const promiseLayerSnippet = `let hasResumedFromPromise = false;
 
-const waitPromise = function* (promise, flag) {
+const waitPromise = function* (promise, flag, warp) {
     const isPromise = value => (
         value !== null &&
         typeof value === 'object' &&
         typeof value.then === 'function'
     );
+    
+    // 对于兼容层来说，应该在一个 StackFrame 中完成，因此需要重置它来避免一些问题
+    util.thread.stackFrames[util.thread.stackFrames.length - 1].reuse(warp);
     if (isPromise(promise)) {
         let result = '';
+        
+        // 如果返回值为 Promise，则对其设置返回值捕捉
         promise.then(value => {
             result = value;
         }).catch(error => {
             console.error('Promise rejected:', error);
+        }).finally(() => {
+            util.thread.status = 0; // STATUS_RUNNING
         });
-        while (result === '') yield;
+        util.thread.status = 1; // STATUS_PROMISE_WAIT
+        
+        while (result === '') {
+            // 被挂起的线程会在下一次迭代中被调用
+            if (util.thread.status === 2 /* STATUS_YIELD */) {
+                util.thread.status = 0; // STATUS_RUNNING
+                if (!warp) yield;
+            }
+            if (!warp) yield;
+        }
         if (flag) hasResumedFromPromise = true;
         return result;
     }

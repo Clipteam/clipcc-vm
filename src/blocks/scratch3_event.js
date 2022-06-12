@@ -30,6 +30,12 @@ class Scratch3EventBlocks {
             event_whengreaterthan: this.hatGreaterThanPredicate
         };
     }
+    
+    getCompiledFragment () {
+        return {
+            event_whentouchingobject: this._touchingObject
+        };
+    }
 
     getHats () {
         return {
@@ -60,6 +66,10 @@ class Scratch3EventBlocks {
                 restartExistingThreads: true
             }
         };
+    }
+    
+    _touchingObject (args) {
+        return `util.target.isTouchingObject(${args.TOUCHINGOBJECTMENU.raw()})`;
     }
 
     touchingObject (args, util) {

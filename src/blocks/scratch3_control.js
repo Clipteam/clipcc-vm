@@ -69,7 +69,7 @@ class Scratch3ControlBlocks {
 
     _repeat (args) {
         return `for (let i = ${args.TIMES.asPureNumber()}; i >= 0.5; i--){\n` +
-        `${args.SUBSTACK.raw()}\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
         `yield\n` +
         `}`;
     }
@@ -92,8 +92,8 @@ class Scratch3ControlBlocks {
     }
 
     _repeatUntil (args) {
-        return `while(!${args.CONDITION.asBoolean()}){\n` +
-        `${args.SUBSTACK}\n` +
+        return `while(!${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}){\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
         `yield\n` +
         `}`;
     }
@@ -107,8 +107,8 @@ class Scratch3ControlBlocks {
     }
     
     _repeatWhile (args) {
-        return `while(${args.CONDITION.asBoolean()}){\n` +
-        `${args.SUBSTACK}\n` +
+        return `while(${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}){\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
         `yield\n` +
         `}`;
     }
@@ -145,7 +145,7 @@ class Scratch3ControlBlocks {
 
     _forever (args) {
         return `while(true) {\n` +
-        `${args.SUBSTACK.raw()}\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
         `yield\n` +
         `}`;
     }
@@ -196,8 +196,8 @@ class Scratch3ControlBlocks {
     }
 
     _if (args) {
-        return `if (${args.CONDITION.asBoolean()}) {\n` +
-        `${args.SUBSTACK.raw()}\n` +
+        return `if (${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}) {\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
         `}`;
     }
 
@@ -209,10 +209,10 @@ class Scratch3ControlBlocks {
     }
 
     _ifElse (args) {
-        return `if (${args.CONDITION.asBoolean()}) {\n` +
-        `${args.SUBSTACK.raw()}\n` +
+        return `if (${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}) {\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
         `} else {\n` +
-        `${args.SUBSTACK2.raw()}\n` +
+        `${args.SUBSTACK2 ? args.SUBSTACK2.raw() : '// null'}\n` +
         `}`;
     }
 

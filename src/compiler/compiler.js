@@ -5,6 +5,10 @@ const VariablePool = require('./variable-pool');
 const CompiledInput = require('./compiled-input');
 const CompiledScript = require('./compiled-script');
 const Frame = require('./frame');
+const placeholder = name => ({
+    name,
+    unit: new CompiledInput(0, CompiledInput.TYPE_DYNAMIC, true)
+});
 
 class Compiler {
     constructor (thread) {
@@ -132,7 +136,6 @@ class Compiler {
      */
     generateBlock (block, isWarp = false, paramNames) {
         if (!block) throw new Error('block is undefined');
-        if (block.opcode === 'looks_changeeffectby') console.log(block);
         try {
             // 如果为自定义积木，则开始生成自定义积木，并通过yield * 移交执行权
             // 我还没想好自定义返回值和全局怎么写，走一步看一步吧
@@ -182,10 +185,9 @@ class Compiler {
                     }
                     return base;
                 }
-                console.log(block);
                 throw new Error(`cannot generate "${block.opcode}"`);
             }
-            console.log(block);
+            console.log('failed to generate', block);
             throw new Error(`failed to generate "${block.opcode}":\n ${e.message}`);
         }
     }
@@ -233,6 +235,7 @@ class Compiler {
         const inputs = isInCLayer ? [] : {};
         // 解析可输入内容
         for (const name in block.inputs) {
+            // 需要对空值进行处理，否则会在生成树状或布尔输入的积木中出现问题
             const input = this.decodeInput(block, name, paramNames);
             if (isInCLayer) inputs.push(`${name}: ${input.unit.asString()}`);
             else inputs[name] = input.unit;

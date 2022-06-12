@@ -140,7 +140,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _and (args) {
-        return `${args.OPERAND1.asBoolean()} && ${args.OPERAND2.asBoolean()}`;
+        return `${args.OPERAND1 ? args.OPERAND1.asBoolean() : 'false'} && ${args.OPERAND2 ? args.OPERAND2.asBoolean() : 'false'}`;
     }
 
     and (args) {
@@ -148,7 +148,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _or (args) {
-        return `${args.OPERAND1.asBoolean()} || ${args.OPERAND2.asBoolean()}`;
+        return `${args.OPERAND1 ? args.OPERAND1.asBoolean() : 'false'} || ${args.OPERAND2 ? args.OPERAND2.asBoolean() : 'false'}`;
     }
 
     or (args) {
@@ -156,7 +156,7 @@ class Scratch3OperatorsBlocks {
     }
 
     _not (args) {
-        return `!${args.OPERAND.asBoolean()}`;
+        return `!${args.OPERAND ? args.OPERAND.asBoolean() : 'false'}`;
     }
 
     not (args) {

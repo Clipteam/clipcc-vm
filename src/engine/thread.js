@@ -197,6 +197,12 @@ class Thread {
          * @type {boolean}
          */
         this.isCompiled = false;
+        
+        /**
+         * Whether It's unable to compile
+         * @type {boolean}
+         */
+         this.failedToCompile = false;
 
         /**
          * Store the compiled fragment of procedures.
@@ -496,7 +502,7 @@ class Thread {
 
     // --------------------------
     compile () {
-        if (!this.isCompiled) {
+        if (!this.isCompiled && !this.failedToCompile) {
             const blocks = this.blockContainer.getBlock(this.topBlock) ? this.blockContainer : this.target.runtime.flyoutBlocks;
             // 检查是否有缓存，如果有则使用缓存
             if (!blocks._cache.compiledFragment.hasOwnProperty(this.topBlock)) {
@@ -507,8 +513,7 @@ class Thread {
                     this.isCompiled = true;
                 } catch (e) {
                     console.error(`Error occurred during compilation:\n ${e}`);
-                    // 仍然标注为编译已完成，这样会在运行的时候报错然后换回原始执行方案
-                    this.isCompiled = true;
+                    this.failedToCompile = true;
                 }
             }
             this.compiledStack = blocks._cache.compiledFragment;

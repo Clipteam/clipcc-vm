@@ -178,7 +178,7 @@ class Sequencer {
      * @param {!Thread} thread Thread object to step.
      */
     stepThread (thread) {
-        if (thread.isCompiled) {
+        if (thread.isCompiled && !thread.failedToCompile) {
             try {
                 const runner = new Runner(this, thread);
                 if (runner.run().done) this.retireThread(thread);

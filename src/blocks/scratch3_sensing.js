@@ -63,6 +63,9 @@ class Scratch3SensingBlocks {
             sensing_of: this.getAttributeOf,
             sensing_mousex: this.getMouseX,
             sensing_mousey: this.getMouseY,
+            sensing_joystickx: this.getJoystickX,
+            sensing_joysticky: this.getJoystickY,
+            sensing_joystick_distance: this.getJoystickDistance,
             sensing_setdragmode: this.setDragMode,
             sensing_mousedown: this.getMouseDown,
             sensing_mousepressed: this.getMousePressed,
@@ -101,6 +104,9 @@ class Scratch3SensingBlocks {
             sensing_resettimer: this._resetTimer,
             sensing_mousex: this._getMouseX,
             sensing_mousey: this._getMouseY,
+            sensing_joystickx: this._getJoystickX,
+            sensing_joysticky: this._getJoystickY,
+            sensing_joystick_distance: this._getJoystickDistance,
             sensing_current: this._current,
             sensing_keypressed: this._getKeyPressed,
             sensing_username: this._getUsername,
@@ -323,9 +329,32 @@ class Scratch3SensingBlocks {
     _getMouseDown () {
         return `!!util.ioQuery('mouse', 'isDown')`;
     }
-
+    
     getMouseDown (args, util) {
         return util.ioQuery('mouse', 'getIsDown');
+    }
+    
+    _getJoystickX () {
+        return `util.ioQuery('joystick', 'getX')`;
+    }
+    getJoystickX (args, util) {
+        return util.ioQuery('joystick', 'getX');
+    }
+    
+    _getJoystickY () {
+        return `util.ioQuery('joystick', 'getY')`;
+    }
+    
+    getJoystickY (args, util) {
+        return util.ioQuery('joystick', 'getY');
+    }
+    
+    _getJoystickDistance () {
+        return `util.ioQuery('joystick', 'getDistance')`;
+    }
+    
+    getJoystickDistance (args, util) {
+        return util.ioQuery('joystick', 'getDistance');
     }
 
     getMousePressed (args, util) {

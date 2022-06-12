@@ -225,7 +225,7 @@ class ExtensionAPI {
 
         // Process input menus
         for (const paramId in block.param) {
-            if (!block.param[paramId].menu || block.param[paramId].field) break;
+            if (!block.param[paramId].menu || block.param[paramId].field) continue;
             const menuId = `${block.opcode}.menu_${paramId}`;
             const menuItems = block.param[paramId].menu.map(item => ([
                 formatMessage({

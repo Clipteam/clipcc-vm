@@ -129,6 +129,77 @@ requiredSnippet.push(`const waitThreads = function* (threads) {
     }
 };`);
 
+// For data blocks
+requiredSnippet.push(`
+const listIndex = (index, length) => {
+    if (index === 'last') {
+        return length - 1;
+    } else if (index === 'random' || index === 'any') {
+        if (length > 0) {
+            return (Math.random() * length) | 0;
+        }
+        return -1;
+    }
+    index = (+index || 0) | 0;
+    if (index < 1 || index > length) return -1;
+    return index - 1;
+};
+
+const listGet = (list, idx) => {
+    const index = listIndex(idx, list.length);
+    if (index === -1) return '';
+    return list[index];
+};
+
+const listReplace = (list, idx, value) => {
+    const index = listIndex(idx, list.value.length);
+    if (index === -1) return;
+    list.value[index] = value;
+    list._monitorUpToDate = false;
+};
+
+const listInsert = (list, idx, value) => {
+    const index = listIndex(idx, list.value.length + 1);
+    if (index === -1) return;
+    list.value.splice(index, 0, value);
+    list._monitorUpToDate = false;
+};
+
+const listDelete = (list, idx) => {
+    if (idx === 'all') {
+        list.value = [];
+        return;
+    }
+    const index = listIndex(idx, list.value.length);
+    if (index === -1) return;
+    list.value.splice(index, 1);
+    list._monitorUpToDate = false;
+};
+
+const listContains = (list, item) => {
+    if (list.value.indexOf(item) !== -1) return true;
+    for (let i = 0; i < list.value.length; i++) {
+        if (eq(list.value[i], item)) return true;
+    }
+    return false;
+};
+
+const listIndexOf = (list, item) => {
+    for (let i = 0; i < list.value.length; i++) {
+        if (eq(list.value[i], item)) return i + 1;
+    }
+    return 0;
+};
+
+const listContents = list => {
+    for (let i = 0; i < list.value.length; i++) {
+        const listItem = list.value[i];
+        if ((listItem + '').length !== 1) return list.value.join(' ');
+    }
+    return list.value.join('');
+};
+`);
+
 // For control_wait
 requiredSnippet.push(`
 const timer = () => {

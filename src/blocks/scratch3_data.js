@@ -43,7 +43,19 @@ class Scratch3DataBlocks {
             data_setvariableto: this._setVariableTo,
             data_changevariableby: this._changeVariableBy,
             data_showvariable: this._showVariable,
-            data_hidevariable: this._hideVariable
+            data_hidevariable: this._hideVariable,
+            data_listcontents: this._getListContents,
+            data_addtolist: this._addToList,
+            data_deleteoflist: this._deleteOfList,
+            data_deletealloflist: this._deleteAllOfList,
+            data_insertatlist: this._insertAtList,
+            data_replaceitemoflist: this._replaceItemOfList,
+            data_itemoflist: this._getItemOfList,
+            data_itemnumoflist: this._getItemNumOfList,
+            data_lengthoflist: this._lengthOfList,
+            data_listcontainsitem: this._listContainsItem,
+            data_hidelist: this._hideList,
+            data_showlist: this._showList
         };
     }
 
@@ -51,14 +63,36 @@ class Scratch3DataBlocks {
     _getVariableRef (args, thread) {
         const target = thread.target;
         const stage = thread.runtime.getTargetForStage();
-        const varId = args.VARIABLE.raw();
-        
-        if (target.variables.hasOwnProperty(varId)) {
-            return `util.target.variables['${varId}']`;
+        let referTo = args.VARIABLE ? args.VARIABLE.raw() : args.LIST.raw();
+
+        // 直接从 id 获取
+        if (target.variables.hasOwnProperty(referTo)) {
+            return `util.target.variables['${referTo}']`;
         }
         if (!target.isStage) {
-            if (stage && stage.variables.hasOwnProperty(varId)) {
-                return `util.runtime.getTargetForStage().variables['${varId}']`;
+            if (stage && stage.variables.hasOwnProperty(referTo)) {
+                return `util.runtime.getTargetForStage().variables['${referTo}']`;
+            }
+        }
+
+        // 根据名字遍历获取, 通常发生在获取链表引用中
+        for (const varId in target.variables) {
+            if (target.variables.hasOwnProperty(varId)) {
+                const currVar = target.variables[varId];
+                if (currVar.name === referTo) {
+                    return `util.target.variables['${currVar.id}']`;
+                }
+            }
+        }
+
+        if (!target.isStage && stage) {
+            for (const varId in stage.variables) {
+                if (stage.variables.hasOwnProperty(varId)) {
+                    const currVar = stage.variables[varId];
+                    if (currVar.name === referTo) {
+                        return `util.runtime.getTargetForStage().variables['${currVar.id}']`;
+                    }
+                }
             }
         }
     }
@@ -132,12 +166,24 @@ class Scratch3DataBlocks {
         this.changeMonitorVisibility(args.VARIABLE.id, false);
     }
 
+    _showList (args, isWarp, varPool, thread) {
+        return `util.runtime.monitorBlocks.changeBlock({ id: ${this._getVariableRef(args, thread)}.id, element: "checkbox", value: true }, util.runtime)`;
+    }
+
     showList (args) {
         this.changeMonitorVisibility(args.LIST.id, true);
     }
 
+    _hideList (args, isWarp, varPool, thread) {
+        return `util.runtime.monitorBlocks.changeBlock({ id: ${this._getVariableRef(args, thread)}.id, element: "checkbox", value: false }, util.runtime)`;
+    }
+
     hideList (args) {
         this.changeMonitorVisibility(args.LIST.id, false);
+    }
+
+    _getListContents (args, isWarp, varPool, thread) {
+        return `listContents(${this._getVariableRef(args, thread)})`;
     }
 
     getListContents (args, util) {
@@ -173,6 +219,11 @@ class Scratch3DataBlocks {
 
     }
 
+    _addToList (args, isWarp, varPool, thread) {
+        return `${this._getVariableRef(args, thread)}.value.push(${args.ITEM.asString()})\n` +
+        `${this._getVariableRef(args, thread)}._monitorUpToDate = false`;
+    }
+
     addToList (args, util) {
         const list = util.target.lookupOrCreateList(
             args.LIST.id, args.LIST.name);
@@ -180,6 +231,10 @@ class Scratch3DataBlocks {
             list.value.push(args.ITEM);
             list._monitorUpToDate = false;
         }
+    }
+
+    _deleteOfList (args, isWarp, varPool, thread) {
+        return `listDelete(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()})`;
     }
 
     deleteOfList (args, util) {
@@ -196,11 +251,19 @@ class Scratch3DataBlocks {
         list._monitorUpToDate = false;
     }
 
+    _deleteAllOfList (args, isWarp, varPool, thread) {
+        return `${this._getVariableRef(args, thread)}.value = []`;
+    }
+
     deleteAllOfList (args, util) {
         const list = util.target.lookupOrCreateList(
             args.LIST.id, args.LIST.name);
         list.value = [];
         return;
+    }
+
+    _insertAtList (args, isWarp, varPool, thread) {
+        return `listInsert(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()}, ${args.ITEM.asString()}})`;
     }
 
     insertAtList (args, util) {
@@ -222,6 +285,10 @@ class Scratch3DataBlocks {
         list._monitorUpToDate = false;
     }
 
+    _replaceItemOfList (args, isWarp, varPool, thread) {
+        return `listReplace(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()}, ${args.ITEM.asString()}})`;
+    }
+
     replaceItemOfList (args, util) {
         const item = args.ITEM;
         const list = util.target.lookupOrCreateList(
@@ -234,6 +301,10 @@ class Scratch3DataBlocks {
         list._monitorUpToDate = false;
     }
 
+    _getItemOfList (args, isWarp, varPool, thread) {
+        return `listGet(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()})`;
+    }
+
     getItemOfList (args, util) {
         const list = util.target.lookupOrCreateList(
             args.LIST.id, args.LIST.name);
@@ -242,6 +313,10 @@ class Scratch3DataBlocks {
             return '';
         }
         return list.value[index - 1];
+    }
+
+    _getItemNumOfList (args, isWarp, varPool, thread) {
+        return `listIndexOf(${this._getVariableRef(args, thread)}, ${args.ITEM.asString()})`;
     }
 
     getItemNumOfList (args, util) {
@@ -272,10 +347,18 @@ class Scratch3DataBlocks {
         return 0;
     }
 
+    _lengthOfList (args, isWarp, varPool, thread) {
+        return `${this._getVariableRef(args, thread)}.value.length`;
+    }
+
     lengthOfList (args, util) {
         const list = util.target.lookupOrCreateList(
             args.LIST.id, args.LIST.name);
         return list.value.length;
+    }
+
+    _listContainsItem (args, isWarp, varPool, thread) {
+        return `listContains(${this._getVariableRef(args, thread)}, ${args.ITEM.asString()})`;
     }
 
     listContainsItem (args, util) {

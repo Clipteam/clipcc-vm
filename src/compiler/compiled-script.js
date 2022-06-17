@@ -1,7 +1,10 @@
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 
-const castSnippet = `const isWhiteSpace = val => typeof val === 'string' && val.trim().length === 0;
+const requiredSnippet = [];
 
+// Cast
+requiredSnippet.push(`
+const isWhiteSpace = val => typeof val === 'string' && val.trim().length === 0;
 const toBoolean = (value) => {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {
@@ -78,19 +81,68 @@ const eq = (v1, v2) => {
     if (isNaN(n2) || (n2 === 0 && isWhiteSpace(v2))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
     return n1 === n2;
 };
-`;
+`);
 
-const timerSnippet = `const timer = () => {
+// For motion blocks
+// This corresponds to snapToInteger in Scratch 2
+requiredSnippet.push(`
+const limitPrecision = coordinate => {
+    const rounded = Math.round(coordinate);
+    const delta = coordinate - rounded;
+    return (Math.abs(delta) < 1e-9) ? rounded : coordinate;
+}
+`);
+
+// For event_broadcast
+requiredSnippet.push(`
+const startHats = (requestedHat, optMatchFields) => {
+    const threads = util.thread.target.runtime.startHats(requestedHat, optMatchFields);
+    return threads;
+};
+`);
+
+// Also for event_broadcast
+requiredSnippet.push(`const waitThreads = function* (threads) {
+    const thread = util.thread;
+    const runtime = thread.target.runtime;
+
+    while (true) {
+        let anyRunning = false;
+        // 确认是否有线程正在运行,,有则跳出循环
+        for (let i = 0; i < threads.length; i++) {
+            if (runtime.threads.includes(threads[i])) {
+                anyRunning = true;
+                break;
+            }
+        }
+        if (!anyRunning) return;
+
+        let allWaiting = true;
+        for (let i = 0; i < threads.length; i++) {
+            if (!runtime.isWaitingThread(threads[i])) {
+                allWaiting = false;
+                break;
+            }
+        }
+        if (allWaiting) thread.status = 3; // STATUS_YIELD_TICK
+        yield;
+    }
+};`);
+
+// For control_wait
+requiredSnippet.push(`
+const timer = () => {
     const t = new globalState.Timer({
         now: () => util.thread.target.runtime.currentMSecs
     });
     t.start();
     return t;
 };
-`;
+`);
 
-const promiseLayerSnippet = `let hasResumedFromPromise = false;
-
+// Keep track of promise returned by blocks.
+requiredSnippet.push(`
+let hasResumedFromPromise = false;
 const waitPromise = function* (promise, flag, warp) {
     const isPromise = value => (
         value !== null &&
@@ -126,7 +178,7 @@ const waitPromise = function* (promise, flag, warp) {
     }
     return promise;
 };
-`;
+`);
 class CompiledScript {
     constructor (type = 'script', source) {
         this.type = type;
@@ -139,9 +191,10 @@ class CompiledScript {
     convert () {
         if (!this.isGenerated) {
             try {
-                this.generator = new GeneratorFunction('util', 'globalState', 'parameter', castSnippet + timerSnippet + promiseLayerSnippet + this.source);
+                this.generator = new GeneratorFunction('util', 'globalState', 'parameter', requiredSnippet.join('') + this.source);
                 this.isGenerated = true;
             } catch (e) {
+                console.error(`Failed code:\n${this.source}`);
                 throw new Error(`Error occured while generating script:\n${e}`);
             }
         }

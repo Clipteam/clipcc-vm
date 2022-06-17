@@ -224,7 +224,7 @@ class Compiler {
             for (const item of mapping) {
                 const input = block.inputs[item];
                 if (input.block === input.shadow) { // 非嵌套reporter模块，开始获取值
-                    args.push(this.decodeConstant(this.getBlockById(input.block)));
+                    args.push(`"${this.decodeConstant(this.getBlockById(input.block))}"`);
                 } else {
                     const inputBlock = this.thread.target.blocks.getBlock(input.block);
                     args.push(this.generateBlock(inputBlock));
@@ -307,7 +307,7 @@ class Compiler {
         case 'event_broadcast_menu': {
             const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
             const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
-            const result = broadcastVariable ? `"${broadcastVariable.name}"` : '';
+            const result = broadcastVariable ? `${broadcastVariable.name}` : '';
             return {
                 name: input.name,
                 unit: new CompiledInput(result, CompiledInput.TYPE_STRING, true)

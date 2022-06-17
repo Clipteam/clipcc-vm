@@ -578,7 +578,7 @@ class Scratch3LooksBlocks {
     }
 
     _changeSize (args) {
-        return `util.target.setSize(util.target.size + ${args.SIZE.asPureNumber()})`;
+        return `util.target.setSize(util.target.size + ${args.CHANGE.asPureNumber()})`;
     }
 
     changeSize (args, util) {

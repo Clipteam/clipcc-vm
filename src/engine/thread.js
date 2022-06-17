@@ -512,7 +512,7 @@ class Thread {
                     blocks._cache.compiledFragment[this.topBlock] = compiler.generate(this.topBlock);
                     this.isCompiled = true;
                 } catch (e) {
-                    console.error(`Error occurred during compilation:\n ${e}`);
+                    console.error(`Error occurred during compilation:\n ${e.message}`);
                     blocks._cache.compiledFragment[this.topBlock] = {status: 'failed'};
                     this.failedToCompile = true;
                 }

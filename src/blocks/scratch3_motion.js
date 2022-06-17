@@ -51,6 +51,8 @@ class Scratch3MotionBlocks {
             motion_turnleft: this._turnLeft,
             motion_pointindirection: this._pointInDirection,
             motion_changexby: this._changeX,
+            motion_xposition: this._getX,
+            motion_yposition: this.getY,
             motion_setx: this._setX,
             motion_changeyby: this._changeY,
             motion_sety: this._setY,
@@ -313,8 +315,16 @@ class Scratch3MotionBlocks {
         util.target.setXY(util.target.x, y);
     }
 
+    _getX () {
+        return `limitPrecision(util.target.x)`;
+    }
+
     getX (args, util) {
         return this.limitPrecision(util.target.x);
+    }
+
+    _getY () {
+        return `limitPrecision(util.target.y)`;
     }
 
     getY (args, util) {

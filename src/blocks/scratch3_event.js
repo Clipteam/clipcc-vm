@@ -33,6 +33,8 @@ class Scratch3EventBlocks {
     
     getCompiledFragment () {
         return {
+            event_broadcast: this._broadcast,
+            event_broadcastandwait: this._broadcastAndWait,
             event_whentouchingobject: this._touchingObject
         };
     }
@@ -88,6 +90,10 @@ class Scratch3EventBlocks {
         return false;
     }
 
+    _broadcast (args) {
+        return `startHats("event_whenbroadcastreceived", { BROADCAST_OPTION: ${args.BROADCAST_INPUT.asString()} })`;
+    }
+
     broadcast (args, util) {
         const broadcastVar = util.runtime.getTargetForStage().lookupBroadcastMsg(
             args.BROADCAST_OPTION.id, args.BROADCAST_OPTION.name);
@@ -97,6 +103,10 @@ class Scratch3EventBlocks {
                 BROADCAST_OPTION: broadcastOption
             });
         }
+    }
+
+    _broadcastAndWait (args) {
+        return `yield* waitThreads(startHats("event_whenbroadcastreceived", { BROADCAST_OPTION: ${args.BROADCAST_INPUT.asString()} }))`;
     }
 
     broadcastAndWait (args, util) {

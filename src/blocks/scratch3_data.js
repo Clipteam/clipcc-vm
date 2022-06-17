@@ -252,7 +252,8 @@ class Scratch3DataBlocks {
     }
 
     _deleteAllOfList (args, isWarp, varPool, thread) {
-        return `${this._getVariableRef(args, thread)}.value = []`;
+        return `${this._getVariableRef(args, thread)}.value = []\n` +
+        `${this._getVariableRef(args, thread)}._monitorUpToDate = false`;
     }
 
     deleteAllOfList (args, util) {
@@ -263,7 +264,7 @@ class Scratch3DataBlocks {
     }
 
     _insertAtList (args, isWarp, varPool, thread) {
-        return `listInsert(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()}, ${args.ITEM.asString()}})`;
+        return `listInsert(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()}, ${args.ITEM.asString()})`;
     }
 
     insertAtList (args, util) {
@@ -286,7 +287,7 @@ class Scratch3DataBlocks {
     }
 
     _replaceItemOfList (args, isWarp, varPool, thread) {
-        return `listReplace(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()}, ${args.ITEM.asString()}})`;
+        return `listReplace(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()}, ${args.ITEM.asString()})`;
     }
 
     replaceItemOfList (args, util) {
@@ -302,7 +303,7 @@ class Scratch3DataBlocks {
     }
 
     _getItemOfList (args, isWarp, varPool, thread) {
-        return `listGet(${this._getVariableRef(args, thread)}, ${args.INDEX.asNumber()})`;
+        return `listGet(${this._getVariableRef(args, thread)}.value, ${args.INDEX.asNumber()})`;
     }
 
     getItemOfList (args, util) {

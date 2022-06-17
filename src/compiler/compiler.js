@@ -178,11 +178,14 @@ class Compiler {
                     const inputs = this.decodeInputs(block, true, paramNames);
                     const isLastBlockInLoop = this.isLastBlockInLoop();
                     const base = `yield* waitPromise(util.runtime.getOpcodeFunction("${block.opcode}")(${inputs}, util), ${isLastBlockInLoop}, ${isWarp})`;
+                    /*
                     // 如果循环中的最后一条命令返回一个 Promise，立即继续下一个迭代。
                     // 如果不这样做，循环在每次迭代中都会产生两次，并将以半速运行。
+                    // 但是如果这样做，有些项目又会出问题，所以我暂时屏蔽掉好了.png
                     if (isLastBlockInLoop) {
                         return `${base}\nif(hasResumedFromPromise){hasResumedFromPromise = false;continue;}`;
                     }
+                    */
                     return base;
                 }
                 throw new Error(`cannot generate "${block.opcode}"`);

@@ -156,8 +156,8 @@ class BlockUtility {
      * Start a specified procedure on this thread.
      * @param {string} procedureCode Procedure code for procedure to start.
      */
-    startProcedure (procedureCode, isGlobal) {
-        this.sequencer.stepToProcedure(this.thread, procedureCode, isGlobal);
+    startProcedure (procedureCode) {
+        this.sequencer.stepToProcedure(this.thread, procedureCode);
     }
 
     /**
@@ -171,23 +171,23 @@ class BlockUtility {
     /**
      * Get names and ids of parameters for the given procedure.
      * @param {string} procedureCode Procedure code for procedure to query.
-     * @param {string} isGlobal Whether the procedure global.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesAndIds (procedureCode, isGlobal) {
-        if (isGlobal) return this.sequencer.runtime.getProcedureParamNamesAndIds(procedureCode);
-        return this.thread.target.blocks.getProcedureParamNamesAndIds(procedureCode);
+    getProcedureParamNamesAndIds (procedureCode) {
+        const ret = this.thread.blockContainer.getProcedureParamNamesAndIds(procedureCode);
+        if (!ret) return this.sequencer.runtime.getProcedureParamNamesAndIds(procedureCode);
+        return ret;
     }
 
     /**
      * Get names, ids, and defaults of parameters for the given procedure.
      * @param {string} procedureCode Procedure code for procedure to query.
-     * @param {string} isGlobal Whether the procedure global.
      * @return {Array.<string>} List of param names for a procedure.
      */
-    getProcedureParamNamesIdsAndDefaults (procedureCode, isGlobal) {
-        if (isGlobal) return this.sequencer.runtime.getProcedureParamNamesIdsAndDefaults(procedureCode);
-        return this.thread.target.blocks.getProcedureParamNamesIdsAndDefaults(procedureCode);
+    getProcedureParamNamesIdsAndDefaults (procedureCode) {
+        const ret = this.thread.blockContainer.getProcedureParamNamesIdsAndDefaults(procedureCode);
+        if (!ret) return this.sequencer.runtime.getProcedureParamNamesIdsAndDefaults(procedureCode);
+        return ret;
         
     }
 

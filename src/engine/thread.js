@@ -61,6 +61,12 @@ class _StackFrame {
          * @type {Object}
          */
         this.executionContext = null;
+
+        /**
+         * Context target for getting blocks, it should be preserved when reset.
+         * @type {?Target}
+         */
+        this.contextTarget = null;
     }
 
     /**
@@ -139,8 +145,6 @@ class Thread {
          */
         this.stack = [];
 
-        this.targetChange = [];
-
         /**
          * Stack frames for the thread. Store metadata for the executing blocks.
          * @type {Array.<_StackFrame>}
@@ -164,12 +168,6 @@ class Thread {
          * @type {?Target}
          */
         this.target = null;
-
-        /**
-         * Target stack of this thread.
-         * @type {Array.<Target>}
-         */
-        this.targetStack = [];
 
         /**
          * The Blocks this thread will execute.
@@ -251,24 +249,19 @@ class Thread {
      */
     pushStack (blockId, target) {
         this.stack.push(blockId);
-        if (target && this.target !== target) {
-            this.pushTarget(target);
-            this.targetChange.push(true);
-        } else {
-            this.targetChange.push(false);
-        }
         // Push an empty stack frame, if we need one.
         // Might not, if we just popped the stack.
         if (this.stack.length > this.stackFrames.length) {
             const parent = this.stackFrames[this.stackFrames.length - 1];
-            this.stackFrames.push(_StackFrame.create(typeof parent !== 'undefined' && parent.warpMode));
+            const stackFrame = _StackFrame.create(typeof parent !== 'undefined' && parent.warpMode);
+            if (target) {
+                stackFrame.contextTarget = target;
+                this.blockContainer = target.blocks; // cc - update block container to new target
+            } else {
+                stackFrame.contextTarget = parent ? parent.contextTarget : this.target;
+            }
+            this.stackFrames.push(stackFrame);
         }
-    }
-
-    pushTarget (target) {
-        this.targetStack.push(this.target);
-        this.target = target;
-        this.blockContainer = this.target.blocks;
     }
 
     /**
@@ -287,16 +280,11 @@ class Thread {
      */
     popStack () {
         _StackFrame.release(this.stackFrames.pop());
-        if (this.targetChange.pop()) {
-            this.popTarget();
+        const stackFrame = this.peekStackFrame();
+        if (stackFrame) {
+            this.blockContainer = stackFrame.contextTarget.blocks; // cc - rollback to last target
         }
         return this.stack.pop();
-    }
-
-    popTarget () {
-        this.target = this.targetStack.pop();
-        this.blockContainer = this.target.blocks;
-        return this.target;
     }
 
     /**
@@ -305,7 +293,7 @@ class Thread {
     stopThisScript () {
         let blockID = this.peekStack();
         while (blockID !== null) {
-            const block = this.target.blocks.getBlock(blockID);
+            const block = this.blockContainer.getBlock(blockID);
             if (this.peekStackFrame().waitingReporter) {
                 // cc - check if a reporter procedure is on the stack
                 break;
@@ -421,7 +409,7 @@ class Thread {
      * where execution proceeds from one block to the next.
      */
     goToNextBlock () {
-        const nextBlockId = this.target.blocks.getNextBlock(this.peekStack());
+        const nextBlockId = this.blockContainer.getNextBlock(this.peekStack());
         this.reuseStackForNextBlock(nextBlockId);
     }
 
@@ -440,28 +428,21 @@ class Thread {
             // cc - that the flag is set means the stack has been checked, otherwise it should be checked first.
             if (!flag && this.stackFrames[i].waitingReporter) {
                 blockId = this.stackFrames[i].reporting;
-                flag = true;
-                ++i;
-            } else {
-                flag = false;
             }
-            let block = this.target.blocks.getBlock(blockId);
-            if (!block) { // This block is not in current sprite.
-                // todo: optimize iff the stack only be pushed when a procedure is called.
-                for (const target of this.runtime.targets) {
-                    block = target.blocks.getBlock(blockId);
-                    if (block) break;
-                }
-            }
-            if (!block) {
-                return false;
-            }
+            const block = this.stackFrames[i].contextTarget.blocks.getBlock(blockId);
             if ((block.opcode === 'procedures_call' || block.opcode === 'procedures_call_return') &&
                 block.mutation.proccode === procedureCode) {
                 return true;
             }
             if (--callCount < 0) {
                 return false;
+            }
+            // @see L433 (current line = L454)
+            if (flag) {
+                flag = false;
+            } else {
+                flag = true;
+                ++i;
             }
         }
         return false;

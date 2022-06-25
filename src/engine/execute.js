@@ -125,8 +125,8 @@ const handlePromise = (primitiveReportedValue, sequencer, thread, blockCached, l
                     thread.popStack();
                     return;
                 }
-                nextBlockId = thread.target.blocks.getNextBlock(top);
-                target = thread.target;
+                nextBlockId = thread.blockContainer.getNextBlock(top);
+                target = thread.peekStackFrame().contextTarget;
                 thread.popStack(); // Pop here
                 if (nextBlockId !== null) {
                     // A next block exists so break out this loop

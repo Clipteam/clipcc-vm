@@ -13,7 +13,7 @@ const project = readFileToBuffer(projectUri);
 const checkIsHatThread = (t, vm, hatThread) => {
     t.equal(hatThread.stackClick, false);
     t.equal(hatThread.updateMonitor, false);
-    const blockContainer = hatThread.target.blocks;
+    const blockContainer = hatThread.blockContainer;
     const opcode = blockContainer.getOpcode(blockContainer.getBlock(hatThread.topBlock));
     t.assert(vm.runtime.getIsEdgeActivatedHat(opcode));
 };

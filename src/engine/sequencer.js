@@ -320,6 +320,7 @@ class Sequencer {
             return;
         }
 
+        // target equals null if not calling a global procedure
         const blocks = target ? target.blocks : thread.blockContainer;
         const definitionBlock = blocks.getBlock(definition);
         const innerBlock = blocks.getBlock(definitionBlock.inputs.custom_block.block);
@@ -337,7 +338,7 @@ class Sequencer {
 
             // refused to call if procedure is not global
             const global = innerBlock.mutation.global;
-            if (target !== thread.target && (global === false || global === 'false')) {
+            if (target && (global === false || global === 'false')) {
                 return;
             }
         }

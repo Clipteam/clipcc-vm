@@ -22,7 +22,8 @@ const argumentType = [
     'color', // COLOR: 5
     'matrix', // MATRIX: 6
     'note', // NOTE: 7
-    'angle' // ANGLE: 8
+    'angle', // ANGLE: 8
+    'script', // SCRIPT: 9
 ];
 
 
@@ -107,6 +108,9 @@ class ExtensionAPI {
     _generateBlockInfo (block) {
         const paramInfo = {};
         for (const name in block.param) {
+            if (block.param[name].type === 9) { // script
+                continue; // skip if arg is script
+            }
             paramInfo[name] = {
                 type: argumentType[block.param[name].type],
                 defaultValue: block.param[name].default || '',
@@ -148,31 +152,8 @@ class ExtensionAPI {
                         blockInfo,
                         inputList: []
                     };
-                    const blockText = Array.isArray(blockInfo.text) ? blockInfo.text : [blockInfo.text];
-                    const convertPlaceholders = this._convertPlaceholders.bind(this, context, this.blocks.get(blockInfo.opcode));
-                    let inTextNum = 0;
-                    let inBranchNum = 0;
-                    let outLineNum = 0;
-                    while (inTextNum < blockText.length || inBranchNum < blockInfo.branchCount) {
-                        if (inTextNum < blockText.length) {
-                            context.outLineNum = outLineNum;
-                            const lineText = maybeFormatMessage(blockText[inTextNum]);
-                            blockJSON[`args${outLineNum}`] = [];
-                            const convertedText = lineText.replace(/\[(.+?)]/g, convertPlaceholders);
-                            blockJSON[`message${outLineNum}`] = convertedText;
-                            ++inTextNum;
-                            ++outLineNum;
-                        }
-                        if (inBranchNum < blockInfo.branchCount) {
-                            blockJSON[`message${outLineNum}`] = '%1';
-                            blockJSON[`args${outLineNum}`] = [{
-                                type: 'input_statement',
-                                name: `SUBSTACK${inBranchNum > 0 ? inBranchNum + 1 : ''}`
-                            }];
-                            ++inBranchNum;
-                            ++outLineNum;
-                        }
-                    }
+                    
+                    this._processBlockArguments(context, this.blocks.get(this.categoryInfo[i].blocks[j].info.opcode));
                 }
                 this.vm.runtime.emit('BLOCKSINFO_UPDATE', this.categoryInfo[i]);
             }
@@ -271,9 +252,11 @@ class ExtensionAPI {
             blockJSON.output = 'Boolean';
             blockJSON.outputShape = ScratchBlocksConstants.OUTPUT_SHAPE_HEXAGONAL;
             break;
+        /* deleted
         case 4: // BRANCH
             // TODO: Block with branch
             break;
+        */
         case 5: // HAT
             // blockInfo.isEdgeActivated = block.isEdgeActivated;
             if (!blockInfo.isEdgeActivated) {
@@ -288,34 +271,8 @@ class ExtensionAPI {
         }
         // TODO: Alternate between a block "arm" with text on it and an open slot for a substack
         // engine/runtime.js: line 1145-1167
-        const blockText = Array.isArray(blockInfo.text) ? blockInfo.text : [blockInfo.text];
-        const convertPlaceholders = this._convertPlaceholders.bind(this, context, block);
-        let inTextNum = 0;
-        let inBranchNum = 0;
-        let outLineNum = 0;
-        while (inTextNum < blockText.length || inBranchNum < blockInfo.branchCount) {
-            if (inTextNum < blockText.length) {
-                context.outLineNum = outLineNum;
-                const lineText = maybeFormatMessage(blockText[inTextNum]);
-                const convertedText = lineText.replace(/\[(.+?)]/g, convertPlaceholders);
-                if (blockJSON[`message${outLineNum}`]) {
-                    blockJSON[`message${outLineNum}`] += convertedText;
-                } else {
-                    blockJSON[`message${outLineNum}`] = convertedText;
-                }
-                ++inTextNum;
-                ++outLineNum;
-            }
-            if (inBranchNum < blockInfo.branchCount) {
-                blockJSON[`message${outLineNum}`] = '%1';
-                blockJSON[`args${outLineNum}`] = [{
-                    type: 'input_statement',
-                    name: `SUBSTACK${inBranchNum > 0 ? inBranchNum + 1 : ''}`
-                }];
-                ++inBranchNum;
-                ++outLineNum;
-            }
-        }
+
+        this._processBlockArguments(context, block);
 
         // Monitor of a repoter
         // add iff there is no input and hasMonitor is set
@@ -355,6 +312,155 @@ class ExtensionAPI {
         this.blocks.set(block.opcode, block);
 
         return category;
+    }
+
+    _processBlockArguments (context, block) {
+        const text = context.blockInfo.text;
+        let inBranchNum = 0;
+        let outLineNum = 0;
+
+        const re = /\[(.+?)]/g;
+
+        let searchResult = null;
+        let convertedText = '';
+        let lastIndex = 0;
+        while ((searchResult = re.exec(text)) !== null) {
+            convertedText += text.substr(lastIndex, searchResult.index - lastIndex);
+            lastIndex = re.lastIndex;
+
+            // Sanitize the placeholder to ensure valid XML
+            const placeholder = searchResult[1].replace(/[<"&]/, '_');
+            const param = block.param[placeholder] || {};
+
+            // Check whether it is an substack
+            if (param.type === 9) { // script
+                if (context.blockJSON[`message${outLineNum}`]) {
+                    context.blockJSON[`message${outLineNum}`] += convertedText;
+                } else {
+                    context.blockJSON[`message${outLineNum}`] = convertedText;
+                }
+                ++outLineNum;
+                convertedText = '';
+
+                context.blockJSON[`message${outLineNum}`] = '%1';
+                context.blockJSON[`args${outLineNum}`] = [{
+                    type: 'input_statement',
+                    name: `SUBSTACK${inBranchNum > 0 ? inBranchNum + 1 : ''}`
+                }];
+                ++inBranchNum;
+                ++outLineNum;
+                ++context.blockInfo.branchCount;
+                continue;
+            }
+
+            // Determine whether the argument type is one of the known standard field types
+            const argInfo = context.blockInfo.arguments[placeholder] || {};
+            let argTypeInfo = ArgumentTypeMap[argInfo.type] || {};
+
+            // Field type not a standard field type, see if extension has registered custom field type
+            if (!ArgumentTypeMap[argInfo.type] && context.categoryInfo.customFieldTypes[argInfo.type]) {
+                argTypeInfo = context.categoryInfo.customFieldTypes[argInfo.type].argumentTypeInfo;
+            }
+
+            // Start to construct the scratch-blocks style JSON defining how the block should be
+            // laid out
+            let argJSON;
+
+            // Most field types are inputs (slots on the block that can have other blocks plugged into them)
+            // check if this is not one of those cases. E.g. an inline image on a block.
+            if (argTypeInfo.fieldType === 'field_image') {
+                argJSON = this._constructInlineImageJson(argInfo);
+            } else {
+                // Construct input value
+
+                // Layout a block argument (e.g. an input slot on the block)
+                argJSON = {
+                    type: 'input_value',
+                    name: placeholder
+                };
+
+                const defaultValue = argInfo.defaultValue;
+
+                if (argTypeInfo.check) {
+                    // Right now the only type of 'check' we have specifies that the
+                    // input slot on the block accepts Boolean reporters, so it should be
+                    // shaped like a hexagon
+                    argJSON.check = argTypeInfo.check;
+                }
+
+                let valueName, shadowType, fieldName;
+                if (param.menu) {
+                    if (param.field) {
+                        argJSON.type = 'field_dropdown';
+                        argJSON.options = param.menu.map(item => ([
+                            formatMessage({
+                                id: item.messageId,
+                                default: item.messageId
+                            }),
+                            item.value
+                        ]));
+                        valueName = null;
+                        shadowType = null;
+                        fieldName = placeholder;
+                    } else {
+                        valueName = placeholder;
+                        shadowType = `${block.opcode}.menu_${placeholder}`;
+                        fieldName = placeholder;
+                    }
+                } else {
+                    valueName = placeholder;
+                    shadowType = argInfo.shadow;
+                    if (argInfo.shadow === undefined || argInfo.shadow === true) {
+                        shadowType = (argTypeInfo.shadow && argTypeInfo.shadow.type) || null;
+                        fieldName = (argTypeInfo.shadow && argTypeInfo.shadow.fieldName) || null;
+                    }
+                }
+
+                // <value> is the ScratchBlocks name for a block input.
+                if (valueName) {
+                    context.inputList.push(`<value name="${placeholder}">`);
+                }
+
+                // The <shadow> is a placeholder for a reporter and is visible when there's no reporter in this input.
+                // Boolean inputs don't need to specify a shadow in the XML.
+                if (shadowType) {
+                    context.inputList.push(`<shadow type="${shadowType}">`);
+                }
+
+                // A <field> displays a dynamic value: a user-editable text field, a drop-down menu, etc.
+                // Leave out the field if defaultValue or fieldName are not specified
+                if (defaultValue && fieldName) {
+                    context.inputList.push(`<field name="${fieldName}">${defaultValue}</field>`);
+                }
+
+                if (shadowType) {
+                    context.inputList.push('</shadow>');
+                }
+
+                if (valueName) {
+                    context.inputList.push('</value>');
+                }
+            }
+
+            const argsName = `args${outLineNum}`;
+            const blockArgs = (context.blockJSON[argsName] = context.blockJSON[argsName] || []);
+            if (argJSON) blockArgs.push(argJSON);
+            const argNum = blockArgs.length;
+            context.argsMap[placeholder] = argNum;
+
+            convertedText += `%${argNum}`;
+        }
+
+        convertedText += text.substr(lastIndex, text.length - lastIndex);
+
+        // Process the remaining string
+        if (convertedText.length) {
+            if (context.blockJSON[`message${outLineNum}`]) {
+                context.blockJSON[`message${outLineNum}`] += convertedText;
+            } else {
+                context.blockJSON[`message${outLineNum}`] = convertedText;
+            }
+        }
     }
 
     removeBlocks (blockIds) {
@@ -425,122 +531,6 @@ class ExtensionAPI {
     loadProject (input) {
         return this.vm.loadProject(input);
     }
-
-    /**
-     * Helper for _convertForScratchBlocks which handles linearization of argument placeholders. Called as a callback
-     * from string#replace. In addition to the return value the JSON and XML items in the context will be filled.
-     * @see runtime.js Runtime._convertPlaceholders
-     * @param {object} context - information shared with _convertForScratchBlocks about the block, etc.
-     * @param {object} block - block prototype.
-     * @param {string} match - the overall string matched by the placeholder regex, including brackets: '[FOO]'.
-     * @param {string} placeholder - the name of the placeholder being matched: 'FOO'.
-     * @return {string} scratch-blocks placeholder for the argument: '%1'.
-     * @private
-     */
-     _convertPlaceholders (context, block, match, placeholder) {
-        // Sanitize the placeholder to ensure valid XML
-        placeholder = placeholder.replace(/[<"&]/, '_');
-
-        // Determine whether the argument type is one of the known standard field types
-        const argInfo = context.blockInfo.arguments[placeholder] || {};
-        const param = block.param[placeholder] || {};
-        let argTypeInfo = ArgumentTypeMap[argInfo.type] || {};
-
-        // Field type not a standard field type, see if extension has registered custom field type
-        if (!ArgumentTypeMap[argInfo.type] && context.categoryInfo.customFieldTypes[argInfo.type]) {
-            argTypeInfo = context.categoryInfo.customFieldTypes[argInfo.type].argumentTypeInfo;
-        }
-
-        // Start to construct the scratch-blocks style JSON defining how the block should be
-        // laid out
-        let argJSON;
-
-        // Most field types are inputs (slots on the block that can have other blocks plugged into them)
-        // check if this is not one of those cases. E.g. an inline image on a block.
-        if (argTypeInfo.fieldType === 'field_image') {
-            argJSON = this._constructInlineImageJson(argInfo);
-        } else {
-            // Construct input value
-
-            // Layout a block argument (e.g. an input slot on the block)
-            argJSON = {
-                type: 'input_value',
-                name: placeholder
-            };
-
-            const defaultValue = argInfo.defaultValue;
-
-            if (argTypeInfo.check) {
-                // Right now the only type of 'check' we have specifies that the
-                // input slot on the block accepts Boolean reporters, so it should be
-                // shaped like a hexagon
-                argJSON.check = argTypeInfo.check;
-            }
-
-            let valueName;
-            let shadowType;
-            let fieldName;
-            if (param.menu) {
-                if (param.field) {
-                    argJSON.type = 'field_dropdown';
-                    argJSON.options = param.menu.map(item => ([
-                        formatMessage({
-                            id: item.messageId,
-                            default: item.messageId
-                        }),
-                        item.value
-                    ]));
-                    valueName = null;
-                    shadowType = null;
-                    fieldName = placeholder;
-                } else {
-                    valueName = placeholder;
-                    shadowType = `${block.opcode}.menu_${placeholder}`;
-                    fieldName = placeholder;
-                }
-            } else {
-                valueName = placeholder;
-                shadowType = argInfo.shadow;
-                if (argInfo.shadow === undefined || argInfo.shadow === true) {
-                    shadowType = (argTypeInfo.shadow && argTypeInfo.shadow.type) || null;
-                    fieldName = (argTypeInfo.shadow && argTypeInfo.shadow.fieldName) || null;
-                }
-            }
-
-            // <value> is the ScratchBlocks name for a block input.
-            if (valueName) {
-                context.inputList.push(`<value name="${placeholder}">`);
-            }
-
-            // The <shadow> is a placeholder for a reporter and is visible when there's no reporter in this input.
-            // Boolean inputs don't need to specify a shadow in the XML.
-            if (shadowType) {
-                context.inputList.push(`<shadow type="${shadowType}">`);
-            }
-
-            // A <field> displays a dynamic value: a user-editable text field, a drop-down menu, etc.
-            // Leave out the field if defaultValue or fieldName are not specified
-            if (defaultValue && fieldName) {
-                context.inputList.push(`<field name="${fieldName}">${defaultValue}</field>`);
-            }
-
-            if (shadowType) {
-                context.inputList.push('</shadow>');
-            }
-
-            if (valueName) {
-                context.inputList.push('</value>');
-            }
-        }
-
-        const argsName = `args${context.outLineNum}`;
-        const blockArgs = (context.blockJSON[argsName] = context.blockJSON[argsName] || []);
-        if (argJSON) blockArgs.push(argJSON);
-        const argNum = blockArgs.length;
-        context.argsMap[placeholder] = argNum;
-
-        return `%${argNum}`;
-     }
 
     /**
      * Helper for _convertPlaceholdes which handles inline images which are a specialized case of block "arguments".

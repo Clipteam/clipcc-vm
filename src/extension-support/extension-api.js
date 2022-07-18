@@ -330,7 +330,7 @@ class ExtensionAPI {
             lastIndex = re.lastIndex;
 
             // Sanitize the placeholder to ensure valid XML
-            const placeholder = searchResult[1].replace(/[<"&]/, '_');
+            let placeholder = searchResult[1].replace(/[<"&]/, '_');
             const param = block.param[placeholder] || {};
 
             // Check whether it is an substack

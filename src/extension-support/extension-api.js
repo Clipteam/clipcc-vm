@@ -22,8 +22,7 @@ const argumentType = [
     'color', // COLOR: 5
     'matrix', // MATRIX: 6
     'note', // NOTE: 7
-    'angle', // ANGLE: 8
-    'script', // SCRIPT: 9
+    'angle' // ANGLE: 8
 ];
 
 
@@ -335,7 +334,8 @@ class ExtensionAPI {
             const param = block.param[placeholder] || {};
 
             // Check whether it is an substack
-            if (param.type === 9) { // script
+            if (placeholder.startsWith('SUBSTACK')) { // script
+                if (placeholder === 'SUBSTACK1') placeholder = 'SUBSTACK';
                 if (context.blockJSON[`message${outLineNum}`]) {
                     context.blockJSON[`message${outLineNum}`] += convertedText;
                 } else {
@@ -347,7 +347,7 @@ class ExtensionAPI {
                 context.blockJSON[`message${outLineNum}`] = '%1';
                 context.blockJSON[`args${outLineNum}`] = [{
                     type: 'input_statement',
-                    name: `SUBSTACK${inBranchNum > 0 ? inBranchNum + 1 : ''}`
+                    name: placeholder
                 }];
                 ++inBranchNum;
                 ++outLineNum;

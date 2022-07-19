@@ -2308,10 +2308,10 @@ cli-width@^2.0.0:
   resolved "https://registry.yarnpkg.com/cli-width/-/cli-width-2.2.1.tgz#b0433d0b4e9c847ef18868a4ef16fd5fc8271c48"
   integrity sha512-GRMWDxpOB6Dgk2E5Uo+3eEBvtOOlimMmpbFiKuLFnQzYDavtLFY3K5ona41jgN/WdRZtG7utuVSVTL4HbZHGkw==
 
-clipcc-block@3.1.6:
-  version "3.1.6"
-  resolved "https://registry.yarnpkg.com/clipcc-block/-/clipcc-block-3.1.6.tgz#b28c3b2ab11fcdb1324c969f7dcbd5283ec0435d"
-  integrity sha512-EgAdPNvAzwVAM9zAEHl3AxL+sV+irWy6zhLMFGy2L7rVZXfWVYdpE9bdddER2AQfyZoYedMorx5BWtY6ItfoZg==
+clipcc-block@3.1.7:
+  version "3.1.7"
+  resolved "https://registry.yarnpkg.com/clipcc-block/-/clipcc-block-3.1.7.tgz#0c637a4ef97ab323d0b7efec8f344b8eb088c724"
+  integrity sha512-R0CQP4OUCeaJi0FdgH/x+KkBru8kEUoJpmwPPOGN8nUz72/1EGA/FCyKHVDlPhlKLIVqLCTNIdrs+jtXECtHdQ==
   dependencies:
     exports-loader "0.6.3"
     imports-loader "0.6.5"
@@ -2323,10 +2323,10 @@ clipcc-block@3.1.6:
     google-closure-compiler-osx "^20200112.0.0"
     google-closure-compiler-windows "^20200112.0.0"
 
-clipcc-l10n@3.1.7:
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/clipcc-l10n/-/clipcc-l10n-3.1.7.tgz#82de27f6275b5117ea4056aed65bf5a4cae6dcdd"
-  integrity sha512-xgbhqcWKYlAENzmCmTHxS3eUP7OfdT5YU2DGM0EG06VPgkH3TurchAcjWjhOBPZlaFCwb678cAbWSFn1d7nD2g==
+clipcc-l10n@3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/clipcc-l10n/-/clipcc-l10n-3.1.8.tgz#094703a54469bec02e800d55a53e8ca0993f5086"
+  integrity sha512-YA0O0EtTdbsxSC719IR7H2L3y1km0a2krRK6gFE3DiDm+MxG57H7dLUPX/Do3V4tK1JJ1r9eJ/sJLdBhVQtDcg==
   dependencies:
     "@babel/cli" "^7.1.2"
     "@babel/core" "^7.1.2"

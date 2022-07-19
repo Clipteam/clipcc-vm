@@ -382,6 +382,23 @@ const serializeSound = function (sound) {
     return obj;
 };
 
+const makeSafeForJSON = value => {
+    if (Array.isArray(value)) {
+        if (value.includes(null)) {
+            const copy = value.slice();
+            for (let i = 0; i < copy.length; i++) {
+                if (copy[i] === null) {
+                    copy[i] = 'null';
+                }
+            }
+            return copy;
+        }
+    } else if (value === null) {
+        return 'null';
+    }
+    return value;
+};
+
 /**
  * Serialize the given variables object.
  * @param {object} variables The variables to be serialized.
@@ -404,12 +421,12 @@ const serializeVariables = function (variables) {
             continue;
         }
         if (v.type === Variable.LIST_TYPE) {
-            obj.lists[varId] = [v.name, v.value];
+            obj.lists[varId] = [v.name, makeSafeForJSON(v.value)];
             continue;
         }
 
         // otherwise should be a scalar type
-        obj.variables[varId] = [v.name, v.value];
+        obj.variables[varId] = [v.name, makeSafeForJSON(v.value)];
         // only scalar vars have the potential to be cloud vars
         if (v.isCloud) obj.variables[varId].push(true);
     }

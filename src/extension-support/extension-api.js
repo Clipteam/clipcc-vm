@@ -205,8 +205,17 @@ class ExtensionAPI {
 
         // Process input menus
         for (const paramId in block.param) {
+            // if the param doesn't have menu or it's an field
             if (!block.param[paramId].menu || block.param[paramId].field) continue;
-            const menuId = `${block.opcode}.menu_${paramId}`;
+            // if the param uses an existing menu
+            if (typeof(block.param[paramId].menu) === 'string') continue;
+
+            // check whether the menu specified an id
+            if (!block.param[paramId].menuId) {
+                // automatically generate an id
+                block.param[paramId].menuId = `${block.opcode}.menu_${paramId}`;
+            }
+
             const menuItems = block.param[paramId].menu.map(item => ([
                 formatMessage({
                     id: item.messageId,
@@ -214,10 +223,11 @@ class ExtensionAPI {
                 }),
                 item.value
             ]));
+            
             category.menus.push({
                 json: {
                     message0: '%1',
-                    type: menuId,
+                    type: block.param[paramId].menuId,
                     inputsInline: true,
                     output: 'String',
                     colour: category.color1,
@@ -389,24 +399,22 @@ class ExtensionAPI {
                 }
 
                 let valueName, shadowType, fieldName;
-                if (param.menu) {
-                    if (param.field) {
-                        argJSON.type = 'field_dropdown';
-                        argJSON.options = param.menu.map(item => ([
-                            formatMessage({
-                                id: item.messageId,
-                                default: item.messageId
-                            }),
-                            item.value
-                        ]));
-                        valueName = null;
-                        shadowType = null;
-                        fieldName = placeholder;
-                    } else {
-                        valueName = placeholder;
-                        shadowType = `${block.opcode}.menu_${placeholder}`;
-                        fieldName = placeholder;
-                    }
+                if (param.menu && param.field) {
+                    argJSON.type = 'field_dropdown';
+                    argJSON.options = param.menu.map(item => ([
+                        formatMessage({
+                            id: item.messageId,
+                            default: item.messageId
+                        }),
+                        item.value
+                    ]));
+                    valueName = null;
+                    shadowType = null;
+                    fieldName = placeholder;
+                } else if (param.menuId) {
+                    valueName = placeholder;
+                    shadowType = param.menuId;
+                    fieldName = placeholder;
                 } else {
                     valueName = placeholder;
                     shadowType = argInfo.shadow;

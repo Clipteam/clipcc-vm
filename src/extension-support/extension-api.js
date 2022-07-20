@@ -339,7 +339,6 @@ class ExtensionAPI {
 
             // Sanitize the placeholder to ensure valid XML
             let placeholder = searchResult[1].replace(/[<"&]/, '_');
-            const param = block.param[placeholder] || {};
 
             // Check whether it is an substack
             if (placeholder.startsWith('SUBSTACK')) { // script
@@ -362,6 +361,9 @@ class ExtensionAPI {
                 ++context.blockInfo.branchCount;
                 continue;
             }
+            
+            // create param lazily in order to avoid errors caused by BRANCH
+            const param = block.param[placeholder] || {};
 
             // Determine whether the argument type is one of the known standard field types
             const argInfo = context.blockInfo.arguments[placeholder] || {};

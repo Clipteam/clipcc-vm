@@ -24,6 +24,16 @@ class StageLayering {
             StageLayering.SPRITE_LAYER
         ];
     }
+    
+    // Order of layer groups relative to each other,
+    static get LAYER_GROUPS_PEN () {
+        return [
+            StageLayering.BACKGROUND_LAYER,
+            StageLayering.VIDEO_LAYER,
+            StageLayering.SPRITE_LAYER,
+            StageLayering.PEN_LAYER
+        ];
+    }
 }
 
 module.exports = StageLayering;

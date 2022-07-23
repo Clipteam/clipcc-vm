@@ -30,6 +30,16 @@ const ColorParam = {
 };
 
 /**
+ * Enum for layer parameter values.
+ * @readonly
+ * @enum {string}
+ */
+const LayerParam = {
+    FRONT: 'front',
+    BACK: 'back'
+};
+
+/**
  * Enum for true/false.
  * @readonly
  * @enum {string}
@@ -139,14 +149,10 @@ class Scratch3PenBlocks {
     }
 
     shouldCreatePenLayer () {
-        if (this._penSkinId < 0) {
-            console.log('首次创建 PenLayer');
-            return true;
-        } // 首次创建 PenLayer
-        if (!this.runtime.renderer._allSkins[this._penSkinId]) {
-            console.log('PenLayer 已被删除');
-            return true;
-        } // 已被不明原因清空
+        if (this._penSkinId < 0)
+            return true; // 首次创建 PenLayer
+        if (!this.runtime.renderer._allSkins[this._penSkinId])
+            return true; // 已被不明原因清空
         // 不知道为什么会报覆盖
         /*
         if (this.runtime.renderer._allSkins[this._penSkinId].constructor.name !== 'PenSkin') {
@@ -325,6 +331,27 @@ class Scratch3PenBlocks {
                     description: 'label for false'
                 }),
                 value: BooleanParam.FALSE
+            }
+        ];
+    }
+    
+    getLayerParam () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'pen.layerMenu.front',
+                    default: 'front',
+                    description: 'label for front'
+                }),
+                value: LayerParam.FRONT
+            },
+            {
+                text: formatMessage({
+                    id: 'pen.layerMenu.back',
+                    default: 'back',
+                    description: 'label for back'
+                }),
+                value: LayerParam.BACK
             }
         ];
     }
@@ -693,6 +720,22 @@ class Scratch3PenBlocks {
                         }
                     },
                     hideFromPalette: true
+                },
+                {
+                    opcode: 'goPenLayer',
+                    blockType: BlockType.COMMAND,
+                    text: formatMessage({
+                        id: 'pen.GoPenLayer',
+                        default: 'go to [OPTION] layer',
+                        description: 'go to front layer(pen)'
+                    }),
+                    arguments: {
+                        OPTION: {
+                            type: ArgumentType.STRING,
+                            menu: 'layerParam',
+                            defaultValue: LayerParam.FRONT
+                        }
+                    },
                 }
             ],
             menus: {
@@ -700,12 +743,27 @@ class Scratch3PenBlocks {
                     acceptReporters: true,
                     items: this._initColorParam()
                 },
+                layerParam: {
+                    acceptReporters: false,
+                    items: this.getLayerParam()
+                },
                 booleanParam: {
                     acceptReporters: true,
                     items: this.getBooleanParamItem()
                 }
             }
         };
+    }
+    
+    // experimental stuff
+    goPenLayer (args) {
+        if (this.runtime.renderer) {
+            if (args.OPTION === 'front')
+                this.runtime.renderer.setLayerGroupOrdering(StageLayering.LAYER_GROUPS_PEN);
+                this.runtime.renderer.setDrawableOrder(this._penDrawableId, Infinity, StageLayering.PEN_LAYER);
+            if (args.OPTION === 'back')
+                this.runtime.renderer.setLayerGroupOrdering(StageLayering.LAYER_GROUPS);
+        }
     }
 
     // ClipBlocks

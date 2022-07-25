@@ -231,7 +231,7 @@ class Scratch3SensingBlocks {
     directionBetweenPosition (args, util) {
         const dx = args.X2 - args.X1;
         const dy = args.Y2 - args.Y1;
-        const d = MathUtil.radToDeg(Math.atan(dx / dy));
+        let d = MathUtil.radToDeg(Math.atan(dx / dy));
         if (dy < 0) {
             if (d > 0) d = d - 180;
             else d = d + 180;

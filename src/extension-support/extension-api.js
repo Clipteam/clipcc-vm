@@ -327,6 +327,8 @@ class ExtensionAPI {
         const text = context.blockInfo.text;
         let inBranchNum = 0;
         let outLineNum = 0;
+        // clear next arg
+        context.blockJSON[`args${outLineNum}`] = [];
 
         const re = /\[(.+?)]/g;
 
@@ -343,11 +345,7 @@ class ExtensionAPI {
             // Check whether it is an substack
             if (placeholder.startsWith('SUBSTACK')) { // script
                 if (placeholder === 'SUBSTACK1') placeholder = 'SUBSTACK';
-                if (context.blockJSON[`message${outLineNum}`]) {
-                    context.blockJSON[`message${outLineNum}`] += convertedText;
-                } else {
-                    context.blockJSON[`message${outLineNum}`] = convertedText;
-                }
+                context.blockJSON[`message${outLineNum}`] = convertedText;
                 ++outLineNum;
                 convertedText = '';
 
@@ -359,6 +357,8 @@ class ExtensionAPI {
                 ++inBranchNum;
                 ++outLineNum;
                 ++context.blockInfo.branchCount;
+                // clear next arg
+                context.blockJSON[`args${outLineNum}`] = [];
                 continue;
             }
             
@@ -465,11 +465,7 @@ class ExtensionAPI {
 
         // Process the remaining string
         if (convertedText.length) {
-            if (context.blockJSON[`message${outLineNum}`]) {
-                context.blockJSON[`message${outLineNum}`] += convertedText;
-            } else {
-                context.blockJSON[`message${outLineNum}`] = convertedText;
-            }
+            context.blockJSON[`message${outLineNum}`] = convertedText;
         }
     }
 

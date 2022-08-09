@@ -443,7 +443,7 @@ class Scratch3SensingBlocks {
         const x = Cast.toNumber(args.X);
         const y = Cast.toNumber(args.Y);
         const {r, g, b} = renderer.extractColor(x, y, 1).color;
-        return (r << 16) + (g << 8) + rgb.b;
+        return (r << 16) + (g << 8) + b;
     }
 }
 

@@ -15,8 +15,7 @@ const builtinExtensions = {
     boost: () => require('../extensions/scratch3_boost'),
     gdxfor: () => require('../extensions/scratch3_gdx_for'),
     httpio: () => require('../extensions/clip_httpio'),
-    ccjson: () => require('../extensions/clipcc_json'),
-    clipblocks: () => require('../extensions/clipblocks')
+    ccjson: () => require('../extensions/clipcc_json')
 };
 
 module.exports = builtinExtensions;

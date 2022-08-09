@@ -88,7 +88,8 @@ class Scratch3SensingBlocks {
             },
             sensing_isturbomode: (args, util) => this.runtime.turboMode,
             sensing_distancebetweenposition: this.distanceBetweenPosition,
-            sensing_directionbetweenposition: this.directionBetweenPosition
+            sensing_directionbetweenposition: this.directionBetweenPosition,
+            sensing_colorat: this.colorAt
         };
     }
 
@@ -391,6 +392,23 @@ class Scratch3SensingBlocks {
     }
 
     getOS () {
+        if (navigator.userAgentData) {
+            return new Promise(resolve => {
+                navigator.userAgentData.getHighEntropyValues(["platformVersion"])
+                    .then(ua => {
+                        if (navigator.userAgentData.platform !== "Windows")
+                            resolve(this._getOS());
+                        
+                        const majorPlatformVersion = parseInt(ua.platformVersion.split('.')[0]);
+                        if (majorPlatformVersion >= 13) resolve('Win11');
+                        else resolve(this._getOS());
+                    });
+            });
+        }
+        return this._getOS();
+    }
+    
+    _getOS () {
         const userAgent = navigator.userAgent;
         const isWin = (navigator.platform == 'Win32') || (navigator.platform == 'Windows');
         const isMac = (navigator.platform == 'Mac68K') || (navigator.platform == 'MacPPC') || (navigator.platform == 'Macintosh') || (navigator.platform == 'MacIntel');
@@ -418,6 +436,13 @@ class Scratch3SensingBlocks {
 
     getVersion () {
         return this.runtime.version;
+    }
+    
+    colorAt (args) {
+        const { extractColor } = this.runtime.renderer;
+        const x = Cast.toNumber(args.X);
+        const y = Cast.toNumber(args.Y);
+        return extractColor(x, y, 0);
     }
 }
 

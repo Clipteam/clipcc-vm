@@ -878,6 +878,9 @@ class VirtualMachine extends EventEmitter {
      * @return {AudioBuffer} the sound's audio buffer.
      */
     getSoundBuffer (soundIndex) {
+        if (!this.editingTarget.sprite.sounds[soundIndex]) {
+            return null;
+        }
         const id = this.editingTarget.sprite.sounds[soundIndex].soundId;
         if (id && this.runtime && this.runtime.audioEngine) {
             return this.editingTarget.sprite.soundBank.getSoundPlayer(id).buffer;

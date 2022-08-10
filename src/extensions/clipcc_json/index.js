@@ -58,6 +58,21 @@ class ClipCCJSONBlocks {
                     }
                 },
                 {
+                    opcode: 'getLengthOfArray',
+                    text: formatMessage({
+                        id: 'ccjson.getLengthOfArray',
+                        default: 'get length of [ARRAY]',
+                        description: 'get length of array'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        ARRAY: {
+                            type: ArgumentType.STRING,
+                            defaultValue: '["clipcc","is","good"]'
+                        }
+                    }
+                },
+                {
                     opcode: 'setValueByKey',
                     text: formatMessage({
                         id: 'ccjson.setValueByKey',
@@ -79,6 +94,29 @@ class ClipCCJSONBlocks {
                             defaultValue: '{"key": "value"}'
                         }
                     }
+                },
+                {
+                    opcode: 'setValueByPos',
+                    text: formatMessage({
+                        id: 'ccjson.setValueByPos',
+                        default: 'set [POS] in array [ARRAY] to [VALUE]',
+                        description: 'set value in array by pos'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        POS: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: '0'
+                        },
+                        VALUE: {
+                            type: ArgumentType.STRING,
+                            defaultValue: '🐢💈'
+                        },
+                        ARRAY: {
+                            type: ArgumentType.STRING,
+                            defaultValue: '["🍎", "🍌", "🚇"]'
+                        }
+                    }
                 }
             ]
         };
@@ -91,17 +129,43 @@ class ClipCCJSONBlocks {
             if (typeof decodedText === 'object') return JSON.stringify(decodedText);
             return Cast.toString(decodedText);
         } catch (e) {
-            return `[ERROR] ${e}`;
+            return `[ERROR] ${e.message}`;
         }
     }
 
     getValueByArray (args, util) {
         try {
             const array = JSON.parse(args.ARRAY);
-            if (typeof array[args.POS] === 'object') return JSON.stringify(array[args.POS]);
-            return Cast.toString(array[args.POS]);
+            if (typeof array[args.POS] === 'object') return JSON.stringify(array[Cast.toNumber(args.POS)]);
+            return Cast.toString(array[Cast.toNumber(args.POS)]);
         } catch (e) {
-            return `[ERROR]${e}`;
+            return `[ERROR]${e.message}`;
+        }
+    }
+    
+    getLengthOfArray (args) {
+        try {
+            const array = JSON.parse(args.ARRAY);
+            return array.length;
+        } catch (e) {
+            return `[ERROR]${e.message}`;
+        }
+    }
+    
+    setValueByPos (args, util) {
+        let array = [];
+        try {
+            if (args.ARRAY != '') array = JSON.parse(Cast.toString(args.ARRAY));
+            array[Cast.toNumber(args.POS)] = Cast.toString(args.VALUE);
+            const result = [];
+            for (const elem of array) {
+                if (typeof elem === 'object') result.push(JSON.stringify(elem));
+                else if (typeof elem === 'string') result.push(`"${elem}"`);
+                else result.push(elem);
+            }
+            return `[${result.join(', ')}]`;
+        } catch (e) {
+            return `[ERROR] ${e.message}`;
         }
     }
 

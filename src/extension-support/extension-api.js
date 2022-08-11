@@ -195,7 +195,7 @@ class ExtensionAPI {
             colourTertiary: category.color3
         };
         const blockInfo = this._generateBlockInfo(block);
-        if (block.filter) blockInfo.filter = block.filter; //filter过滤器
+        if (block.option.filter) blockInfo.filter = block.option.filter; //filter过滤器
         const context = {
             argsMap: {},
             blockJSON,
@@ -218,14 +218,18 @@ class ExtensionAPI {
             }
 
             //动态菜单 传function
-            const menuItems = (typeof(block.param[paramId].menu) === 'function') ? block.param[paramId].menu : 
-                block.param[paramId].menu.map(item => ([
+            const menuItems;
+            if (typeof(block.param[paramId].menu) === 'function') {
+                menuItems = block.param[paramId].menu;
+            } else {
+                menuItems = block.param[paramId].menu.map(item => ([
                     formatMessage({
                         id: item.messageId,
                         default: item.messageId
                     }),
                     item.value
                 ]));
+            }
             
             category.menus.push({
                 json: {
@@ -236,7 +240,7 @@ class ExtensionAPI {
                     colour: category.color1,
                     colourSecondary: category.color2,
                     colourTertiary: category.color3,
-                    outputShape: block.param[paramId].menuShape ? block.param[paramId].menuShape : ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
+                    outputShape: ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
                     args0: [{
                         type: 'field_dropdown',
                         name: paramId,

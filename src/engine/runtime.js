@@ -2534,20 +2534,26 @@ class Runtime extends EventEmitter {
      * @property {string} [label] - the label for this opcode if `labelFn` is absent
      */
     getLabelForOpcode (extendedOpcode) {
-        const [category, opcode] = StringUtil.splitFirst(extendedOpcode, '_');
-        if (!(category && opcode)) return;
+        // const categoryInfo = this._blockInfo.find(ci => ci.id === category);
+        // if (!categoryInfo) return;
 
-        const categoryInfo = this._blockInfo.find(ci => ci.id === category);
-        if (!categoryInfo) return;
+        // const block = categoryInfo.blocks.find(b => b.info.opcode === opcode);
+        // if (!block) return;
 
-        const block = categoryInfo.blocks.find(b => b.info.opcode === opcode);
-        if (!block) return;
-
-        // TODO: we may want to format the label in a locale-specific way.
-        return {
-            category: 'extension', // This assumes that all extensions have the same monitor color.
-            label: `${categoryInfo.name}: ${block.info.text}`
-        };
+        for (const category of this._blockInfo) {
+            for (const block of category.blocks) {
+                console.log(block);
+                if (block.info.opcode === extendedOpcode) {
+                    return {
+                        category: category.id,
+                        label: block.info.text,
+                        labelFn: undefined,
+                        colour: block.json.colour,
+                    };
+                }
+            }
+        }
+        return;
     }
 
     /**

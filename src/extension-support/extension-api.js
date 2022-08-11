@@ -195,6 +195,7 @@ class ExtensionAPI {
             colourTertiary: category.color3
         };
         const blockInfo = this._generateBlockInfo(block);
+        if (block.option.filter) blockInfo.filter = block.option.filter; //filter过滤器
         const context = {
             argsMap: {},
             blockJSON,
@@ -216,13 +217,19 @@ class ExtensionAPI {
                 block.param[paramId].menuId = `${block.opcode}.menu_${paramId}`;
             }
 
-            const menuItems = block.param[paramId].menu.map(item => ([
-                formatMessage({
-                    id: item.messageId,
-                    default: item.messageId
-                }),
-                item.value
-            ]));
+            //动态菜单 传function
+            const menuItems;
+            if (typeof(block.param[paramId].menu) === 'function') {
+                menuItems = block.param[paramId].menu;
+            } else {
+                menuItems = block.param[paramId].menu.map(item => ([
+                    formatMessage({
+                        id: item.messageId,
+                        default: item.messageId
+                    }),
+                    item.value
+                ]));
+            }
             
             category.menus.push({
                 json: {

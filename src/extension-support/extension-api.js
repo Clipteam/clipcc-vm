@@ -218,7 +218,7 @@ class ExtensionAPI {
             }
 
             //动态菜单 传function
-            const menuItems;
+            let menuItems;
             if (typeof(block.param[paramId].menu) === 'function') {
                 menuItems = block.param[paramId].menu;
             } else {

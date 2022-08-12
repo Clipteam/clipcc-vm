@@ -124,7 +124,7 @@ class ClipCCJSONBlocks {
 
     getValueByKey (args, util) {
         try {
-            const decodedText = JSON.parse(Cast.toString(args.JSON))[Cast.toString(args.KEY)];
+            const decodedText = JSON.parse(Cast.toString(args.JSON).replace(/\\/g, '\\\\')) [Cast.toString(args.KEY)];
             // console.log(decodedText);
             if (typeof decodedText === 'object') return JSON.stringify(decodedText);
             return Cast.toString(decodedText);
@@ -135,7 +135,7 @@ class ClipCCJSONBlocks {
 
     getValueByArray (args, util) {
         try {
-            const array = JSON.parse(args.ARRAY);
+            const array = JSON.parse(args.ARRAY.replace(/\\/g, '\\\\'));
             if (typeof array[args.POS] === 'object') return JSON.stringify(array[Cast.toNumber(args.POS)]);
             return Cast.toString(array[Cast.toNumber(args.POS)]);
         } catch (e) {
@@ -145,7 +145,7 @@ class ClipCCJSONBlocks {
     
     getLengthOfArray (args) {
         try {
-            const array = JSON.parse(args.ARRAY);
+            const array = JSON.parse(args.ARRAY.replace(/\\/g, '\\\\'));
             return array.length;
         } catch (e) {
             return `[ERROR]${e.message}`;
@@ -154,9 +154,15 @@ class ClipCCJSONBlocks {
     
     setValueByPos (args, util) {
         let array = [];
+        let data = null;
         try {
-            if (args.ARRAY != '') array = JSON.parse(Cast.toString(args.ARRAY));
-            array[Cast.toNumber(args.POS)] = Cast.toString(args.VALUE);
+            try {
+                data = JSON.parse(args.VALUE.replace(/\\/g, '\\\\'));
+            } catch (e) {
+                data = args.VALUE;
+            }
+            if (args.ARRAY != '') array = JSON.parse(Cast.toString(args.ARRAY).replace(/\\/g, '\\\\'));
+            typeof data === 'object' ? array[Cast.toNumber(args.POS)] = data : array[Cast.toNumber(args.POS)] = Cast.toString(data);
             const result = [];
             for (const elem of array) {
                 if (typeof elem === 'object') result.push(JSON.stringify(elem));
@@ -171,9 +177,15 @@ class ClipCCJSONBlocks {
 
     setValueByKey (args, util) {
         let obj = {};
+        let data = null;
         try {
-            if (args.JSON != '') obj = JSON.parse(Cast.toString(args.JSON));
-            obj[Cast.toString(args.KEY)] = Cast.toString(args.VALUE);
+            try {
+                data = JSON.parse(args.VALUE.replace(/\\/g, '\\\\'));
+            } catch (e) {
+                data = args.VALUE;
+            }
+            if (args.JSON != '') obj = JSON.parse(Cast.toString(args.JSON).replace(/\\/g, '\\\\'));
+            typeof data === 'object' ? obj[Cast.toString(args.KEY)] = data : obj[Cast.toString(args.KEY)] = Cast.toString(data);
             return JSON.stringify(obj);
         } catch (e) {
             return `[ERROR] ${e}`;

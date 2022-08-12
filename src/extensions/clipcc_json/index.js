@@ -127,7 +127,7 @@ class ClipCCJSONBlocks {
             const decodedText = JSON.parse(Cast.toString(args.JSON).replace(/\\/g, '\\\\')) [Cast.toString(args.KEY)];
             // console.log(decodedText);
             if (typeof decodedText === 'object') return JSON.stringify(decodedText);
-            return Cast.toString(decodedText);
+            return Cast.toString(decodedText) || '';
         } catch (e) {
             return `[ERROR] ${e.message}`;
         }
@@ -137,7 +137,7 @@ class ClipCCJSONBlocks {
         try {
             const array = JSON.parse(args.ARRAY.replace(/\\/g, '\\\\'));
             if (typeof array[args.POS] === 'object') return JSON.stringify(array[Cast.toNumber(args.POS)]);
-            return Cast.toString(array[Cast.toNumber(args.POS)]);
+            return Cast.toString(array[Cast.toNumber(args.POS)])  || '';
         } catch (e) {
             return `[ERROR]${e.message}`;
         }
@@ -186,7 +186,7 @@ class ClipCCJSONBlocks {
             }
             if (args.JSON != '') obj = JSON.parse(Cast.toString(args.JSON).replace(/\\/g, '\\\\'));
             typeof data === 'object' ? obj[Cast.toString(args.KEY)] = data : obj[Cast.toString(args.KEY)] = Cast.toString(data);
-            return JSON.stringify(obj);
+            return Cast.toString(JSON.stringify(obj))  || '';
         } catch (e) {
             return `[ERROR] ${e}`;
         }

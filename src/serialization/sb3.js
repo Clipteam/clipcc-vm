@@ -384,17 +384,33 @@ const serializeSound = function (sound) {
 
 const makeSafeForJSON = value => {
     if (Array.isArray(value)) {
-        if (value.includes(null)) {
+        // 列表可能存在多维数组的情况
+        if (Array.isArray(value[0])) {
+            let safed = value;
+            for (const itemId in value) {
+                const item = value[itemId];
+                if (value.includes(null)) {
+                    const copy = item.slice();
+                    for (let i = 0; i < copy.length; i++) {
+                        if (copy[i] === null) {
+                            copy[i] = '';
+                        }
+                    }
+                    safed[itemId] = copy;
+                }
+            }
+            return safed;
+        } else if (value.includes(null)) {
             const copy = value.slice();
             for (let i = 0; i < copy.length; i++) {
                 if (copy[i] === null) {
-                    copy[i] = 'null';
+                    copy[i] = '';
                 }
             }
             return copy;
         }
     } else if (value === null) {
-        return 'null';
+        return '';
     }
     return value;
 };

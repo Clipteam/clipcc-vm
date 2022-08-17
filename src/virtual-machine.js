@@ -195,6 +195,14 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
+     * Quit the VM, clearing any handles which might keep the process alive.
+     * Do not use the runtime after calling this method. This method is meant for test shutdown.
+     */
+    quit () {
+        this.runtime.quit();
+    }
+
+    /**
      * "Green flag" handler - start all threads starting with a green flag.
      */
     greenFlag () {
@@ -395,7 +403,11 @@ class VirtualMachine extends EventEmitter {
         const vm = this;
         const promise = storage.load(storage.AssetType.Project, id);
         promise.then(projectAsset => {
-            vm.loadProject(projectAsset.data);
+            if (!projectAsset) {
+                log.error(`Failed to fetch project with id: ${id}`);
+                return null;
+            }
+            return vm.loadProject(projectAsset.data);
         });
     }
 
@@ -501,11 +513,9 @@ class VirtualMachine extends EventEmitter {
      * specified by optZipType or blob by default.
      */
     exportSprite (targetId, optZipType) {
-        const sb3 = require('./serialization/sb3');
-
         const soundDescs = serializeSounds(this.runtime, targetId);
         const costumeDescs = serializeCostumes(this.runtime, targetId);
-        const spriteJson = StringUtil.stringify(sb3.serialize(this.runtime, targetId));
+        const spriteJson = this.toJSON(targetId);
 
         const zip = new JSZip();
         zip.file('sprite.json', spriteJson);
@@ -522,12 +532,13 @@ class VirtualMachine extends EventEmitter {
     }
 
     /**
-     * Export project as a Scratch 3.0 JSON representation.
+     * Export project or sprite as a Scratch 3.0 JSON representation.
+     * @param {string=} optTargetId - Optional id of a sprite to serialize
      * @return {string} Serialized state of the runtime.
      */
-    toJSON () {
+    toJSON (optTargetId) {
         const sb3 = require('./serialization/sb3');
-        return StringUtil.stringify(sb3.serialize(this.runtime));
+        return StringUtil.stringify(sb3.serialize(this.runtime, optTargetId));
     }
 
     // TODO do we still need this function? Keeping it here so as not to introduce
@@ -551,6 +562,9 @@ class VirtualMachine extends EventEmitter {
     deserializeProject (projectJSON, zip) {
         this.clear();
 
+        if (typeof performance !== 'undefined') {
+            performance.mark('scratch-vm-deserialize-start');
+        }
         const runtime = this.runtime;
         const deserializePromise = function () {
             if (projectJSON.meta && projectJSON.meta.editor === 'clipcc') {
@@ -896,6 +910,7 @@ class VirtualMachine extends EventEmitter {
      */
     updateSoundBuffer (soundIndex, newBuffer, soundEncoding) {
         const sound = this.editingTarget.sprite.sounds[soundIndex];
+        if (sound && sound.broken) delete sound.broken;
         const id = sound ? sound.soundId : null;
         if (id && this.runtime && this.runtime.audioEngine) {
             this.editingTarget.sprite.soundBank.getSoundPlayer(id).buffer = newBuffer;
@@ -981,6 +996,7 @@ class VirtualMachine extends EventEmitter {
     updateBitmap (costumeIndex, bitmap, rotationCenterX, rotationCenterY, bitmapResolution) {
         const costume = this.editingTarget.getCostumes()[costumeIndex];
         if (!(costume && this.runtime && this.runtime.renderer)) return;
+        if (costume && costume.broken) delete costume.broken;
 
         costume.rotationCenterX = rotationCenterX;
         costume.rotationCenterY = rotationCenterY;
@@ -1039,6 +1055,7 @@ class VirtualMachine extends EventEmitter {
      */
     updateSvg (costumeIndex, svg, rotationCenterX, rotationCenterY) {
         const costume = this.editingTarget.getCostumes()[costumeIndex];
+        if (costume && costume.broken) delete costume.broken;
         if (costume && this.runtime && this.runtime.renderer) {
             costume.rotationCenterX = rotationCenterX;
             costume.rotationCenterY = rotationCenterY;

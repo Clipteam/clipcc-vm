@@ -14,7 +14,7 @@
   "scripts": {
     "build": "webpack --progress --colors --bail",
     "coverage": "tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov",
-    "deploy": "touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log --pretty=format:%H -n1)\"",
+    "deploy": "touch playground/.nojekyll && gh-pages -t -d playground -m \"Build for $(git log -n1 --pretty=format:\"%h %s\") [skip ci]\"",
     "docs": "jsdoc -c .jsdoc.json",
     "i18n:build": "mkdirp translations/core && format-message extract --out-file translations/core/en.json src/extensions/**/index.js && node convert-l10n.js translations/core/en.json translations/en.json",
     "i18n:push": "poe-push extension translations/en.json",
@@ -26,6 +26,17 @@
     "test": "yarn run lint && yarn run docs && yarn run tap",
     "watch": "webpack --progress --colors --watch",
     "version": "json -f package.json -I -e \"this.repository.sha = '$(git log -n1 --pretty=format:%H)'\""
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "tap": {
+      "branches": 60,
+      "functions": 70,
+      "lines": 70,
+      "statements": 70
   },
   "dependencies": {
     "@vernier/godirect": "1.5.0",
@@ -56,6 +67,8 @@
   "devDependencies": {
     "@babel/core": "7.13.10",
     "@babel/preset-env": "7.14.8",
+    "@commitlint/cli": "17.0.2",
+    "@commitlint/config-conventional": "17.0.2",
     "adm-zip": "0.4.11",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
@@ -76,11 +89,11 @@
     "scratch-audio": "latest",
     "scratch-render": "latest",
     "scratch-render-fonts": "latest",
-    "scratch-storage": "^1.3.3",
     "scratch-svg-renderer": "latest",
+    "scratch-storage": "2.0.2",
     "script-loader": "0.7.2",
     "stats.js": "0.17.0",
-    "tap": "12.0.1",
+    "tap": "16.2.0",
     "tiny-worker": "2.3.0",
     "uglifyjs-webpack-plugin": "1.2.7",
     "webpack": "4.46.0",

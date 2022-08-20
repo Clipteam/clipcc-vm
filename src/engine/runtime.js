@@ -420,7 +420,7 @@ class Runtime extends EventEmitter {
          */
         this.origin = null;
 
-        this._initScratchLink();
+        // this._initScratchLink();
     }
 
     /**

@@ -136,6 +136,7 @@ class ExtensionAPI {
                     id: this.categoryInfo[i].messageId,
                     default: this.categoryInfo[i].messageId
                 });
+                this.categoryInfo[i].menus = []
                 for (const j in this.categoryInfo[i].blocks) {
                     this.categoryInfo[i].blocks[j].info.text = formatMessage({
                         id: this.categoryInfo[i].blocks[j].info.messageId,
@@ -151,7 +152,42 @@ class ExtensionAPI {
                         blockInfo,
                         inputList: []
                     };
-                    
+                    let block = this.blocks.get(this.categoryInfo[i].blocks[j].info.opcode);
+                    for (const paramId in block.param) {
+                        // if the param doesn't have menu or it's an field
+                        if (!block.param[paramId].menu || block.param[paramId].field) continue;
+                        // if the param uses an existing menu
+                        if (typeof(block.param[paramId].menu) === 'string') continue;
+                        let menuItems;
+                        if (typeof(block.param[paramId].menu) === 'function') {
+                            menuItems = block.param[paramId].menu;
+                        } else {
+                            menuItems = block.param[paramId].menu.map(item => ([
+                                formatMessage({
+                                    id: item.messageId,
+                                    default: item.messageId
+                                }),
+                                item.value
+                            ]));
+                        }
+                        this.categoryInfo[i].menus.push({
+                            json: {
+                                message0: '%1',
+                                type: block.param[paramId].menuId,
+                                inputsInline: true,
+                                output: 'String',
+                                colour: this.categoryInfo[i].color1,
+                                colourSecondary: this.categoryInfo[i].color2,
+                                colourTertiary: this.categoryInfo[i].color3,
+                                outputShape: ScratchBlocksConstants.OUTPUT_SHAPE_ROUND,
+                                args0: [{
+                                    type: 'field_dropdown',
+                                    name: paramId,
+                                    options: menuItems
+                                }]
+                            }
+                        })
+                    }
                     this._processBlockArguments(context, this.blocks.get(this.categoryInfo[i].blocks[j].info.opcode));
                 }
                 this.vm.runtime.emit('BLOCKSINFO_UPDATE', this.categoryInfo[i]);
@@ -210,7 +246,6 @@ class ExtensionAPI {
             if (!block.param[paramId].menu || block.param[paramId].field) continue;
             // if the param uses an existing menu
             if (typeof(block.param[paramId].menu) === 'string') continue;
-
             // check whether the menu specified an id
             if (!block.param[paramId].menuId) {
                 // automatically generate an id

@@ -182,8 +182,11 @@ class ClipCCJSONBlocks {
             try {
                 data = JSON.parse(args.VALUE.replace(/\\/g, '\\\\'));
             } catch (e) {
-                data = args.VALUE;
+                let value = args.VALUE;
+                if (Number.isNaN(Cast.toNumber(args.VALUE))) value = Cast.toNumber(args.VALUE);
+                data = value;
             }
+            
             if (args.JSON != '') obj = JSON.parse(Cast.toString(args.JSON).replace(/\\/g, '\\\\'));
             typeof data === 'object' ? obj[Cast.toString(args.KEY)] = data : obj[Cast.toString(args.KEY)] = Cast.toString(data);
             return Cast.toString(JSON.stringify(obj))  || '';

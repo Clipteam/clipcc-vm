@@ -540,6 +540,12 @@ class ExtensionAPI {
     }
 
     addCategory (category) {
+        // 阻止多次添加同名 category
+        if (!!this._getCategory(category.categoryId)) {
+            console.warn('reject to add category twice');
+            return;
+        }
+        
         const categoryInfo = {
             id: category.categoryId,
             messageId: category.messageId,
@@ -562,6 +568,12 @@ class ExtensionAPI {
     }
 
     removeCategory (categoryId) {
+        // 阻止卸载不存在 category
+        if (!this._getCategory(category.categoryId)) {
+            console.warn('reject to add category twice');
+            return;
+        }
+        
         for (const i in this.vm.runtime._blockInfo) {
             const category = this.vm.runtime._blockInfo[i];
             if (category.id === categoryId) {

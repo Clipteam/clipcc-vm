@@ -233,9 +233,10 @@ class Sequencer {
             }
             // If no control flow has happened, switch to next block.
             if (thread.peekStack() === currentBlockId) {
-                if (thread.controlFlow) {
-                    thread.controlFlow = false;
-                } else {
+                // If current block is a return block, skip it.
+                const block = thread.blockContainer.getBlock(currentBlockId);
+                // Note: if current block is called from a monitor, the block will be undefined.
+                if (!block || block.opcode !== 'procedures_return') {
                     thread.goToNextBlock();
                 }
             }

@@ -195,12 +195,6 @@ class Thread {
         this.warpTimer = null;
 
         this.justReported = null;
-
-        /**
-         * An option to forcely mention that a control flow has happened.
-         * @type {boolean}
-         */
-        this.controlFlow = false;
     }
 
     /**
@@ -311,7 +305,7 @@ class Thread {
             this.popStack();
             blockID = this.peekStack();
         }
-        this.controlFlow = true;
+
         if (this.stack.length === 0) {
             // Clean up!
             this.requestScriptGlowInFrame = false;

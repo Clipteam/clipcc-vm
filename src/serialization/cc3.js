@@ -49,9 +49,15 @@ const serialize = function (options, runtime, targetId) {
     // Assemble extension list
     obj.extensions = runtime.vm.ccExtensionManager.getLoadedExtensions(options.saveOptionalExtension);
 
+    // Store settings in obj
+    if (runtime.storeSettings) {
+        obj.settings = {
+            frameRate: runtime.frameRate
+        }
+    }
     // Assemble metadata
     const meta = Object.create(null);
-    meta.semver = '3.0.0';
+    meta.semver = vm.runtime.version;
     meta.editor = 'clipcc';
     meta.vm = vmPackage.version;
     if (runtime.origin) {
@@ -86,6 +92,13 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         runtime.origin = json.meta.origin;
     } else {
         runtime.origin = null;
+    }
+    
+    // load settings
+    if (json.settings) {
+        const { settings } = json;
+        if (settings.frameRate)
+            runtime.setFramerate(parseInt(settings.frameRate));
     }
 
     // First keep track of the current target order in the json,

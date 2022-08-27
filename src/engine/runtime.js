@@ -309,10 +309,16 @@ class Runtime extends EventEmitter {
         // the framerate of clipcc-vm
         // 60 to match default of compatibility mode off
         this.frameRate = 60;
+        
+        /**
+         * Whether store settings in .cc3 file
+         * @type {boolean}
+         */
+         this.storeSettings = false;
 
         /**
          * Whether the project is in "compatibility mode" (30 TPS).
-         * @type {Boolean}
+         * @type {boolean}
          */
         this.compatibilityMode = false;
 

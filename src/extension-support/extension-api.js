@@ -569,7 +569,7 @@ class ExtensionAPI {
 
     removeCategory (categoryId) {
         // 阻止卸载不存在 category
-        if (!this._getCategory(category.categoryId)) {
+        if (!this._getCategory(categoryId)) {
             console.warn('reject to add category twice');
             return;
         }

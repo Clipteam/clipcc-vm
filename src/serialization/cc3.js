@@ -51,7 +51,7 @@ const serialize = function (options, runtime, targetId) {
 
     // Assemble metadata
     const meta = Object.create(null);
-    meta.semver = runtime.version;
+    meta.semver = '3.0.0';
     meta.editor = 'clipcc';
     meta.vm = vmPackage.version;
     if (runtime.origin) {

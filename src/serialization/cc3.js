@@ -49,12 +49,6 @@ const serialize = function (options, runtime, targetId) {
     // Assemble extension list
     obj.extensions = runtime.vm.ccExtensionManager.getLoadedExtensions(options.saveOptionalExtension);
 
-    // Store settings in obj
-    if (runtime.storeSettings) {
-        obj.settings = {
-            frameRate: runtime.frameRate
-        }
-    }
     // Assemble metadata
     const meta = Object.create(null);
     meta.semver = runtime.version;
@@ -62,6 +56,13 @@ const serialize = function (options, runtime, targetId) {
     meta.vm = vmPackage.version;
     if (runtime.origin) {
         meta.origin = runtime.origin;
+    }
+    
+    // Store settings in meta
+    if (runtime.storeSettings) {
+        meta.settings = {
+            frameRate: runtime.frameRate
+        }
     }
 
     // Attach full user agent string to metadata if available
@@ -95,8 +96,8 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
     }
     
     // load settings
-    if (json.settings) {
-        const { settings } = json;
+    if (json.meta.settings) {
+        const { settings } = json.meta;
         if (settings.frameRate)
             runtime.setFramerate(parseInt(settings.frameRate));
     }

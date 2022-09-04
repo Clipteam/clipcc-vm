@@ -1,4 +1,4 @@
-const BlockUtility = require('./block-utility');
+const { BlockUtility } = require('./block-utility');
 const BlocksExecuteCache = require('./blocks-execute-cache');
 const log = require('../util/log');
 const Thread = require('./thread');

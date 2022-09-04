@@ -8,7 +8,7 @@ const Timer = require('../util/timer');
  */
 
 class BlockUtility {
-    constructor (sequencer = null, thread = null, version = null, block = null) {
+    constructor (sequencer = null, thread = null, block = null) {
         /**
          * A sequencer block primitives use to branch or start procedures with
          * @type {?Sequencer}
@@ -256,4 +256,13 @@ class BlockUtility {
     }
 }
 
-module.exports = BlockUtility;
+class CompliedBlockUtility extends BlockUtility {
+    constructor (...params) {
+        super(...params);
+    }
+}
+
+module.exports = {
+    BlockUtility,
+    CompliedBlockUtility
+};

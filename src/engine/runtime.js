@@ -7,6 +7,7 @@ const BlocksRuntimeCache = require('./blocks-runtime-cache');
 const BlockType = require('../extension-support/block-type');
 const Profiler = require('./profiler');
 const Sequencer = require('./sequencer');
+const Compiler = require('./compiler');
 const execute = require('./execute.js');
 const ScratchBlocksConstants = require('./scratch-blocks-constants');
 const TargetType = require('../extension-support/target-type');
@@ -209,6 +210,9 @@ class Runtime extends EventEmitter {
 
         /** @type {!Sequencer} */
         this.sequencer = new Sequencer(this);
+        
+        /** @type {!Compiler} */
+        this.compiler = new Compiler(this);
 
         /**
          * Storage container for flyout blocks.
@@ -229,6 +233,12 @@ class Runtime extends EventEmitter {
          * @type {?Target}
          */
         this._editingTarget = null;
+        
+        /**
+         * Store block packages
+         * used by compiled scripts
+         */
+         this.packageInstances = {};
 
         /**
          * Map to look up a block primitive's implementation function by its opcode.
@@ -302,9 +312,15 @@ class Runtime extends EventEmitter {
 
         /**
          * Whether the project is in "turbo mode."
-         * @type {Boolean}
+         * @type {boolean}
          */
         this.turboMode = false;
+        
+        /**
+         * Whether use compiler instead of sequencer.
+         * type {boolean}
+         */
+         this.useCompiler = false;
 
         // the framerate of clipcc-vm
         // 60 to match default of compatibility mode off
@@ -789,6 +805,7 @@ class Runtime extends EventEmitter {
             if (defaultBlockPackages.hasOwnProperty(packageName)) {
                 // @todo pass a different runtime depending on package privilege?
                 const packageObject = new (defaultBlockPackages[packageName])(this);
+                this.packageInstances[packageName] = packageObject;
                 // Collect primitives from package.
                 if (packageObject.getPrimitives) {
                     const packagePrimitives = packageObject.getPrimitives();
@@ -1669,6 +1686,7 @@ class Runtime extends EventEmitter {
 
         thread.pushStack(id);
         this.threads.push(thread);
+        if (this.useCompiler) this.compiler.submitTask(thread);
         return thread;
     }
 
@@ -2217,6 +2235,10 @@ class Runtime extends EventEmitter {
             this._steppingInterval = null;
             this.start();
         }
+    }
+    
+    setCompiler (option) {
+        this.useCompiler = !!option;
     }
 
     /**

@@ -1,15 +1,16 @@
 function workerFunc () {
     
-// debug
 const debug = false;
 let myId = -1;
+let varCount = 0;
+let entryBlock = null;
 
 function output (...content) {
     if (!debug) return;
-    console.log(...content);
+    console.log(`[Worker ${myId}]`, ...content);
 }
 
-output('worker created!');
+output('created!');
 
 // initialize
 let promisePool = [];
@@ -25,6 +26,7 @@ self.onmessage = function ({data}) {
     case 'start': {
         output('start');
         const { blocks, topBlockId } = content;
+        entryBlock = topBlockId;
         blockContainer = blocks;
         // For worker, interacting with main thread should use promise.
         generateStack(topBlockId, false)
@@ -33,8 +35,18 @@ self.onmessage = function ({data}) {
                     operation: 'generated',
                     content: {
                         name: codename || 'main',
-                        // use strict mode for optimization and avoid potential mistakes as much as possible
                         code: snippet,
+                        topBlockId,
+                        id: myId
+                    }
+                })
+            })
+            .catch(e => {
+                self.postMessage({
+                    operation: 'error',
+                    content: {
+                        name: 'main',
+                        error: e,
                         id: myId
                     }
                 })
@@ -92,19 +104,122 @@ async function generateBlock (blockId, isWarp, paramNames) {
     const block = await getBlock(blockId);
     output('generate block ', block);
     
-    const inputs = await processArguments(block, paramNames);
+    const args = await processArguments(block, paramNames);
+    output('args is', args);
     switch (block.opcode) {
+    // Control
+    case 'control_repeat': {
+        return `for (let i = ${args.TIMES.asPureNumber()}; i >= 0.5; i--){\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
+        `yield\n` +
+        `}`;
+    }
+    case 'control_repeat_until': {
+        return `while(!${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}){\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
+        `yield\n` +
+        `}`;
+    }
+    case 'control_while': {
+        return `while(${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}){\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
+        `yield\n` +
+        `}`;
+    }
+    case 'control_forever': {
+        return `while(true) {\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
+        `yield\n` +
+        `}`;
+    }
+    case 'control_wait': {
+        varCount++;
+        const base = `util.thread.timer = util.getTimer()\n` +
+        `const ${`var_${varCount}`} = Math.max(0, 1000 * ${args.DURATION.asPureNumber()})\n` +
+        `util.runtime.requestRedraw()\n` +
+        `yield\n` +
+        `while (util.thread.timer.timeElapsed() < ${`var_${varName}`}) {\n`;
+        if (isWarp) return `${base}// wrap, no yield\n}\nutil.thread.timer = null`;
+        return `${base}yield\n}\nutil.thread.timer = null`;
+    }
+    case 'control_suspend': {
+        return 'yield';
+    }
+    case 'control_breakpoint': {
+        return '// todo';
+    }
+    case 'control_if': {
+        return `if (${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}) {\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
+        `}`;
+    }
+    case 'control_if_else': {
+        return `if (${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}) {\n` +
+        `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
+        `} else {\n` +
+        `${args.SUBSTACK2 ? args.SUBSTACK2.raw() : '// null'}\n` +
+        `}`;
+    }
+    case 'control_stop': {
+        const option = args.STOP_OPTION.raw();
+        if (option === 'all') return `util.stopAll()`;
+        if (option === 'this script') return `return`;
+        if (option === 'other scripts in sprite' || option === 'other scripts in stage') return `util.runtime.stopForTarget(util.target, util.thread)`;
+        return `// no-op`;
+    }
+    // Operator
+    case 'operator_add': {
+        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.raw() + args.NUM2.raw()}`;
+        return `${args.NUM1.asNumber()} + ${args.NUM2.asNumber()}`;
+    }
+    case 'operator_subtract': {
+        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.raw() - args.NUM2.raw()}`;
+        return `${args.NUM1.asNumber()} - ${args.NUM2.asNumber()}`;
+    }
+    case 'operator_multiply': {
+        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.raw() * args.NUM2.raw()}`;
+        return `${args.NUM1.asNumber()} * ${args.NUM2.asNumber()}`;
+    }
+    case 'operator_divide': {
+        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.raw() / args.NUM2.raw()}`;
+        return `${args.NUM1.asNumber()} / ${args.NUM2.asNumber()}`;
+    }
+    case 'operator_lt': {
+        return `util.lt(${args.OPERAND1.asNumber()}, ${args.OPERAND2.asNumber()})`;
+    }
+    case 'operator_equals': {
+        return `util.eq(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
+    }
+    case 'operator_gt': {
+        return `util.gt(${args.OPERAND1.asNumber()}, ${args.OPERAND2.asNumber()})`;
+    }
+    case 'operator_and': {
+        return `${args.OPERAND1 ? args.OPERAND1.asBoolean() : 'false'} && ${args.OPERAND2 ? args.OPERAND2.asBoolean() : 'false'}`;
+    }
+    case 'operator_or': {
+        return `${args.OPERAND1 ? args.OPERAND1.asBoolean() : 'false'} || ${args.OPERAND2 ? args.OPERAND2.asBoolean() : 'false'}`;
+    }
+    case 'operator_not': {
+        return `!${args.OPERAND ? args.OPERAND.asBoolean() : 'false'}`;
+    }
+    // Functions
+    case 'procedures_call': {
+        return `/* procedures_call*/`;
+    }
+    case 'procedures_call_return': {
+        return `/* procedures_call_return*/`;
+    }
     // todo generate Javascript code for specific block 
     default: {
         // todo get compile function of extension
         // fallback to compatibility layer
         const convertedInput = [];
-        for (const name in inputs) {
-            const input = inputs[name];
+        for (const name in args) {
+            const input = args[name];
             output(`input of block ${blockId} is `, input);
             convertedInput.push(`${name}: ${input.asString()}`);
         }
-        return `yield* runInCompatibilityLayer("${block.opcode}", {${convertedInput.join(', ')}}, ${isWarp || false})`;
+        return `yield* util.runInCompatibilityLayer("${block.opcode}", {${convertedInput.join(', ')}}, ${isWarp || false})`;
     }
     }
 }
@@ -186,7 +301,7 @@ async function decodeInput (inputBlock, name, paramNames) {
     }
     case 'event_broadcast_menu': {
         const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
-        const broadcastVariable = this.thread.target.lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
+        const broadcastVariable = await lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
         const result = broadcastVariable ? `${broadcastVariable.name}` : '';
         return new CompiledInput(
             result,
@@ -254,6 +369,25 @@ function isHat (block) {
     });
 }
 
+function lookupBroadcastMsg (id, value) {
+    return new Promise((resolve, reject) => {
+        promisePool.push({
+            type: 'lookupBroadcastMsg',
+            id,
+            resolve,
+            reject
+        });
+        self.postMessage({
+            operation: 'lookupBroadcastMsg',
+            content: {
+                entry: entryBlock,
+                id,
+                value
+            }
+        });
+    });
+}
+
 function getBlock (blockId) {
     // If it's exist in block container, use it
     if (blockContainer.hasOwnProperty(blockId)) {
@@ -284,9 +418,23 @@ class CompiledInput {
      * @param {boolean} constant
      */
     constructor (value, type, constant = false) {
-        this.value = value;
         this.type = type;
         this.constant = constant;
+        if (this.constant) {
+            switch (type) {
+            case CompiledInput.TYPE_ALWAYS_NUMBER:
+            case CompiledInput.TYPE_NUMBER:
+                this.value = CompiledInput.toNumber(value);
+                break;
+            case CompiledInput.TYPE_BOOLEAN:
+                this.value = CompiledInput.toBoolean(value);
+                break;
+            default:
+                this.value = value;
+            }
+        } else {
+            this.value = value;
+        }
     }
 
     static get TYPE_ALWAYS_NUMBER () {
@@ -307,6 +455,30 @@ class CompiledInput {
 
     static get TYPE_DYNAMIC () {
         return 4;
+    }
+    
+    // from src/util/cast.js
+    static toNumber (value) {
+        if (typeof value === 'number') {
+            if (Number.isNaN(value)) return 0;
+            return value;
+        }
+        const n = Number(value);
+        if (Number.isNaN(n)) return 0;
+        return n;
+    }
+    
+    static toBoolean (value) {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            if ((value === '') ||
+                (value === '0') ||
+                (value.toLowerCase() === 'false')) {
+                return false;
+            }
+            return true;
+        }
+        return Boolean(value);
     }
 
     raw () {

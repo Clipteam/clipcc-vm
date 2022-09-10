@@ -1,3 +1,4 @@
+const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 const workerScript = require('./compiler-worker');
 
 class Compiler {
@@ -50,8 +51,45 @@ class Compiler {
                 });
                 break;
             }
+            case 'lookupBroadcastMsg': {
+                let thread;
+                for (const task of this.waitingToCompile) {
+                    if (task.id === content.entry) {
+                        thread = task.thread;
+                        break;
+                    }
+                }
+                const result = thread.target.lookupBroadcastMsg(content.id, content.value);
+                worker.postMessage({
+                    operation: 'resolvePromise',
+                    content: {
+                        type: 'lookupBroadcastMsg',
+                        id: content.id,
+                        result
+                    }
+                });
+                break;
+            }
             case 'generated': {
-                console.log(`[Worker ${content.id}] ` + 'the final code is \n' + content.code);
+                console.log(`[Worker ${content.id} -> Main] ` + 'the final code is \n' + content.code);
+                try {
+                    const func = eval(`'use strict';\n(function scoped(){return function*(){${content.code}}})()`);
+                    console.log('the function is', func);
+                } catch (e) {
+                    console.error('cannot create function from code', e);
+                }
+                
+                this.workers[content.id].available = true;
+                
+                if (this.waitingToCompile.length > 0) {
+                    // perform the next task
+                    this.check();
+                }
+                
+                break;
+            }
+            case 'error': {
+                console.log(`[Worker ${content.id} -> Main] ` + 'error occurred while generating\n', content.error);
                 this.workers[content.id].available = true;
                 if (this.waitingToCompile.length > 0) {
                     this.waitingToCompile.shift();
@@ -89,11 +127,14 @@ class Compiler {
     
     submitTask (thread) {
         const task = {
+            id: thread.topBlock,
             status: 'pending',
             thread
         };
         this.waitingToCompile.push(task);
         this.checkForTask(this.waitingToCompile[this.waitingToCompile.length - 1]);
+        
+        console.log(this.waitingToCompile);
     }
     
     check () {
@@ -104,6 +145,7 @@ class Compiler {
     }
     
     checkForTask (task) {
+        console.log('check task', task);
         // Find available workers for the current task
         for (const workerUnitId in this.workers) {
             const workerUnit = this.workers[workerUnitId];
@@ -124,6 +166,14 @@ class Compiler {
     
     _getBlockInFlyout (id) {
         return this.runtime.flyoutBlocks._blocks[id];
+    }
+    
+    dispose () {
+        for (const workerId in this.workers) {
+            const { worker } = this.workers[workerId];
+            worker.terminate();
+            delete this.workers[workerId];
+        }
     }
 }
 

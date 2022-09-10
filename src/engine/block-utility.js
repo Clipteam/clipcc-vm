@@ -1,11 +1,26 @@
 const Thread = require('./thread');
 const Timer = require('../util/timer');
+const Cast = require('../util/cast');
 
 /**
  * @fileoverview
  * Interface provided to block primitive functions for interacting with the
  * runtime, thread, target, and convenient methods.
  */
+
+const isPromise = function (value) {
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        typeof value.then === 'function'
+    );
+};
+
+const yieldingStatus = [
+    Thread.STATUS_YIELD,
+    Thread.STATUS_YIELD_TICK,
+    Thread.STATUS_PROMISE_WAIT
+];
 
 class BlockUtility {
     constructor (sequencer = null, thread = null, block = null) {
@@ -259,6 +274,129 @@ class BlockUtility {
 class CompliedBlockUtility extends BlockUtility {
     constructor (...params) {
         super(...params);
+        this.refreshCounter = 0;
+    }
+    
+    getTimer () {
+        const t = new Timer({
+            now: () => util.thread.target.runtime.currentMSecs
+        });
+        t.start();
+        return t;
+    }
+    
+    needRefresh () {
+        this.refreshCounter++;
+        if (this.refreshCounter === 100) {
+            this.refreshCounter = 0;
+            // src/engine/sequencer.js:63
+            return this.thread.target.runtime.sequencer.timer.timeElapsed() > 500;
+        }
+        return false;
+    }
+    
+    * runInCompatibilityLayer (opcode, inputs, isWarp) {
+        // just use it one time, we should reset it to avoid issues
+        this.thread.stackFrames[thread.stackFrames.length - 1].reuse(isWarp);
+        
+        // get block function
+        const blockFunction = this.runtime.getOpcodeFunction(opcode);
+        if (!blockFunction) {
+            console.warn('no-op block ' + opcode, ', skip it.');
+            return;
+        }
+        
+        let reported = blockFunction(inputs);
+        if (isPromise(reported)) {
+            reported.then(value => {
+                util.thread.status = Thread.STATUS_RUNNING;
+                reported = value;
+            }).catch(e => {
+                util.thread.status = Thread.STATUS_RUNNING;
+                console.error('Promise rejected in compatibility layer:', e);
+                reported = null;
+            });
+            util.thread.status = Thread.STATUS_PROMISE_WAIT;
+        }
+        
+        while (yieldingStatus.includes(util.thread.status)) {
+            if (util.thread.status === Thread.STATUS_YIELD_TICK) {
+                // always yield when It's yield tick.
+                yield;
+            } else if (util.thread.status === Thread.STATUS_YIELD) {
+                util.thread.status = Thread.STATUS_RUNNING;
+                if (this.needRefresh() && !isWarp) yield;
+            } else {
+                // It's a promise, yield it.
+                if (this.needRefresh() && !isWarp) yield;
+            }
+        }
+        
+        return reported;
+    }
+    
+    toBoolean (value) {
+        return Cast.toBoolean(value);
+    }
+    
+    lt (v1, v2) {
+        let n1 = +v1;
+        let n2 = +v2;
+        if (n1 === 0 && Cast.isWhiteSpace(v1)) n1 = NaN;
+        else if (n2 === 0 && Cast.isWhiteSpace(v2)) n2 = NaN;
+        if (isNaN(n1) || isNaN(n2)) {
+            const s1 = ('' + v1).toLowerCase();
+            const s2 = ('' + v2).toLowerCase();
+            return s1 < s2;
+        }
+        return n1 < n2;
+    }
+    
+    le (v1, v2) {
+        let n1 = +v1;
+        let n2 = +v2;
+        if (n1 === 0 && Cast.isWhiteSpace(v1)) n1 = NaN;
+        else if (n2 === 0 && Cast.isWhiteSpace(v2)) n2 = NaN;
+        if (isNaN(n1) || isNaN(n2)) {
+            const s1 = ('' + v1).toLowerCase();
+            const s2 = ('' + v2).toLowerCase();
+            return s1 <= s2;
+        }
+        return n1 <= n2;
+    }
+    
+    gt (v1, v2) {
+        let n1 = +v1;
+        let n2 = +v2;
+        if (n1 === 0 && Cast.isWhiteSpace(v1)) n1 = NaN;
+        else if (n2 === 0 && Cast.isWhiteSpace(v2)) n2 = NaN;
+        if (isNaN(n1) || isNaN(n2)) {
+            const s1 = ('' + v1).toLowerCase();
+            const s2 = ('' + v2).toLowerCase();
+            return s1 > s2;
+        }
+        return n1 > n2;
+    }
+    
+    ge (v1, v2) {
+        let n1 = +v1;
+        let n2 = +v2;
+        if (n1 === 0 && Cast.isWhiteSpace(v1)) n1 = NaN;
+        else if (n2 === 0 && Cast.isWhiteSpace(v2)) n2 = NaN;
+        if (isNaN(n1) || isNaN(n2)) {
+            const s1 = ('' + v1).toLowerCase();
+            const s2 = ('' + v2).toLowerCase();
+            return s1 >= s2;
+        }
+        return n1 >= n2;
+    }
+    
+    eq (v1, v2) {
+        const n1 = +v1;
+        if (isNaN(n1) || (n1 === 0 && isWhiteSpace(v1))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
+        const n2 = +v2;
+        if (isNaN(n2) || (n2 === 0 && isWhiteSpace(v2))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
+        return n1 === n2;
     }
 }
 

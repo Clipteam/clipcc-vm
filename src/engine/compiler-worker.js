@@ -1,6 +1,6 @@
 function workerFunc () {
     
-const debug = false;
+const debug = true;
 let myId = -1;
 let varCount = 0;
 let entryBlock = null;
@@ -15,6 +15,8 @@ output('created!');
 // initialize
 let promisePool = [];
 let blockContainer = {};
+let dependencies = new Set();
+
 self.onmessage = function ({data}) {
     const { operation, content } = data;
     switch (operation) {
@@ -28,6 +30,8 @@ self.onmessage = function ({data}) {
         const { blocks, topBlockId } = content;
         entryBlock = topBlockId;
         blockContainer = blocks;
+        varCount = 0;
+        dependencies = new Set();
         // For worker, interacting with main thread should use promise.
         generateStack(topBlockId, false)
             .then((snippet, codename) => {
@@ -37,6 +41,7 @@ self.onmessage = function ({data}) {
                         name: codename || 'main',
                         code: snippet,
                         entry: topBlockId,
+                        dependencies: Array.from(dependencies),
                         id: myId
                     }
                 })
@@ -112,25 +117,25 @@ async function generateBlock (blockId, isWarp, paramNames) {
     case 'control_repeat': {
         return `for (let i = ${args.TIMES.asPureNumber()}; i >= 0.5; i--){\n` +
         `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
-        `yield\n` +
+        (isWarp ? `if (util.needRefresh()) yield\n` : 'yield\n') +
         `}`;
     }
     case 'control_repeat_until': {
         return `while(!${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}){\n` +
         `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
-        `yield\n` +
+        (isWarp ? `if (util.needRefresh()) yield\n` : 'yield\n') +
         `}`;
     }
     case 'control_while': {
         return `while(${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}){\n` +
         `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
-        `yield\n` +
+        (isWarp ? `if (util.needRefresh()) yield\n` : 'yield\n') +
         `}`;
     }
     case 'control_forever': {
         return `while(true) {\n` +
         `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
-        `yield\n` +
+        (isWarp ? `if (util.needRefresh()) yield\n` : 'yield\n') +
         `}`;
     }
     case 'control_wait': {
@@ -139,8 +144,8 @@ async function generateBlock (blockId, isWarp, paramNames) {
         `const ${`var_${varCount}`} = Math.max(0, 1000 * ${args.DURATION.asPureNumber()})\n` +
         `util.runtime.requestRedraw()\n` +
         `yield\n` +
-        `while (util.thread.timer.timeElapsed() < ${`var_${varName}`}) {\n`;
-        if (isWarp) return `${base}// wrap, no yield\n}\nutil.thread.timer = null`;
+        `while (util.thread.timer.timeElapsed() < ${`var_${varCount}`}) {\n`;
+        if (isWarp) return `${base}if (util.needRefresh()) yield\n}\nutil.thread.timer = null`;
         return `${base}yield\n}\nutil.thread.timer = null`;
     }
     case 'control_suspend': {
@@ -186,13 +191,19 @@ async function generateBlock (blockId, isWarp, paramNames) {
         return `${args.NUM1.asNumber()} / ${args.NUM2.asNumber()}`;
     }
     case 'operator_lt': {
-        return `util.lt(${args.OPERAND1.asNumber()}, ${args.OPERAND2.asNumber()})`;
+        return `util.lt(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
+    }
+    case 'operator_le': {
+        return `util.le(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
     }
     case 'operator_equals': {
         return `util.eq(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
     }
     case 'operator_gt': {
-        return `util.gt(${args.OPERAND1.asNumber()}, ${args.OPERAND2.asNumber()})`;
+        return `util.gt(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
+    }
+    case 'operator_ge': {
+        return `util.ge(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
     }
     case 'operator_and': {
         return `${args.OPERAND1 ? args.OPERAND1.asBoolean() : 'false'} && ${args.OPERAND2 ? args.OPERAND2.asBoolean() : 'false'}`;
@@ -204,11 +215,44 @@ async function generateBlock (blockId, isWarp, paramNames) {
         return `!${args.OPERAND ? args.OPERAND.asBoolean() : 'false'}`;
     }
     // Functions
+    case 'procedures_call_return':
     case 'procedures_call': {
-        return `/* procedures_call*/`;
+        // get parameters
+        const [_paramNames, _paramIds, _paramDefaults] = await getProcedureParamNamesIdsAndDefaults(block.mutation.proccode);
+        const definitionId = await getProcedureDefinition(block.mutation.proccode);
+        if (!definitionId) return `/*headless call ${block.mutation.proccode}*/`;
+        
+        const params = args.mutation.join(', ');
+        const base =  `yield* f${hash(block.mutation.proccode)}(util, [${params}])`;
+        
+        if (dependencies.has(hash(block.mutation.proccode))) return base;
+        
+        dependencies.add(hash(block.mutation.proccode));
+        output(_paramNames, _paramIds, _paramDefaults, definitionId);
+        return generateStack(definitionId, block.mutation.warp === 'true', _paramNames)
+            .then((snippet) => {
+                self.postMessage({
+                    operation: 'procedure',
+                    content: {
+                        name: hash(block.mutation.proccode),
+                        entry: entryBlock,
+                        code: snippet
+                    }
+                });
+                return base;
+            })
+            .catch(e => {
+                self.postMessage({
+                    operation: 'error',
+                    content: {
+                        name: hash(block.mutation.proccode),
+                        error: e
+                    }
+                });
+            });
     }
-    case 'procedures_call_return': {
-        return `/* procedures_call_return*/`;
+    case 'procedures_return': {
+        return `return ${args.VALUE.asString()}`;
     }
     // todo generate Javascript code for specific block 
     default: {
@@ -227,6 +271,26 @@ async function generateBlock (blockId, isWarp, paramNames) {
 
 async function processArguments (block, paramNames) {
     const args = {};
+    if (block.hasOwnProperty('mutation')) {
+        args.mutation = [];
+        const mapping = JSON.parse(block.mutation.argumentids);
+        for (const item of mapping) {
+            const input = block.inputs[item];
+            if (!input) {
+                args.mutation.push('null');
+                continue;
+            }
+            if (input.block === input.shadow) { // Non-nested reporter, get the value directly
+                const inputBlock = await getBlock(input.block);
+                args.mutation.push(`"${(await decodeInput(inputBlock, '%', paramNames)).value}"`);
+            } else {
+                const inputBlock = await getBlock(input.block);
+                const targetCode = await generateBlock(inputBlock);
+                args.mutation.push(targetCode);
+            }
+        }
+        
+    }
     // Read from inputs
     for (const name in block.inputs) {
         const input = block.inputs[name];
@@ -253,15 +317,19 @@ async function processArguments (block, paramNames) {
     return args;
 }
 
+function hash (s) {
+  return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+}
+
 async function decodeInput (inputBlock, name, paramNames) {
     switch (inputBlock.opcode) {
     // function
     case 'argument_reporter_boolean':
     case 'argument_reporter_string_number': {
         // follow the original logic of Scratch
-        const index = paramNames.lastIndexOf(inputBlock.fields.VALUE.value);
+        const index = paramNames ? paramNames.lastIndexOf(inputBlock.fields.VALUE.value) : 0;
         return new CompiledInput(
-            `(parameter[${index}] || 0)`,
+            `(params[${index}] || 0)`,
             CompiledInput.TYPE_STRING,
             false
         )
@@ -343,10 +411,46 @@ async function decodeInput (inputBlock, name, paramNames) {
                 );
             }
             
-            throw new Error(`cannot generate input ${input.name}:\n ${e.message}`);
+            throw new Error(`cannot generate input ${inputBlock.opcode}:\n ${e.message}`);
         }
     }
     }
+}
+
+function getProcedureDefinition (proccode) {
+    return new Promise((resolve, reject) => {
+        promisePool.push({
+            type: 'getProcedureDefinition',
+            id: proccode,
+            resolve,
+            reject
+        });
+        self.postMessage({
+            operation: 'getProcedureDefinition',
+            content: {
+                entry: entryBlock,
+                id: proccode
+            }
+        });
+    });
+}
+
+function getProcedureParamNamesIdsAndDefaults (proccode) {
+    return new Promise((resolve, reject) => {
+        promisePool.push({
+            type: 'getProcedureParamNamesIdsAndDefaults',
+            id: proccode,
+            resolve,
+            reject
+        });
+        self.postMessage({
+            operation: 'getProcedureParamNamesIdsAndDefaults',
+            content: {
+                entry: entryBlock,
+                id: proccode
+            }
+        });
+    });
 }
 
 function isHat (block) {
@@ -394,20 +498,24 @@ function getBlock (blockId) {
     if (blockContainer.hasOwnProperty(blockId)) {
         return Promise.resolve(blockContainer[blockId]);
     }
+    
     // get it from main thread
     return new Promise((resolve, reject) => {
         promisePool.push({
-            type: 'getBlock',
-            id: blockId,
+            type: 'getBlocks',
+            id: entryBlock,
             resolve,
             reject
         });
         self.postMessage({
-            operation: 'getBlock',
+            operation: 'getBlocks',
             content: {
-                id: blockId
+                entry: entryBlock
             }
         });
+    }).then(newBlocks => {
+        blockContainer = newBlocks;
+        return blockContainer[blockId];
     });
 }
 

@@ -85,10 +85,16 @@ class Blocks {
             scripts: {},
             
             /**
-             * A cache of complied block stack.
+             * A cache of compiled block stack.
              * @type {blockid: {status: string, artifact?:GeneratorFunction}}
              */
-            compiledScripts: {}
+            compiledScripts: {},
+            
+            /**
+             * A cache of compiled procedures.
+             * @type {blockid: {status: string, artifact?:GeneratorFunction}}
+             */
+            compiledProcedures: {}
         };
 
         /**

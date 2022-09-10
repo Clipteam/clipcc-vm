@@ -16,12 +16,6 @@ const isPromise = function (value) {
     );
 };
 
-const yieldingStatus = [
-    Thread.STATUS_YIELD,
-    Thread.STATUS_YIELD_TICK,
-    Thread.STATUS_PROMISE_WAIT
-];
-
 class BlockUtility {
     constructor (sequencer = null, thread = null, block = null) {
         /**
@@ -287,7 +281,7 @@ class CompiledBlockUtility extends BlockUtility {
     
     needRefresh () {
         this.refreshCounter++;
-        if (this.refreshCounter === 100) {
+        if (this.refreshCounter >= 100) {
             this.refreshCounter = 0;
             // src/engine/sequencer.js:63
             return this.thread.target.runtime.sequencer.timer.timeElapsed() > 500;
@@ -319,16 +313,16 @@ class CompiledBlockUtility extends BlockUtility {
             this.thread.status = Thread.STATUS_PROMISE_WAIT;
         }
         
-        while (yieldingStatus.includes(this.thread.status)) {
+        while (this.thread.status !== Thread.STATUS_RUNNING) {
             if (this.thread.status === Thread.STATUS_YIELD_TICK) {
                 // always yield when It's yield tick.
                 yield;
             } else if (this.thread.status === Thread.STATUS_YIELD) {
                 this.thread.status = Thread.STATUS_RUNNING;
-                if (this.needRefresh() && !isWarp) yield;
+                if (!isWarp || this.needRefresh()) yield;
             } else {
                 // It's a promise, yield it.
-                if (this.needRefresh() && !isWarp) yield;
+                if (!isWarp || this.needRefresh()) yield;
             }
         }
         

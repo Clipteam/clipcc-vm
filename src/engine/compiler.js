@@ -16,7 +16,6 @@ class Compiler {
     }
     
     createWorker (workerId) {
-        console.log('create worker' + workerId);
         // Create worker
         if (!window.Worker) {
             console.error('Browser does not support Worker.');
@@ -27,14 +26,21 @@ class Compiler {
         worker.onmessage = ({data}) => {
             const { operation, content } = data;
             switch (operation) {
-            case 'getBlock': {
-                const result = this._getBlockInFlyout(content.id);
+            case 'getBlocks': {
+                let thread;
+                for (const task of this.waitingToCompile) {
+                    if (task.id === content.entry) {
+                        thread = task.thread;
+                        break;
+                    }
+                }
+                
                 worker.postMessage({
                     operation: 'resolvePromise',
                     content: {
-                        type: 'getBlock',
-                        id: content.id,
-                        result
+                        type: 'getBlocks',
+                        id: content.entry,
+                        result: thread.blockContainer._blocks
                     }
                 });
                 break;
@@ -70,10 +76,46 @@ class Compiler {
                 });
                 break;
             }
+            case 'getProcedureParamNamesIdsAndDefaults': {
+                let thread;
+                for (const task of this.waitingToCompile) {
+                    if (task.id === content.entry) {
+                        thread = task.thread;
+                        break;
+                    }
+                }
+                const result = thread.target.blocks.getProcedureParamNamesIdsAndDefaults(content.id);
+                worker.postMessage({
+                    operation: 'resolvePromise',
+                    content: {
+                        type: 'getProcedureParamNamesIdsAndDefaults',
+                        id: content.id,
+                        result
+                    }
+                });
+                break;
+            }
+            case 'getProcedureDefinition': {
+                let thread;
+                for (const task of this.waitingToCompile) {
+                    if (task.id === content.entry) {
+                        thread = task.thread;
+                        break;
+                    }
+                }
+                const result = thread.target.blocks.getProcedureDefinition(content.id);
+                worker.postMessage({
+                    operation: 'resolvePromise',
+                    content: {
+                        type: 'getProcedureDefinition',
+                        id: content.id,
+                        result
+                    }
+                });
+                break;
+            }
             case 'generated': {
-                console.log(`[Worker ${content.id} -> Main] ` + 'the final code is \n' + content.code);
                 try {
-                    const func = eval(`'use strict';\n(function scoped(){return function*(util, params){${content.code}}})()`);
                     //console.log('the function is', func);
                     
                     for (const taskId in this.waitingToCompile) {
@@ -81,13 +123,20 @@ class Compiler {
                         
                         if (task.id === content.entry) {
                             const blockCache = task.thread.blockContainer._cache;
-                            console.log(task, blockCache)
+                            
+                            let insertedCode = content.code;
+                            for (const dependency of content.dependencies) {
+                                insertedCode += '\n' + blockCache.compiledProcedures[dependency].artifact;
+                            }
+                            
+                            console.log(`[Worker ${content.id} -> Main] ` + 'the final code is \n' + insertedCode);
+                            const func = eval(`'use strict';\n(function scoped(){return function*(util, params){${insertedCode}}})()`);
                             blockCache.compiledScripts[content.entry] = {
                                 status: 'success',
                                 artifact: func
                             };
                             task.thread.compiledArtifact = func;
-                            delete this.waitingToCompile[taskId];
+                            this.waitingToCompile.splice(taskId, 1);
                             break;
                         }
                     }
@@ -104,8 +153,30 @@ class Compiler {
                 
                 break;
             }
+            case 'procedure': {
+                console.log(`[Worker ${content.id} -> Main] ` + 'the final procedure is \n' + content.code);
+                try {
+                    for (const taskId in this.waitingToCompile) {
+                        const task = this.waitingToCompile[taskId];
+                        
+                        if (task.id === content.entry) {
+                            const blockCache = task.thread.blockContainer._cache;
+                            // console.log(task, blockCache)
+                            blockCache.compiledProcedures[content.name] = {
+                                status: 'success',
+                                artifact: `function * f${content.name} (util, params) {\n${content.code}\n}\n`
+                            };
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    console.error('cannot create procedure', e);
+                }
+                
+                break;
+            }
             case 'error': {
-                console.log(`[Worker ${content.id} -> Main] ` + 'error occurred while generating\n', content.error);
+                console.error(`[Worker ${content.id} -> Main] ` + 'error occurred while generating\n', content.error);
                 this.workers[content.id].available = true;
                 
                 for (const taskId in this.waitingToCompile) {
@@ -113,10 +184,10 @@ class Compiler {
                         
                     if (task.id === content.entry) {
                         const blockCache = task.thread.blockContainer._cache;
-                        blockCache.compliedScripts[content.entry] = {
+                        blockCache.compiledScripts[content.entry] = {
                             status: 'error'
                         };
-                        delete this.waitingToCompile[taskId];
+                        this.waitingToCompile.splice(taskId, 1);
                         break;
                     }
                 }
@@ -160,10 +231,10 @@ class Compiler {
         if (blockCache.compiledScripts.hasOwnProperty(thread.topBlock)) {
             const cache = blockCache.compiledScripts[thread.topBlock];
             if (cache.status === 'success') {
-                console.log('use cache', cache);
+                // console.log('use cache', cache);
                 thread.compiledArtifact = cache.artifact;
             } else {
-                console.log('disable compiler');
+                // console.log('disable compiler');
                 thread.disableCompiler = true;
             }
             return;
@@ -176,7 +247,7 @@ class Compiler {
         this.waitingToCompile.push(task);
         this.checkForTask(this.waitingToCompile[this.waitingToCompile.length - 1]);
         
-        console.log(this.waitingToCompile);
+        // console.log(this.waitingToCompile);
     }
     
     check () {
@@ -187,12 +258,12 @@ class Compiler {
     }
     
     checkForTask (task) {
-        console.log('check task', task);
+        // console.log('check task', task);
         // Find available workers for the current task
         for (const workerUnitId in this.workers) {
             const workerUnit = this.workers[workerUnitId];
             if (!workerUnit.available) continue;
-            console.log(`worker${workerUnitId} is available!`);
+            // console.log(`worker${workerUnitId} is available!`);
             workerUnit.worker.postMessage({
                 operation: 'start',
                 content: {

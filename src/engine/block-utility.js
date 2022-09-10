@@ -271,7 +271,7 @@ class BlockUtility {
     }
 }
 
-class CompliedBlockUtility extends BlockUtility {
+class CompiledBlockUtility extends BlockUtility {
     constructor (...params) {
         super(...params);
         this.refreshCounter = 0;
@@ -279,7 +279,7 @@ class CompliedBlockUtility extends BlockUtility {
     
     getTimer () {
         const t = new Timer({
-            now: () => util.thread.target.runtime.currentMSecs
+            now: () => this.thread.target.runtime.currentMSecs
         });
         t.start();
         return t;
@@ -297,7 +297,7 @@ class CompliedBlockUtility extends BlockUtility {
     
     * runInCompatibilityLayer (opcode, inputs, isWarp) {
         // just use it one time, we should reset it to avoid issues
-        this.thread.stackFrames[thread.stackFrames.length - 1].reuse(isWarp);
+        this.thread.stackFrames[this.thread.stackFrames.length - 1].reuse(isWarp);
         
         // get block function
         const blockFunction = this.runtime.getOpcodeFunction(opcode);
@@ -306,25 +306,25 @@ class CompliedBlockUtility extends BlockUtility {
             return;
         }
         
-        let reported = blockFunction(inputs);
+        let reported = blockFunction(inputs, this);
         if (isPromise(reported)) {
             reported.then(value => {
-                util.thread.status = Thread.STATUS_RUNNING;
+                this.thread.status = Thread.STATUS_RUNNING;
                 reported = value;
             }).catch(e => {
-                util.thread.status = Thread.STATUS_RUNNING;
+                this.thread.status = Thread.STATUS_RUNNING;
                 console.error('Promise rejected in compatibility layer:', e);
                 reported = null;
             });
-            util.thread.status = Thread.STATUS_PROMISE_WAIT;
+            this.thread.status = Thread.STATUS_PROMISE_WAIT;
         }
         
-        while (yieldingStatus.includes(util.thread.status)) {
-            if (util.thread.status === Thread.STATUS_YIELD_TICK) {
+        while (yieldingStatus.includes(this.thread.status)) {
+            if (this.thread.status === Thread.STATUS_YIELD_TICK) {
                 // always yield when It's yield tick.
                 yield;
-            } else if (util.thread.status === Thread.STATUS_YIELD) {
-                util.thread.status = Thread.STATUS_RUNNING;
+            } else if (this.thread.status === Thread.STATUS_YIELD) {
+                this.thread.status = Thread.STATUS_RUNNING;
                 if (this.needRefresh() && !isWarp) yield;
             } else {
                 // It's a promise, yield it.
@@ -402,5 +402,5 @@ class CompliedBlockUtility extends BlockUtility {
 
 module.exports = {
     BlockUtility,
-    CompliedBlockUtility
+    CompiledBlockUtility
 };

@@ -82,7 +82,13 @@ class Blocks {
              * A cache of hat opcodes to collection of theads to execute.
              * @type {object.<string, object>}
              */
-            scripts: {}
+            scripts: {},
+            
+            /**
+             * A cache of complied block stack.
+             * @type {blockid: {status: string, artifact?:GeneratorFunction}}
+             */
+            compiledScripts: {}
         };
 
         /**
@@ -566,6 +572,7 @@ class Blocks {
         this._cache._executeCached = {};
         this._cache._monitored = null;
         this._cache.scripts = {};
+        this._cache.compiledScripts = {};
     }
 
     /**

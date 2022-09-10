@@ -162,6 +162,18 @@ class Thread {
          * @type {boolean}
          */
         this.isKilled = false;
+         
+         /**
+          * disable compiler in this thread
+          * @type {boolean}
+         */
+        this.disableCompiler = false;
+         
+         /**
+          * Compiled artifact of thread
+          * @type {GeneratorFunction}
+         */
+        this.compiledArtifact = null;
 
         /**
          * Target of this thread.

@@ -36,7 +36,7 @@ self.onmessage = function ({data}) {
                     content: {
                         name: codename || 'main',
                         code: snippet,
-                        topBlockId,
+                        entry: topBlockId,
                         id: myId
                     }
                 })
@@ -47,6 +47,7 @@ self.onmessage = function ({data}) {
                     content: {
                         name: 'main',
                         error: e,
+                        entry: topBlockId,
                         id: myId
                     }
                 })

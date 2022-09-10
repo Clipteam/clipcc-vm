@@ -73,8 +73,24 @@ class Compiler {
             case 'generated': {
                 console.log(`[Worker ${content.id} -> Main] ` + 'the final code is \n' + content.code);
                 try {
-                    const func = eval(`'use strict';\n(function scoped(){return function*(){${content.code}}})()`);
-                    console.log('the function is', func);
+                    const func = eval(`'use strict';\n(function scoped(){return function*(util, params){${content.code}}})()`);
+                    //console.log('the function is', func);
+                    
+                    for (const taskId in this.waitingToCompile) {
+                        const task = this.waitingToCompile[taskId];
+                        
+                        if (task.id === content.entry) {
+                            const blockCache = task.thread.blockContainer._cache;
+                            console.log(task, blockCache)
+                            blockCache.compiledScripts[content.entry] = {
+                                status: 'success',
+                                artifact: func
+                            };
+                            task.thread.compiledArtifact = func;
+                            delete this.waitingToCompile[taskId];
+                            break;
+                        }
+                    }
                 } catch (e) {
                     console.error('cannot create function from code', e);
                 }
@@ -91,8 +107,21 @@ class Compiler {
             case 'error': {
                 console.log(`[Worker ${content.id} -> Main] ` + 'error occurred while generating\n', content.error);
                 this.workers[content.id].available = true;
+                
+                for (const taskId in this.waitingToCompile) {
+                    const task = this.waitingToCompile[taskId];
+                        
+                    if (task.id === content.entry) {
+                        const blockCache = task.thread.blockContainer._cache;
+                        blockCache.compliedScripts[content.entry] = {
+                            status: 'error'
+                        };
+                        delete this.waitingToCompile[taskId];
+                        break;
+                    }
+                }
+                
                 if (this.waitingToCompile.length > 0) {
-                    this.waitingToCompile.shift();
                     // perform the next task
                     this.check();
                 }
@@ -126,6 +155,19 @@ class Compiler {
     }
     
     submitTask (thread) {
+        const blockCache = thread.blockContainer._cache;
+        
+        if (blockCache.compiledScripts.hasOwnProperty(thread.topBlock)) {
+            const cache = blockCache.compiledScripts[thread.topBlock];
+            if (cache.status === 'success') {
+                console.log('use cache', cache);
+                thread.compiledArtifact = cache.artifact;
+            } else {
+                console.log('disable compiler');
+                thread.disableCompiler = true;
+            }
+            return;
+        }
         const task = {
             id: thread.topBlock,
             status: 'pending',

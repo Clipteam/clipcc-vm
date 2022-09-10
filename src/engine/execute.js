@@ -1,4 +1,4 @@
-const { BlockUtility } = require('./block-utility');
+const { BlockUtility, CompiledBlockUtility } = require('./block-utility');
 const BlocksExecuteCache = require('./blocks-execute-cache');
 const log = require('../util/log');
 const Thread = require('./thread');
@@ -412,6 +412,25 @@ const _prepareBlockProfiling = function (profiler, blockCached) {
 };
 
 /**
+ * Execute a compiled artifact.
+ * @param {!Sequencer} sequencer Which sequencer is executing.
+ * @param {!Thread} thread Thread which to read and execute.
+ */
+const executeCompiled = function (sequencer, thread) {
+    if (!thread.currentGenerator) {
+        const compiledBlockUtility = new CompiledBlockUtility(sequencer, thread);
+        const compiledArtifact = thread.compiledArtifact;
+        thread.currentGenerator = compiledArtifact(compiledBlockUtility);
+    }
+    
+    if (!thread.blockContainer.forceNoGlow) {
+        thread.blockGlowInFrame = thread.topBlock;
+        thread.requestScriptGlowInFrame = true;
+    }
+    return thread.currentGenerator.next();
+};
+
+/**
  * Execute a block.
  * @param {!Sequencer} sequencer Which sequencer is executing.
  * @param {!Thread} thread Thread which to read and execute.
@@ -636,4 +655,7 @@ const execute = function (sequencer, thread) {
     }
 };
 
-module.exports = execute;
+module.exports = {
+    execute,
+    executeCompiled
+};

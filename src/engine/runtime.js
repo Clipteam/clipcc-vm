@@ -8,7 +8,7 @@ const BlockType = require('../extension-support/block-type');
 const Profiler = require('./profiler');
 const Sequencer = require('./sequencer');
 const Compiler = require('./compiler');
-const execute = require('./execute.js');
+const { execute } = require('./execute.js');
 const ScratchBlocksConstants = require('./scratch-blocks-constants');
 const TargetType = require('../extension-support/target-type');
 const Thread = require('./thread');
@@ -1686,7 +1686,13 @@ class Runtime extends EventEmitter {
 
         thread.pushStack(id);
         this.threads.push(thread);
-        if (this.useCompiler) this.compiler.submitTask(thread);
+        if (this.useCompiler) {
+            if (!thread.stackClick) {
+                this.compiler.submitTask(thread);
+            } else {
+                thread.disableCompiler = true;
+            }
+        }
         return thread;
     }
 

@@ -1,5 +1,9 @@
+/**
+ * @fileoverview
+ * Convert block stack to core.
+ */
+ 
 function workerFunc () {
-    
 const debug = true;
 let myId = -1;
 let varCount = 0;
@@ -9,8 +13,6 @@ function output (...content) {
     if (!debug) return;
     console.log(`[Worker ${myId}]`, ...content);
 }
-
-output('created!');
 
 // initialize
 let promisePool = [];
@@ -22,6 +24,7 @@ self.onmessage = function ({data}) {
     switch (operation) {
     case 'initialize': {
         myId = content.id;
+        output('initialized!');
         break;
     }
     // Start generating code for the thread
@@ -34,11 +37,11 @@ self.onmessage = function ({data}) {
         dependencies = new Set();
         // For worker, interacting with main thread should use promise.
         generateStack(topBlockId, false)
-            .then((snippet, codename) => {
+            .then((snippet) => {
                 self.postMessage({
                     operation: 'generated',
                     content: {
-                        name: codename || 'main',
+                        name: 'main',
                         code: snippet,
                         entry: topBlockId,
                         dependencies: Array.from(dependencies),
@@ -52,8 +55,8 @@ self.onmessage = function ({data}) {
                     content: {
                         name: 'main',
                         error: e,
-                        entry: topBlockId,
-                        id: myId
+                        id: myId,
+                        entry: topBlockId
                     }
                 })
             });
@@ -269,6 +272,12 @@ async function generateBlock (blockId, isWarp, paramNames) {
     }
 }
 
+/**
+ * Process arguments for a block.
+ * @param {Block} block - the block that need to be processed.
+ * @param {string[]} paramNames - parameter name of block stack.
+ * @returns {object} arguments of the block.
+ */
 async function processArguments (block, paramNames) {
     const args = {};
     if (block.hasOwnProperty('mutation')) {
@@ -321,6 +330,13 @@ function hash (s) {
   return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
 }
 
+/**
+ * Decode a input block.
+ * @param {Block} inputBlock - the input block.
+ * @param {string} name - input's name
+ * @param {string[]} paramNames - parameter name of block stack.
+ * @returns {CompiledInput} the input unit.
+ */
 async function decodeInput (inputBlock, name, paramNames) {
     switch (inputBlock.opcode) {
     // function

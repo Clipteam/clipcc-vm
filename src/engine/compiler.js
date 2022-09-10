@@ -1,3 +1,8 @@
+/**
+ * @fileoverview
+ * Convert block stack to generator function.
+ */
+
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 const workerScript = require('./compiler-worker');
 
@@ -9,23 +14,34 @@ class Compiler {
         this.initialize();
     }
     
+    /**
+     * create compile workers.
+     */
     initialize () {
         for (let i = 0; i < 4; i++) {
             this.createWorker(i);
         }
     }
     
+    /**
+     * create compile worker, and listen it.
+     * @param {number} workerId
+     */
     createWorker (workerId) {
-        // Create worker
         if (!window.Worker) {
             console.error('Browser does not support Worker.');
             return;
         }
+        
+        // create worker from string
         const scriptBlob = new Blob([workerScript], {type: "text/javascript"});
         const worker = new Worker(window.URL.createObjectURL(scriptBlob));
+        // listen it
         worker.onmessage = ({data}) => {
             const { operation, content } = data;
             switch (operation) {
+            // triggerred when worker cannot find blocks in its blockContainer.
+            // worker will get new blocks by this.
             case 'getBlocks': {
                 let thread;
                 for (const task of this.waitingToCompile) {
@@ -45,6 +61,8 @@ class Compiler {
                 });
                 break;
             }
+            // ------ interacting with thread ------
+            // @todo use rpcCall to replace them?
             case 'isHat': {
                 const result = this.runtime.getIsHat(content.opcode);
                 worker.postMessage({
@@ -114,28 +132,31 @@ class Compiler {
                 });
                 break;
             }
+            // ------------
+            // triggerred when code had been generated.
             case 'generated': {
                 try {
-                    //console.log('the function is', func);
-                    
                     for (const taskId in this.waitingToCompile) {
                         const task = this.waitingToCompile[taskId];
                         
                         if (task.id === content.entry) {
                             const blockCache = task.thread.blockContainer._cache;
                             
+                            // insert dependencies to code
                             let insertedCode = content.code;
                             for (const dependency of content.dependencies) {
                                 insertedCode += '\n' + blockCache.compiledProcedures[dependency].artifact;
                             }
                             
                             console.log(`[Worker ${content.id} -> Main] ` + 'the final code is \n' + insertedCode);
+                            // store artifact in block cache and target thread.
                             const func = eval(`'use strict';\n(function scoped(){return function*(util, params){${insertedCode}}})()`);
                             blockCache.compiledScripts[content.entry] = {
                                 status: 'success',
                                 artifact: func
                             };
                             task.thread.compiledArtifact = func;
+                            // delete task
                             this.waitingToCompile.splice(taskId, 1);
                             break;
                         }
@@ -144,15 +165,13 @@ class Compiler {
                     console.error('cannot create function from code', e);
                 }
                 
+                // release worker then perform the next task.
                 this.workers[content.id].available = true;
-                
-                if (this.waitingToCompile.length > 0) {
-                    // perform the next task
-                    this.check();
-                }
+                if (this.waitingToCompile.length > 0) this.check();
                 
                 break;
             }
+            // triggerred when procedures had been generated.
             case 'procedure': {
                 console.log(`[Worker ${content.id} -> Main] ` + 'the final procedure is \n' + content.code);
                 try {
@@ -161,7 +180,7 @@ class Compiler {
                         
                         if (task.id === content.entry) {
                             const blockCache = task.thread.blockContainer._cache;
-                            // console.log(task, blockCache)
+                            // For procedures, we just store code to be inserted by main script.
                             blockCache.compiledProcedures[content.name] = {
                                 status: 'success',
                                 artifact: `function * f${content.name} (util, params) {\n${content.code}\n}\n`
@@ -175,6 +194,7 @@ class Compiler {
                 
                 break;
             }
+            // triggered when error occurred in worker
             case 'error': {
                 console.error(`[Worker ${content.id} -> Main] ` + 'error occurred while generating\n', content.error);
                 this.workers[content.id].available = true;
@@ -183,7 +203,9 @@ class Compiler {
                     const task = this.waitingToCompile[taskId];
                         
                     if (task.id === content.entry) {
+                        // cannot generate code for block stack, disable compiler for it.
                         const blockCache = task.thread.blockContainer._cache;
+                        task.thread.disableCompiler = true;
                         blockCache.compiledScripts[content.entry] = {
                             status: 'error'
                         };
@@ -192,10 +214,7 @@ class Compiler {
                     }
                 }
                 
-                if (this.waitingToCompile.length > 0) {
-                    // perform the next task
-                    this.check();
-                }
+                if (this.waitingToCompile.length > 0) this.check();
                 break;
             }
             default: 
@@ -213,6 +232,7 @@ class Compiler {
         worker.onmessageerror = (e) => {
             console.error('Error occurred while serializing postData: ', e);
         }
+        // finally, initialze it.
         worker.postMessage({
             operation: 'initialize',
             content: {
@@ -225,16 +245,20 @@ class Compiler {
         });
     }
     
+    /**
+     * just wanna compile a thread.
+     * @param {Thread} thread
+     */
     submitTask (thread) {
         const blockCache = thread.blockContainer._cache;
         
+        // use cache by default
         if (blockCache.compiledScripts.hasOwnProperty(thread.topBlock)) {
             const cache = blockCache.compiledScripts[thread.topBlock];
             if (cache.status === 'success') {
-                // console.log('use cache', cache);
                 thread.compiledArtifact = cache.artifact;
             } else {
-                // console.log('disable compiler');
+                // disable compiler when cache is corrupted.
                 thread.disableCompiler = true;
             }
             return;
@@ -250,6 +274,9 @@ class Compiler {
         // console.log(this.waitingToCompile);
     }
     
+    /**
+     * try compile every thread.
+     */
     check () {
         for (const task of this.waitingToCompile) {
             if (task.status !== 'pending') continue;
@@ -257,6 +284,10 @@ class Compiler {
         }
     }
     
+    /**
+     * Find idle workers and start compiling
+     * @param {object} task
+     */
     checkForTask (task) {
         // console.log('check task', task);
         // Find available workers for the current task
@@ -277,10 +308,9 @@ class Compiler {
         }
     }
     
-    _getBlockInFlyout (id) {
-        return this.runtime.flyoutBlocks._blocks[id];
-    }
-    
+    /**
+     * destroy all workers
+     */
     dispose () {
         for (const workerId in this.workers) {
             const { worker } = this.workers[workerId];

@@ -159,7 +159,7 @@ class ClipCCJSONBlocks {
             try {
                 data = JSON.parse(args.VALUE.replace(/\\/g, '\\\\'));
             } catch (e) {
-                data = args.VALUE;
+                data = args.VALUE.replace(/\\/g, '\\');
             }
             if (args.ARRAY != '') array = JSON.parse(Cast.toString(args.ARRAY).replace(/\\/g, '\\\\'));
             typeof data === 'object' ? array[Cast.toNumber(args.POS)] = data : array[Cast.toNumber(args.POS)] = Cast.toString(data);
@@ -180,16 +180,16 @@ class ClipCCJSONBlocks {
         let data = null;
         try {
             try {
-                data = JSON.parse(args.VALUE.replace(/\\/g, '\\\\'));
+                data = JSON.parse(args.VALUE.replace(/\\/g, '\\'));
             } catch (e) {
                 let value = args.VALUE;
                 if (Number.isNaN(Cast.toNumber(args.VALUE))) value = Cast.toNumber(args.VALUE);
-                data = value;
+                data = value.replace(/\\/g, '\\');
             }
             
-            if (args.JSON != '') obj = JSON.parse(Cast.toString(args.JSON).replace(/\\/g, '\\\\'));
-            typeof data === 'object' ? obj[Cast.toString(args.KEY)] = data : obj[Cast.toString(args.KEY)] = Cast.toString(data);
-            return Cast.toString(JSON.stringify(obj))  || '';
+            if (args.JSON != '') obj = JSON.parse(Cast.toString(args.JSON).replace(/\\/g, '\\'));
+            obj[Cast.toString(args.KEY)] = data;
+            return Cast.toString(JSON.stringify(obj)).replace(/\\\\/g, '\\')  || '';
         } catch (e) {
             return `[ERROR] ${e}`;
         }

@@ -271,6 +271,10 @@ class CompiledBlockUtility extends BlockUtility {
         this.refreshCounter = 0;
     }
     
+    /**
+     * Create a new timer then return it.
+     * @returns {Timer} a timer instance.
+     */
     getTimer () {
         const t = new Timer({
             now: () => this.thread.target.runtime.currentMSecs
@@ -279,6 +283,10 @@ class CompiledBlockUtility extends BlockUtility {
         return t;
     }
     
+    /**
+     * Whether need to be refresh for prevent render thread being blocked.
+     * @returns {boolean}
+     */
     needRefresh () {
         this.refreshCounter++;
         if (this.refreshCounter >= 100) {
@@ -289,6 +297,14 @@ class CompiledBlockUtility extends BlockUtility {
         return false;
     }
     
+    /**
+     * Try to simulate an environment that is as close to the original operating mode as possible to run a certain block.
+     * This method should only be used without special compilation optimizations for this block.
+     * @param {string} opcode - block's opcode
+     * @param {object} inputs - block's arguments
+     * @param {boolean} isWarp - Whether to run without refreshing the screen
+     * @returns {any} The return value of the block.
+     */
     * runInCompatibilityLayer (opcode, inputs, isWarp) {
         // just use it one time, we should reset it to avoid issues
         this.thread.stackFrames[this.thread.stackFrames.length - 1].reuse(isWarp);
@@ -301,6 +317,7 @@ class CompiledBlockUtility extends BlockUtility {
         }
         
         let reported = blockFunction(inputs, this);
+        // Set callbacks for promise blocks
         if (isPromise(reported)) {
             reported.then(value => {
                 this.thread.status = Thread.STATUS_RUNNING;
@@ -329,6 +346,10 @@ class CompiledBlockUtility extends BlockUtility {
         return reported;
     }
     
+    /**
+     * waiting until all threads specified have completed execution.
+     * params {Thread[]} threads - All threads that need to be waited
+     */
     * waitThreads (threads) {
         const { runtime } = this.sequencer;
         while (true) {

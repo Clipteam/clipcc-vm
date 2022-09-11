@@ -297,6 +297,7 @@ class Compiler {
             workerUnit.worker.postMessage({
                 operation: 'start',
                 content: {
+                    workerId: workerUnitId,
                     blocks: task.thread.blockContainer._blocks,
                     topBlockId: task.thread.topBlock
                 }

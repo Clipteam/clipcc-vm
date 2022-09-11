@@ -30,11 +30,12 @@ self.onmessage = function ({data}) {
     // Start generating code for the thread
     case 'start': {
         output('start');
-        const { blocks, topBlockId } = content;
+        const { blocks, topBlockId, workerId } = content;
         entryBlock = topBlockId;
         blockContainer = blocks;
         varCount = 0;
         dependencies = new Set();
+        myId = workerId;
         // For worker, interacting with main thread should use promise.
         generateStack(topBlockId, false)
             .then((snippet) => {
@@ -236,7 +237,7 @@ async function generateBlock (blockId, isWarp, paramNames) {
     }
     case 'data_itemnumoflist': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._getItemNumOfList(${id.asString()}, ${name.asString()}, ${args.INDEX.asNumber()}, util)`;
+        return `packageInstances['scratch3_data']._getItemNumOfList(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, util)`;
     }
     case 'data_lengthoflist': {
         const { id, name } = args.LIST;
@@ -308,16 +309,17 @@ async function generateBlock (blockId, isWarp, paramNames) {
         
         if (dependencies.has(hash(block.mutation.proccode))) return base;
         
-        dependencies.add(hash(block.mutation.proccode));
         output(_paramNames, _paramIds, _paramDefaults, definitionId);
         return generateStack(definitionId, block.mutation.warp === 'true', _paramNames)
             .then((snippet) => {
+                dependencies.add(hash(block.mutation.proccode));
                 self.postMessage({
                     operation: 'procedure',
                     content: {
                         name: hash(block.mutation.proccode),
                         entry: entryBlock,
-                        code: snippet
+                        code: snippet,
+                        id: myId
                     }
                 });
                 return base;
@@ -327,7 +329,8 @@ async function generateBlock (blockId, isWarp, paramNames) {
                     operation: 'error',
                     content: {
                         name: hash(block.mutation.proccode),
-                        error: e
+                        error: e,
+                        id: myId
                     }
                 });
             });
@@ -361,22 +364,24 @@ async function processArguments (block, paramNames) {
     // It's for procedures now, maybe we should implement variable parameters support?
     if (block.hasOwnProperty('mutation')) {
         args.mutation = [];
-        const mapping = JSON.parse(block.mutation.argumentids);
-        for (const item of mapping) {
-            const input = block.inputs[item];
-            if (!input) {
-                args.mutation.push('null');
-                continue;
-            }
-            if (input.block === input.shadow) { // Non-nested reporter, get the value directly
-                const inputBlock = await getBlock(input.block);
-                args.mutation.push(`"${(await decodeInput(inputBlock, '%', paramNames)).value}"`);
-            } else {
-                const targetCode = await generateBlock(input.block);
-                args.mutation.push(`"" +(${targetCode})`);
+        
+        if (block.mutation.argumentids) {
+            const mapping = JSON.parse(block.mutation.argumentids);
+            for (const item of mapping) {
+                const input = block.inputs[item];
+                if (!input) {
+                    args.mutation.push('null');
+                    continue;
+                }
+                if (input.block === input.shadow) { // Non-nested reporter, get the value directly
+                    const inputBlock = await getBlock(input.block);
+                    args.mutation.push(`"${(await decodeInput(inputBlock, '%', paramNames)).value}"`);
+                } else {
+                    const targetCode = await generateBlock(input.block);
+                    args.mutation.push(`"" +(${targetCode})`);
+                }
             }
         }
-        
     }
     // Read from inputs
     for (const name in block.inputs) {

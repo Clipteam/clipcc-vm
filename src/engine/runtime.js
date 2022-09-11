@@ -200,6 +200,12 @@ class Runtime extends EventEmitter {
          * @type {String}
          */
         this.version = 'unknown';
+        
+        /**
+         * How many workers should be created for compiler
+         * type {number}
+         */
+        this.compileWorker = 4;
 
         /**
          * A list of threads that are currently running in the VM.
@@ -442,7 +448,7 @@ class Runtime extends EventEmitter {
          */
         this.origin = null;
 
-        // this._initScratchLink();
+        this.compiler.initialize();
     }
 
     /**
@@ -1665,7 +1671,7 @@ class Runtime extends EventEmitter {
 
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
-
+     
     /**
      * Create a thread and push it to the list of threads.
      * @param {!string} id ID of block that starts the stack.
@@ -1687,7 +1693,7 @@ class Runtime extends EventEmitter {
         thread.pushStack(id);
         this.threads.push(thread);
         if (this.useCompiler) {
-            if (!thread.stackClick) {
+            if (!thread.stackClick && !thread.updateMonitor) {
                 this.compiler.submitTask(thread);
             } else {
                 thread.disableCompiler = true;

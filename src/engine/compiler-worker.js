@@ -63,13 +63,11 @@ self.onmessage = function ({data}) {
         break;
     }
     case 'resolvePromise': {
-        output('resolvePromise', content);
         // Find the target promise, and resolve it.
         for (const promiseId in promisePool) {
             const promise = promisePool[promiseId];
             if (promise.type !== content.type) continue;
             if (promise.id !== content.id) continue;
-            output('resolve it', content.result);
             promise.resolve(content.result);
             delete promisePool[promiseId];
             break;
@@ -118,6 +116,7 @@ async function generateBlock (blockId, isWarp, paramNames) {
     switch (block.opcode) {
     // Control
     case 'control_repeat': {
+        output(args.TIMES);
         return `for (let i = ${args.TIMES.asPureNumber()}; i >= 0.5; i--){\n` +
         `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
         (isWarp ? `if (util.needRefresh()) yield\n` : 'yield\n') +
@@ -175,6 +174,85 @@ async function generateBlock (blockId, isWarp, paramNames) {
         if (option === 'this script') return `return`;
         if (option === 'other scripts in sprite' || option === 'other scripts in stage') return `util.runtime.stopForTarget(util.target, util.thread)`;
         return `// no-op`;
+    }
+    // Event
+    case 'event_broadcast': {
+        return `util.startHats("event_whenbroadcastreceived", { BROADCAST_OPTION: ${args.BROADCAST_INPUT.asString()} })`;
+    }
+    case 'event_broadcastandwait': {
+        return `yield* util.waitThreads(util.startHats("event_whenbroadcastreceived", { BROADCAST_OPTION: ${args.BROADCAST_INPUT.asString()} }))`;
+    }
+    case 'event_whentouchingobject': {
+        return `util.target.isTouchingObject(${args.TOUCHINGOBJECTMENU.asString()})`;
+    }
+    // Data
+    case 'data_variable': {
+        const { id, name } = args.VARIABLE;
+        return `packageInstances['scratch3_data']._getVariable(${id.asString()}, ${name.asString()}, util)`;
+    }
+    case 'data_setvariableto': {
+        const { id, name } = args.VARIABLE;
+        return `packageInstances['scratch3_data']._setVariableTo(${id.asString()}, ${name.asString()}, ${args.VALUE.asString()}, util)`;
+    }
+    case 'data_changevariableby': {
+        const { id, name } = args.VARIABLE;
+        return `packageInstances['scratch3_data']._changeVariableBy(${id.asString()}, ${name.asString()}, ${args.VALUE.asString()}, util)`;
+    }
+    case 'data_hidevariable': {
+        const { id, name } = args.VARIABLE;
+        return `packageInstances['scratch3_data'].changeMonitorVisibility(${id.asString()}, false)`;
+    }
+    case 'data_showvariable': {
+        const { id, name } = args.VARIABLE;
+        return `packageInstances['scratch3_data'].changeMonitorVisibility(${id.asString()}, true)`;
+    }
+    case 'data_listcontents': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._getListContents(${id.asString()}, ${name.asString()}, util)`;
+    }
+    case 'data_addtolist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._addToList(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, util)`;
+    }
+    case 'data_deleteoflist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._deleteOfList(${id.asString()}, ${name.asString()}, ${args.INDEX.asNumber()}, util)`;
+    }
+    case 'data_deletealloflist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._deleteAllOfList(${id.asString()}, ${name.asString()}, util)`;
+    }
+    case 'data_insertatlist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._insertAtList(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, ${args.INDEX.asNumber()}, util)`;
+    }
+    case 'data_replaceitemoflist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._replaceItemOfList(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, ${args.INDEX.asNumber()}, util)`;
+    }
+    case 'data_itemoflist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._getItemOfList(${id.asString()}, ${name.asString()}, ${args.INDEX.asNumber()}, util)`;
+    }
+    case 'data_itemnumoflist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._getItemNumOfList(${id.asString()}, ${name.asString()}, ${args.INDEX.asNumber()}, util)`;
+    }
+    case 'data_lengthoflist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._lengthOfList(${id.asString()}, ${name.asString()}, util)`;
+    }
+    case 'data_listcontainsitem': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data']._listContainsItem(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, util)`;
+    }
+    case 'data_hidelist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data'].changeMonitorVisibility(${id.asString()}, false)`;
+    }
+    case 'data_showlist': {
+        const { id, name } = args.LIST;
+        return `packageInstances['scratch3_data'].changeMonitorVisibility(${id.asString()}, true)`;
     }
     // Operator
     case 'operator_add': {
@@ -280,6 +358,7 @@ async function generateBlock (blockId, isWarp, paramNames) {
  */
 async function processArguments (block, paramNames) {
     const args = {};
+    // It's for procedures now, maybe we should implement variable parameters support?
     if (block.hasOwnProperty('mutation')) {
         args.mutation = [];
         const mapping = JSON.parse(block.mutation.argumentids);
@@ -293,9 +372,8 @@ async function processArguments (block, paramNames) {
                 const inputBlock = await getBlock(input.block);
                 args.mutation.push(`"${(await decodeInput(inputBlock, '%', paramNames)).value}"`);
             } else {
-                const inputBlock = await getBlock(input.block);
-                const targetCode = await generateBlock(inputBlock);
-                args.mutation.push(targetCode);
+                const targetCode = await generateBlock(input.block);
+                args.mutation.push(`"" +(${targetCode})`);
             }
         }
         
@@ -308,12 +386,11 @@ async function processArguments (block, paramNames) {
     }
     // Read from fields
     for (const name in block.fields) {
-        if (name === 'VARIABLE') {
-            args[name] = new CompiledInput(
-                block.fields[name].id,
-                CompiledInput.TYPE_DYNAMIC,
-                true
-            );
+        if (name === 'VARIABLE' || name === 'LIST') {
+            args[name] = {
+                id: new CompiledInput(block.fields[name].id, CompiledInput.TYPE_DYNAMIC, true),
+                name: new CompiledInput(block.fields[name].value, CompiledInput.TYPE_DYNAMIC, true)
+            };
         } else {
             args[name] = new CompiledInput(
                 block.fields[name].value,
@@ -326,8 +403,47 @@ async function processArguments (block, paramNames) {
     return args;
 }
 
-function hash (s) {
-  return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+function hash (inputString) {
+    var hc="0123456789abcdef";
+    function rh(n) {var j,s="";for(j=0;j<=3;j++) s+=hc.charAt((n>>(j*8+4))&0x0F)+hc.charAt((n>>(j*8))&0x0F);return s;}
+    function ad(x,y) {var l=(x&0xFFFF)+(y&0xFFFF);var m=(x>>16)+(y>>16)+(l>>16);return (m<<16)|(l&0xFFFF);}
+    function rl(n,c)            {return (n<<c)|(n>>>(32-c));}
+    function cm(q,a,b,x,s,t)    {return ad(rl(ad(ad(a,q),ad(x,t)),s),b);}
+    function ff(a,b,c,d,x,s,t)  {return cm((b&c)|((~b)&d),a,b,x,s,t);}
+    function gg(a,b,c,d,x,s,t)  {return cm((b&d)|(c&(~d)),a,b,x,s,t);}
+    function hh(a,b,c,d,x,s,t)  {return cm(b^c^d,a,b,x,s,t);}
+    function ii(a,b,c,d,x,s,t)  {return cm(c^(b|(~d)),a,b,x,s,t);}
+    function sb(x) {
+        var i;var nblk=((x.length+8)>>6)+1;var blks=new Array(nblk*16);for(i=0;i<nblk*16;i++) blks[i]=0;
+        for(i=0;i<x.length;i++) blks[i>>2]|=x.charCodeAt(i)<<((i%4)*8);
+        blks[i>>2]|=0x80<<((i%4)*8);blks[nblk*16-2]=x.length*8;return blks;
+    }
+    var i,x=sb(inputString),a=1732584193,b=-271733879,c=-1732584194,d=271733878,olda,oldb,oldc,oldd;
+    for(i=0;i<x.length;i+=16) {olda=a;oldb=b;oldc=c;oldd=d;
+        a=ff(a,b,c,d,x[i+ 0], 7, -680876936);d=ff(d,a,b,c,x[i+ 1],12, -389564586);c=ff(c,d,a,b,x[i+ 2],17,  606105819);
+        b=ff(b,c,d,a,x[i+ 3],22,-1044525330);a=ff(a,b,c,d,x[i+ 4], 7, -176418897);d=ff(d,a,b,c,x[i+ 5],12, 1200080426);
+        c=ff(c,d,a,b,x[i+ 6],17,-1473231341);b=ff(b,c,d,a,x[i+ 7],22,  -45705983);a=ff(a,b,c,d,x[i+ 8], 7, 1770035416);
+        d=ff(d,a,b,c,x[i+ 9],12,-1958414417);c=ff(c,d,a,b,x[i+10],17,     -42063);b=ff(b,c,d,a,x[i+11],22,-1990404162);
+        a=ff(a,b,c,d,x[i+12], 7, 1804603682);d=ff(d,a,b,c,x[i+13],12,  -40341101);c=ff(c,d,a,b,x[i+14],17,-1502002290);
+        b=ff(b,c,d,a,x[i+15],22, 1236535329);a=gg(a,b,c,d,x[i+ 1], 5, -165796510);d=gg(d,a,b,c,x[i+ 6], 9,-1069501632);
+        c=gg(c,d,a,b,x[i+11],14,  643717713);b=gg(b,c,d,a,x[i+ 0],20, -373897302);a=gg(a,b,c,d,x[i+ 5], 5, -701558691);
+        d=gg(d,a,b,c,x[i+10], 9,   38016083);c=gg(c,d,a,b,x[i+15],14, -660478335);b=gg(b,c,d,a,x[i+ 4],20, -405537848);
+        a=gg(a,b,c,d,x[i+ 9], 5,  568446438);d=gg(d,a,b,c,x[i+14], 9,-1019803690);c=gg(c,d,a,b,x[i+ 3],14, -187363961);
+        b=gg(b,c,d,a,x[i+ 8],20, 1163531501);a=gg(a,b,c,d,x[i+13], 5,-1444681467);d=gg(d,a,b,c,x[i+ 2], 9,  -51403784);
+        c=gg(c,d,a,b,x[i+ 7],14, 1735328473);b=gg(b,c,d,a,x[i+12],20,-1926607734);a=hh(a,b,c,d,x[i+ 5], 4,    -378558);
+        d=hh(d,a,b,c,x[i+ 8],11,-2022574463);c=hh(c,d,a,b,x[i+11],16, 1839030562);b=hh(b,c,d,a,x[i+14],23,  -35309556);
+        a=hh(a,b,c,d,x[i+ 1], 4,-1530992060);d=hh(d,a,b,c,x[i+ 4],11, 1272893353);c=hh(c,d,a,b,x[i+ 7],16, -155497632);
+        b=hh(b,c,d,a,x[i+10],23,-1094730640);a=hh(a,b,c,d,x[i+13], 4,  681279174);d=hh(d,a,b,c,x[i+ 0],11, -358537222);
+        c=hh(c,d,a,b,x[i+ 3],16, -722521979);b=hh(b,c,d,a,x[i+ 6],23,   76029189);a=hh(a,b,c,d,x[i+ 9], 4, -640364487);
+        d=hh(d,a,b,c,x[i+12],11, -421815835);c=hh(c,d,a,b,x[i+15],16,  530742520);b=hh(b,c,d,a,x[i+ 2],23, -995338651);
+        a=ii(a,b,c,d,x[i+ 0], 6, -198630844);d=ii(d,a,b,c,x[i+ 7],10, 1126891415);c=ii(c,d,a,b,x[i+14],15,-1416354905);
+        b=ii(b,c,d,a,x[i+ 5],21,  -57434055);a=ii(a,b,c,d,x[i+12], 6, 1700485571);d=ii(d,a,b,c,x[i+ 3],10,-1894986606);
+        c=ii(c,d,a,b,x[i+10],15,   -1051523);b=ii(b,c,d,a,x[i+ 1],21,-2054922799);a=ii(a,b,c,d,x[i+ 8], 6, 1873313359);
+        d=ii(d,a,b,c,x[i+15],10,  -30611744);c=ii(c,d,a,b,x[i+ 6],15,-1560198380);b=ii(b,c,d,a,x[i+13],21, 1309151649);
+        a=ii(a,b,c,d,x[i+ 4], 6, -145523070);d=ii(d,a,b,c,x[i+11],10,-1120210379);c=ii(c,d,a,b,x[i+ 2],15,  718787259);
+        b=ii(b,c,d,a,x[i+ 9],21, -343485551);a=ad(a,olda);b=ad(b,oldb);c=ad(c,oldc);d=ad(d,oldd);
+    }
+    return rh(a)+rh(b)+rh(c)+rh(d);
 }
 
 /**
@@ -338,6 +454,17 @@ function hash (s) {
  * @returns {CompiledInput} the input unit.
  */
 async function decodeInput (inputBlock, name, paramNames) {
+    output('decodeInput', inputBlock, name, paramNames);
+    // For all branch, use SUBSTACK prefix.
+    if (name.startsWith('SUBSTACK')) {
+        const result = await generateStack(inputBlock.id);
+        return new CompiledInput(
+            result,
+            CompiledInput.TYPE_DYNAMIC,
+            true
+        );
+    }
+    
     switch (inputBlock.opcode) {
     // function
     case 'argument_reporter_boolean':
@@ -384,6 +511,48 @@ async function decodeInput (inputBlock, name, paramNames) {
             true
         );
     }
+    case 'motion_goto_menu': {
+        return new CompiledInput(
+            inputBlock.fields.TO.value,
+            CompiledInput.TYPE_STRING,
+            true
+        );
+    }
+    case 'motion_pointtowards_menu': {
+        return new CompiledInput(
+            inputBlock.fields.TOWARDS.value,
+            CompiledInput.TYPE_STRING,
+            true
+        );
+    }
+    case 'looks_costume': {
+        return new CompiledInput(
+            inputBlock.fields.COSTUME.value,
+            CompiledInput.TYPE_STRING,
+            true
+        );
+    }
+    case 'sensing_of_object_menu': {
+        return new CompiledInput(
+            inputBlock.fields.OBJECT.value,
+            CompiledInput.TYPE_STRING,
+            true
+        );
+    }
+    case 'sensing_keyoptions': {
+        return new CompiledInput(
+            inputBlock.fields.KEY_OPTION.value,
+            CompiledInput.TYPE_STRING,
+            true
+        );
+    }
+    case 'sensing_mouseoptions': {
+        return new CompiledInput(
+            inputBlock.fields.MOUSE_OPTION.value,
+            CompiledInput.TYPE_STRING,
+            true
+        );
+    }
     case 'event_broadcast_menu': {
         const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
         const broadcastVariable = await lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
@@ -396,18 +565,24 @@ async function decodeInput (inputBlock, name, paramNames) {
     }
     // more interesting
     default: {
-        // For all branch, use SUBSTACK prefix.
-        if (name.startsWith('SUBSTACK')) {
-            const result = await generateStack(inputBlock.id);
-            return new CompiledInput(
-                result,
-                CompiledInput.TYPE_DYNAMIC,
-                true
-            );
-        }
-        
-        // For most cases, this is a nested input.
         try {
+            /*
+            // edge case: It's a unknown menu...?
+            // inspired by Turbowarp, although I have not encountered this situation
+            if (inputBlock.opcode !== 'data_variable' && inputBlock.opcode !== 'data_listcontents') {
+                const inputs = Object.keys(inputBlock.inputs);
+                const fields = Object.keys(inputBlock.fields);
+                if (inputs.length === 0 && fields.length === 1) {
+                    return new CompiledInput(
+                        inputBlock.fields[fields[0]].value,
+                        CompiledInput.TYPE_STRING,
+                        true
+                    );
+                }
+            }
+            */
+            
+            // For most cases, this is a nested input.
             const result = await generateBlock(inputBlock.id);
             return new CompiledInput(
                 result,
@@ -415,18 +590,6 @@ async function decodeInput (inputBlock, name, paramNames) {
                 false
             );
         } catch (e) {
-            // edge case: It's a unknown menu...?
-            // inspired by Turbowarp, although I have not encountered this situation
-            const inputs = Object.keys(inputBlock.inputs);
-            const fields = Object.keys(inputBlock.fields);
-            if (inputs.length === 0 && fields.length === 1) {
-                return new CompiledInput(
-                    inputBlock.fields[fields[0]].value,
-                    CompiledInput.TYPE_STRING,
-                    true
-                );
-            }
-            
             throw new Error(`cannot generate input ${inputBlock.opcode}:\n ${e.message}`);
         }
     }
@@ -635,7 +798,7 @@ class CompiledInput {
 
     asBoolean () {
         if (this.type === CompiledInput.TYPE_BOOLEAN) return this.value;
-        if (this.constant) return Cast.toBoolean(this.value).toString();
+        if (this.constant) return Cast.toBoolean(this.value).asString();
         // Scratch 3 is more complicated for boolean type conversion
         // Processed it during runtime in the case of non-constant
         return `util.toBoolean(${this.value})`;

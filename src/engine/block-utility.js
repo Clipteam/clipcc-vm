@@ -329,6 +329,29 @@ class CompiledBlockUtility extends BlockUtility {
         return reported;
     }
     
+    * waitThreads (threads) {
+        const { runtime } = this.sequencer;
+        while (true) {
+            let isFinished = true;
+            for (const thread of threads) {
+                if (runtime.threads.includes(thread)) {
+                    isFinished = false;
+                    break;
+                }
+            }
+            if (isFinished) return;
+            let allWaiting = true;
+            for (const thread of threads) {
+                if (!runtime.isWaitingThread(thread)) {
+                    allWaiting = false;
+                    break;
+                }
+            }
+        if (allWaiting) thread.status = Thread.STATUS_YIELD_TICK;
+        yield;
+        }
+    }
+    
     toBoolean (value) {
         return Cast.toBoolean(value);
     }

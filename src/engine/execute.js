@@ -427,7 +427,18 @@ const executeCompiled = function (sequencer, thread) {
         thread.blockGlowInFrame = thread.topBlock;
         thread.requestScriptGlowInFrame = true;
     }
-    return thread.currentGenerator.next();
+    
+    try {
+        return thread.currentGenerator.next();
+    } catch (e) {
+        console.error('error occurred while running compiled artifact\n', e);
+        const blockCache = thread.blockContainer._cache;
+        thread.disableCompiler = true;
+        blockCache.compiledScripts[thread.topBlock] = {
+            status: 'error'
+        };
+        return {done: true};
+    }
 };
 
 /**

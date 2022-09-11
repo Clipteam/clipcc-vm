@@ -11,14 +11,13 @@ class Compiler {
         this.runtime = runtime;
         this.waitingToCompile = [];
         this.workers = [];
-        this.initialize();
     }
     
     /**
      * create compile workers.
      */
     initialize () {
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < this.runtime.compileWorker; i++) {
             this.createWorker(i);
         }
     }
@@ -143,7 +142,7 @@ class Compiler {
                             const blockCache = task.thread.blockContainer._cache;
                             
                             // insert dependencies to code
-                            let insertedCode = content.code;
+                            let insertedCode = `const { packageInstances } = util.runtime\n` + content.code;
                             for (const dependency of content.dependencies) {
                                 insertedCode += '\n' + blockCache.compiledProcedures[dependency].artifact;
                             }

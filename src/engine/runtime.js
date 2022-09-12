@@ -326,7 +326,13 @@ class Runtime extends EventEmitter {
          * Whether use compiler instead of sequencer.
          * type {boolean}
          */
-         this.useCompiler = false;
+        this.useCompiler = false;
+         
+         /**
+          * Whether precompile scripts
+          * @type {boolean}
+          */
+        this.precompile = false;
 
         // the framerate of clipcc-vm
         // 60 to match default of compatibility mode off
@@ -336,7 +342,7 @@ class Runtime extends EventEmitter {
          * Whether store settings in .cc3 file
          * @type {boolean}
          */
-         this.storeSettings = false;
+        this.storeSettings = false;
 
         /**
          * Whether the project is in "compatibility mode" (30 TPS).
@@ -447,8 +453,6 @@ class Runtime extends EventEmitter {
          * @type {?string}
          */
         this.origin = null;
-
-        this.compiler.initialize();
     }
 
     /**
@@ -2252,7 +2256,30 @@ class Runtime extends EventEmitter {
     }
     
     setCompiler (option) {
+        this.resetAllCaches();
         this.useCompiler = !!option;
+    }
+    
+    precompileScripts () {
+        this.resetAllCaches();
+        this.allScriptsDo((topBlockId, target) => {
+            const topBlock = target.blocks.getBlock(topBlockId);
+            if (this.getIsHat(topBlock.opcode)) {
+                const thread = new Thread(topBlockId);
+                thread.target = target;
+                thread.blockContainer = target.blocks;
+                this.compiler.submitTask(thread);
+            }
+        })
+    }
+    
+    setPrecompile (option) {
+        this.precompile = !!option;
+    }
+    
+    setWorker (num) {
+        this.compileWorker = num;
+        this.compiler.initialize(this.compileWorker);
     }
 
     /**
@@ -2310,6 +2337,16 @@ class Runtime extends EventEmitter {
             }
         }
         this._scriptGlowsPreviousFrame = finalScriptGlows;
+    }
+    
+    /**
+     * Reset all caches.
+     */
+    resetAllCaches () {
+        for (const target of this.targets) {
+            if (target.isOriginal) target.blocks.resetCache();
+        }
+        this.monitorBlocks.resetCache();
     }
 
     /**

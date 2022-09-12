@@ -39,6 +39,7 @@ self.onmessage = function ({data}) {
         // For worker, interacting with main thread should use promise.
         generateStack(topBlockId, false)
             .then((snippet) => {
+                blockContainer = {};
                 self.postMessage({
                     operation: 'generated',
                     content: {

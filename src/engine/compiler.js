@@ -11,15 +11,19 @@ class Compiler {
         this.runtime = runtime;
         this.waitingToCompile = [];
         this.workers = [];
+        this._initialized = false;
+        window.compileWorkers = this.workers;
     }
     
     /**
      * create compile workers.
      */
-    initialize () {
-        for (let i = 0; i < this.runtime.compileWorker; i++) {
+    initialize (num) {
+        if (this._initialized) return;
+        for (let i = 0; i < num; i++) {
             this.createWorker(i);
         }
+        this._initialized = true;
     }
     
     /**
@@ -27,6 +31,7 @@ class Compiler {
      * @param {number} workerId
      */
     createWorker (workerId) {
+        console.log('create worker ' + workerId);
         // create worker from string
         const scriptBlob = new Blob([workerScript], {type: "text/javascript"});
         let objectUrl = URL.createObjectURL(scriptBlob);

@@ -381,6 +381,9 @@ class VirtualMachine extends EventEmitter {
         return validationPromise
             .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1]))
             .then(() => this.runtime.emitProjectLoaded())
+            .then(() => {
+                if (this.runtime.precompile) this.runtime.precompileScripts();
+            })
             .catch(error => {
                 // Intentionally rejecting here (want errors to be handled by caller)
                 if (error.hasOwnProperty('validationError')) {

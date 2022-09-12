@@ -2611,7 +2611,6 @@ class Runtime extends EventEmitter {
 
         for (const category of this._blockInfo) {
             for (const block of category.blocks) {
-                console.log(block);
                 if (block.info.opcode === extendedOpcode) {
                     return {
                         category: category.id,

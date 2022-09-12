@@ -334,9 +334,11 @@ class CompiledBlockUtility extends BlockUtility {
             if (this.thread.status === Thread.STATUS_YIELD_TICK) {
                 // always yield when It's yield tick.
                 yield;
+                reported = blockFunction(inputs, this);
             } else if (this.thread.status === Thread.STATUS_YIELD) {
                 this.thread.status = Thread.STATUS_RUNNING;
                 if (!isWarp || this.needRefresh()) yield;
+                reported = blockFunction(inputs, this);
             } else {
                 // It's a promise, yield it.
                 if (!isWarp || this.needRefresh()) yield;
@@ -371,6 +373,10 @@ class CompiledBlockUtility extends BlockUtility {
         if (allWaiting) thread.status = Thread.STATUS_YIELD_TICK;
         yield;
         }
+    }
+    
+    yield () {
+        this.thread.status = Thread.STATUS_YIELD;
     }
     
     toBoolean (value) {
@@ -431,9 +437,9 @@ class CompiledBlockUtility extends BlockUtility {
     
     eq (v1, v2) {
         const n1 = +v1;
-        if (isNaN(n1) || (n1 === 0 && isWhiteSpace(v1))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
+        if (isNaN(n1) || (n1 === 0 && Cast.isWhiteSpace(v1))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
         const n2 = +v2;
-        if (isNaN(n2) || (n2 === 0 && isWhiteSpace(v2))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
+        if (isNaN(n2) || (n2 === 0 && Cast.isWhiteSpace(v2))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
         return n1 === n2;
     }
 }

@@ -4,7 +4,7 @@
  */
  
 function workerFunc () {
-const debug = true;
+const debug = false;
 let myId = -1;
 let varCount = 0;
 let entryBlock = null;
@@ -132,6 +132,11 @@ async function generateBlock (blockId, isWarp, paramNames) {
     case 'control_while': {
         return `while(${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}){\n` +
         `${args.SUBSTACK ? args.SUBSTACK.raw() : '// null'}\n` +
+        (isWarp ? `if (util.needRefresh()) yield\n` : 'yield\n') +
+        `}`;
+    }
+    case 'control_wait_until': {
+        return `while(!${args.CONDITION ? args.CONDITION.asBoolean() : 'false'}){\n` +
         (isWarp ? `if (util.needRefresh()) yield\n` : 'yield\n') +
         `}`;
     }
@@ -460,6 +465,13 @@ function hash (inputString) {
  */
 async function decodeInput (inputBlock, name, paramNames) {
     output('decodeInput', inputBlock, name, paramNames);
+    if (!inputBlock) {
+        return new CompiledInput(
+            '',
+            CompiledInput.TYPE_STRING,
+            true
+        );
+    }
     // For all branch, use SUBSTACK prefix.
     if (name.startsWith('SUBSTACK')) {
         const result = await generateStack(inputBlock.id);
@@ -516,48 +528,6 @@ async function decodeInput (inputBlock, name, paramNames) {
             true
         );
     }
-    case 'motion_goto_menu': {
-        return new CompiledInput(
-            inputBlock.fields.TO.value,
-            CompiledInput.TYPE_STRING,
-            true
-        );
-    }
-    case 'motion_pointtowards_menu': {
-        return new CompiledInput(
-            inputBlock.fields.TOWARDS.value,
-            CompiledInput.TYPE_STRING,
-            true
-        );
-    }
-    case 'looks_costume': {
-        return new CompiledInput(
-            inputBlock.fields.COSTUME.value,
-            CompiledInput.TYPE_STRING,
-            true
-        );
-    }
-    case 'sensing_of_object_menu': {
-        return new CompiledInput(
-            inputBlock.fields.OBJECT.value,
-            CompiledInput.TYPE_STRING,
-            true
-        );
-    }
-    case 'sensing_keyoptions': {
-        return new CompiledInput(
-            inputBlock.fields.KEY_OPTION.value,
-            CompiledInput.TYPE_STRING,
-            true
-        );
-    }
-    case 'sensing_mouseoptions': {
-        return new CompiledInput(
-            inputBlock.fields.MOUSE_OPTION.value,
-            CompiledInput.TYPE_STRING,
-            true
-        );
-    }
     case 'event_broadcast_menu': {
         const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
         const broadcastVariable = await lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
@@ -571,21 +541,25 @@ async function decodeInput (inputBlock, name, paramNames) {
     // more interesting
     default: {
         try {
-            /*
             // edge case: It's a unknown menu...?
             // inspired by Turbowarp, although I have not encountered this situation
-            if (inputBlock.opcode !== 'data_variable' && inputBlock.opcode !== 'data_listcontents') {
-                const inputs = Object.keys(inputBlock.inputs);
-                const fields = Object.keys(inputBlock.fields);
-                if (inputs.length === 0 && fields.length === 1) {
+            const inputs = Object.keys(inputBlock.inputs);
+            const fields = Object.keys(inputBlock.fields);
+            if (inputs.length === 0 && fields.length === 1) {
+                if (fields[0] === 'VARIABLE' || fields[0] === 'LIST') {
+                    const result = await generateBlock(inputBlock.id);
                     return new CompiledInput(
-                        inputBlock.fields[fields[0]].value,
-                        CompiledInput.TYPE_STRING,
-                        true
+                        result,
+                        CompiledInput.TYPE_DYNAMIC,
+                        false
                     );
                 }
+                return new CompiledInput(
+                    inputBlock.fields[fields[0]].value,
+                    CompiledInput.TYPE_STRING,
+                    true
+                );
             }
-            */
             
             // For most cases, this is a nested input.
             const result = await generateBlock(inputBlock.id);
@@ -803,7 +777,7 @@ class CompiledInput {
 
     asBoolean () {
         if (this.type === CompiledInput.TYPE_BOOLEAN) return this.value;
-        if (this.constant) return Cast.toBoolean(this.value).asString();
+        if (this.constant) return CompiledInput.toBoolean(this.value).toString();
         // Scratch 3 is more complicated for boolean type conversion
         // Processed it during runtime in the case of non-constant
         return `util.toBoolean(${this.value})`;

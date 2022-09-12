@@ -98,7 +98,6 @@ class Sequencer {
 
             numActiveThreads = 0;
             let stoppedThread = false;
-            let waitingThreadId = -1;
             // Attempt to run each thread one time.
             const threads = this.runtime.threads;
             for (let i = 0; i < threads.length; i++) {
@@ -126,9 +125,7 @@ class Sequencer {
                         // Increment the number of times stepThread is called.
                         this.runtime.profiler.increment(stepThreadProfilerId);
                     }
-                    if (this.runtime.useCompiler && !activeThread.compiledArtifact && !activeThread.disableCompiler) {
-                        
-                    }
+                    
                     this.stepThread(activeThread);
                     activeThread.warpTimer = null;
                     if (activeThread.isKilled) {

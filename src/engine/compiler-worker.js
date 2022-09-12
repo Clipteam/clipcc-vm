@@ -107,9 +107,10 @@ async function generateStack (topId, isWarp, paramNames) {
  * @param {string} blockId - the block id
  * @param {boolean} isWarp - Whether yield in loop
  * @param {string[]} paramNames - parameter name of block stack
+ * @param {boolean} asReporter - generate block as reporter
  * @returns {string} generated code
  */
-async function generateBlock (blockId, isWarp, paramNames) {
+async function generateBlock (blockId, isWarp, paramNames, asReporter) {
     const block = await getBlock(blockId);
     output('generate block ', block);
     
@@ -195,7 +196,11 @@ async function generateBlock (blockId, isWarp, paramNames) {
     // Data
     case 'data_variable': {
         const { id, name } = args.VARIABLE;
-        return `packageInstances['scratch3_data']._getVariable(${id.asString()}, ${name.asString()}, util)`;
+        return new CompiledInput(
+            `packageInstances['scratch3_data']._getVariable(${id.asString()}, ${name.asString()}, util)`,
+            CompiledInput.TYPE_STRING,
+            false
+        );
     }
     case 'data_setvariableto': {
         const { id, name } = args.VARIABLE;
@@ -215,15 +220,19 @@ async function generateBlock (blockId, isWarp, paramNames) {
     }
     case 'data_listcontents': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._getListContents(${id.asString()}, ${name.asString()}, util)`;
+        return new CompiledInput(
+            `packageInstances['scratch3_data']._getListContents(${id.asString()}, ${name.asString()}, util)`,
+            CompiledInput.TYPE_STRING,
+            false
+        );
     }
     case 'data_addtolist': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._addToList(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, util)`;
+        return `packageInstances['scratch3_data']._addToList(${id.asString()}, ${name.asString()}, ${args.ITEM.asSafe()}, util)`;
     }
     case 'data_deleteoflist': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._deleteOfList(${id.asString()}, ${name.asString()}, ${args.INDEX.asNumber()}, util)`;
+        return `packageInstances['scratch3_data']._deleteOfList(${id.asString()}, ${name.asString()}, ${args.INDEX.raw()}, util)`;
     }
     case 'data_deletealloflist': {
         const { id, name } = args.LIST;
@@ -231,27 +240,43 @@ async function generateBlock (blockId, isWarp, paramNames) {
     }
     case 'data_insertatlist': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._insertAtList(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, ${args.INDEX.asNumber()}, util)`;
+        return `packageInstances['scratch3_data']._insertAtList(${id.asString()}, ${name.asString()}, ${args.ITEM.asSafe()}, ${args.INDEX.raw()}, util)`;
     }
     case 'data_replaceitemoflist': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._replaceItemOfList(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, ${args.INDEX.asNumber()}, util)`;
+        return `packageInstances['scratch3_data']._replaceItemOfList(${id.asString()}, ${name.asString()}, ${args.ITEM.asSafe()}, ${args.INDEX.raw()}, util)`;
     }
     case 'data_itemoflist': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._getItemOfList(${id.asString()}, ${name.asString()}, ${args.INDEX.asNumber()}, util)`;
+        return new CompiledInput(
+            `packageInstances['scratch3_data']._getItemOfList(${id.asString()}, ${name.asString()}, ${args.INDEX.raw()}, util)`,
+            CompiledInput.TYPE_DYNAMIC,
+            false
+        );
     }
     case 'data_itemnumoflist': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._getItemNumOfList(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, util)`;
+        return new CompiledInput(
+            `packageInstances['scratch3_data']._getItemNumOfList(${id.asString()}, ${name.asString()}, ${args.ITEM.asSafe()}, util)`,
+            CompiledInput.TYPE_NUMBER,
+            false
+        );
     }
     case 'data_lengthoflist': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._lengthOfList(${id.asString()}, ${name.asString()}, util)`;
+        return new CompiledInput(
+            `packageInstances['scratch3_data']._lengthOfList(${id.asString()}, ${name.asString()}, util)`,
+            CompiledInput.TYPE_NUMBER,
+            false
+        );
     }
     case 'data_listcontainsitem': {
         const { id, name } = args.LIST;
-        return `packageInstances['scratch3_data']._listContainsItem(${id.asString()}, ${name.asString()}, ${args.ITEM.asString()}, util)`;
+        return new CompiledInput(
+            `packageInstances['scratch3_data']._listContainsItem(${id.asString()}, ${name.asString()}, ${args.ITEM.asSafe()}, util)`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     case 'data_hidelist': {
         const { id, name } = args.LIST;
@@ -263,47 +288,137 @@ async function generateBlock (blockId, isWarp, paramNames) {
     }
     // Operator
     case 'operator_add': {
-        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.raw() + args.NUM2.raw()}`;
-        return `${args.NUM1.asNumber()} + ${args.NUM2.asNumber()}`;
+        return new CompiledInput(
+            `${args.NUM1.asNumber()} + ${args.NUM2.asNumber()}`,
+            CompiledInput.TYPE_NUMBER_NAN,
+            false
+        );
     }
     case 'operator_subtract': {
-        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.raw() - args.NUM2.raw()}`;
-        return `${args.NUM1.asNumber()} - ${args.NUM2.asNumber()}`;
+        return new CompiledInput(
+            `${args.NUM1.asNumber()} - ${args.NUM2.asNumber()}`,
+            CompiledInput.TYPE_NUMBER_NAN,
+            false
+        );
     }
     case 'operator_multiply': {
-        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.raw() * args.NUM2.raw()}`;
-        return `${args.NUM1.asNumber()} * ${args.NUM2.asNumber()}`;
+        return new CompiledInput(
+            `${args.NUM1.asNumber()} * ${args.NUM2.asNumber()}`,
+            CompiledInput.TYPE_NUMBER_NAN,
+            false
+        );
     }
     case 'operator_divide': {
-        if (args.NUM1.constant && args.NUM2.constant) return `${args.NUM1.raw() / args.NUM2.raw()}`;
-        return `${args.NUM1.asNumber()} / ${args.NUM2.asNumber()}`;
+        return new CompiledInput(
+            `${args.NUM1.asNumber()} / ${args.NUM2.asNumber()}`,
+            CompiledInput.TYPE_NUMBER_NAN,
+            false
+        );
     }
     case 'operator_lt': {
-        return `util.lt(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
+        return new CompiledInput(
+            `util.lt(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     case 'operator_le': {
-        return `util.le(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
+        return new CompiledInput(
+            `util.le(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     case 'operator_equals': {
-        return `util.eq(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
+        return new CompiledInput(
+            `util.eq(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     case 'operator_gt': {
-        return `util.gt(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
+        return new CompiledInput(
+            `util.gt(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     case 'operator_ge': {
-        return `util.ge(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`;
+        return new CompiledInput(
+            `util.ge(${args.OPERAND1.asString()}, ${args.OPERAND2.asString()})`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     case 'operator_and': {
-        return `${args.OPERAND1 ? args.OPERAND1.asBoolean() : 'false'} && ${args.OPERAND2 ? args.OPERAND2.asBoolean() : 'false'}`;
+        return new CompiledInput(
+            `${args.OPERAND1.asBoolean()} && ${args.OPERAND2.asBoolean()}`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     case 'operator_or': {
-        return `${args.OPERAND1 ? args.OPERAND1.asBoolean() : 'false'} || ${args.OPERAND2 ? args.OPERAND2.asBoolean() : 'false'}`;
+        return new CompiledInput(
+            `${args.OPERAND1.asBoolean()} || ${args.OPERAND2.asBoolean()}`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     case 'operator_not': {
-        return `!${args.OPERAND ? args.OPERAND.asBoolean() : 'false'}`;
+        return new CompiledInput(
+            `!${args.OPERAND.asBoolean()}`,
+            CompiledInput.TYPE_BOOLEAN,
+            false
+        );
     }
     // Functions
-    case 'procedures_call_return':
+    case 'procedures_call_return': {
+        // get parameters
+        const [_paramNames, _paramIds, _paramDefaults] = await getProcedureParamNamesIdsAndDefaults(block.mutation.proccode);
+        const definitionId = await getProcedureDefinition(block.mutation.proccode);
+        if (!definitionId) return `/*headless call ${block.mutation.proccode}*/`;
+        
+        const params = args.mutation.join(', ');
+        const base =  `yield* f${hash(block.mutation.proccode)}(util, [${params}])`;
+        
+        if (dependencies.has(hash(block.mutation.proccode))) {
+            return new CompiledInput(
+                base,
+                CompiledInput.TYPE_STRING,
+                false
+            );
+        }
+        dependencies.add(hash(block.mutation.proccode));
+        
+        output(_paramNames, _paramIds, _paramDefaults, definitionId);
+        return generateStack(definitionId, block.mutation.warp === 'true', _paramNames)
+            .then((snippet) => {
+                self.postMessage({
+                    operation: 'procedure',
+                    content: {
+                        name: hash(block.mutation.proccode),
+                        entry: entryBlock,
+                        code: snippet,
+                        id: myId
+                    }
+                });
+                return new CompiledInput(
+                    base,
+                    CompiledInput.TYPE_STRING,
+                    false
+                );
+            })
+            .catch(e => {
+                self.postMessage({
+                    operation: 'error',
+                    content: {
+                        name: hash(block.mutation.proccode),
+                        error: e,
+                        id: myId
+                    }
+                });
+            });
+    }
     case 'procedures_call': {
         // get parameters
         const [_paramNames, _paramIds, _paramDefaults] = await getProcedureParamNamesIdsAndDefaults(block.mutation.proccode);
@@ -314,11 +429,11 @@ async function generateBlock (blockId, isWarp, paramNames) {
         const base =  `yield* f${hash(block.mutation.proccode)}(util, [${params}])`;
         
         if (dependencies.has(hash(block.mutation.proccode))) return base;
+        dependencies.add(hash(block.mutation.proccode));
         
         output(_paramNames, _paramIds, _paramDefaults, definitionId);
         return generateStack(definitionId, block.mutation.warp === 'true', _paramNames)
             .then((snippet) => {
-                dependencies.add(hash(block.mutation.proccode));
                 self.postMessage({
                     operation: 'procedure',
                     content: {
@@ -354,6 +469,13 @@ async function generateBlock (blockId, isWarp, paramNames) {
             output(`input of block ${blockId} is `, input);
             convertedInput.push(`${name}: ${input.asString()}`);
         }
+        if (asReporter) {
+            return new CompiledInput(
+                `yield* util.runInCompatibilityLayer("${block.opcode}", {${convertedInput.join(', ')}}, ${isWarp || false})`,
+                CompiledInput.TYPE_DYNAMIC,
+                false
+            );
+        }
         return `yield* util.runInCompatibilityLayer("${block.opcode}", {${convertedInput.join(', ')}}, ${isWarp || false})`;
     }
     }
@@ -383,8 +505,8 @@ async function processArguments (block, paramNames) {
                     const inputBlock = await getBlock(input.block);
                     args.mutation.push(`"${(await decodeInput(inputBlock, '%', paramNames)).value}"`);
                 } else {
-                    const targetCode = await generateBlock(input.block);
-                    args.mutation.push(`"" +(${targetCode})`);
+                    const targetCode = await generateBlock(input.block, paramNames, false, true);
+                    args.mutation.push(`"" +(${targetCode.asSafe()})`);
                 }
             }
         }
@@ -549,11 +671,7 @@ async function decodeInput (inputBlock, name, paramNames) {
             if (inputs.length === 0 && fields.length === 1) {
                 if (fields[0] === 'VARIABLE' || fields[0] === 'LIST') {
                     const result = await generateBlock(inputBlock.id);
-                    return new CompiledInput(
-                        result,
-                        CompiledInput.TYPE_DYNAMIC,
-                        false
-                    );
+                    return result;
                 }
                 return new CompiledInput(
                     inputBlock.fields[fields[0]].value,
@@ -563,12 +681,8 @@ async function decodeInput (inputBlock, name, paramNames) {
             }
             
             // For most cases, this is a nested input.
-            const result = await generateBlock(inputBlock.id);
-            return new CompiledInput(
-                result,
-                CompiledInput.TYPE_DYNAMIC,
-                false
-            );
+            const result = await generateBlock(inputBlock.id, false, paramNames, true);
+            return result;
         } catch (e) {
             throw new Error(`cannot generate input ${inputBlock.opcode}:\n ${e.message}`);
         }
@@ -712,17 +826,21 @@ class CompiledInput {
     static get TYPE_NUMBER () {
         return 1;
     }
-
-    static get TYPE_STRING () {
+    
+    static get TYPE_NUMBER_NAN () {
         return 2;
     }
 
-    static get TYPE_BOOLEAN () {
+    static get TYPE_STRING () {
         return 3;
     }
 
-    static get TYPE_DYNAMIC () {
+    static get TYPE_BOOLEAN () {
         return 4;
+    }
+
+    static get TYPE_DYNAMIC () {
+        return 5;
     }
     
     // from src/util/cast.js
@@ -752,6 +870,11 @@ class CompiledInput {
     raw () {
         return this.value;
     }
+    
+    asSafe () {
+        if (this.constant) return this.asString();
+        return this.raw();
+    }
 
     asString () {
         if (this.type === CompiledInput.TYPE_ALWAYS_NUMBER) return this.value;
@@ -772,6 +895,7 @@ class CompiledInput {
 
     asNumber () {
         if (this.type === CompiledInput.TYPE_NUMBER) return this.value;
+        if (this.type === CompiledInput.TYPE_NUMBER_NAN) return this.asPureNumber();
         if (this.constant) return this.asPureNumber();
         return `(+(${this.value}))`;
     }

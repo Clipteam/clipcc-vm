@@ -39,12 +39,6 @@ class RenderedTarget extends Target {
         this.drawableID = null;
 
         /**
-         * object that used for store audio.
-         * @type {?Number}
-         */
-        this.audio = new Audio();
-
-        /**
          * Drag state of this rendered target. If true, x/y position can't be
          * changed by blocks.
          * @type {boolean}
@@ -1019,8 +1013,6 @@ class RenderedTarget extends Target {
      * Stop all sounds and clear graphic effects.
      */
     onStopAll () {
-        this.audio.pause();
-        this.audio.currentTime = 0;
         this.clearEffects();
     }
 

@@ -2,7 +2,7 @@
  * @fileoverview
  * Convert block stack to generator function.
  */
-
+const WebWorker = require('web-worker');
 const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 const workerScript = require('./compiler-worker');
 
@@ -27,14 +27,13 @@ class Compiler {
      * @param {number} workerId
      */
     createWorker (workerId) {
-        if (!window.Worker) {
-            console.error('Browser does not support Worker.');
-            return;
-        }
-        
         // create worker from string
         const scriptBlob = new Blob([workerScript], {type: "text/javascript"});
-        const worker = new Worker(window.URL.createObjectURL(scriptBlob));
+        let objectUrl = URL.createObjectURL(scriptBlob);
+        if (typeof window === 'undefined') {
+            objectUrl = 'src/engine/compiler-worker';
+        }
+        const worker = new WebWorker(objectUrl);
         // listen it
         worker.onmessage = ({data}) => {
             const { operation, content } = data;

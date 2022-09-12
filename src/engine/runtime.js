@@ -1948,9 +1948,11 @@ class Runtime extends EventEmitter {
         // @todo clear out extensions? turboMode? etc.
 
         // cc - Clear skins in renderer
-        this.renderer._allSkins.forEach(skin => {
-            if (skin && skin.constructor.name !== 'PenSkin') this.renderer.destroySkin(skin._id);
-        });
+        if (this.renderer) {
+            this.renderer._allSkins.forEach(skin => {
+                if (skin && skin.constructor.name !== 'PenSkin') this.renderer.destroySkin(skin._id);
+            });
+        }
 
         // *********** Cloud *******************
 

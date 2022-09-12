@@ -33,10 +33,10 @@
     }
   },
   "tap": {
-      "branches": 60,
-      "functions": 70,
-      "lines": 70,
-      "statements": 70
+    "branches": 60,
+    "functions": 70,
+    "lines": 70,
+    "statements": 70
   },
   "dependencies": {
     "@vernier/godirect": "1.5.0",
@@ -59,6 +59,7 @@
     "scratch-translate-extension-languages": "0.0.20191118205314",
     "socket.io-client": "2.0.4",
     "text-encoding": "0.7.0",
+    "web-worker": "^1.2.0",
     "worker-loader": "^1.1.1"
   },
   "peerDependencies": {
@@ -89,8 +90,8 @@
     "scratch-audio": "latest",
     "scratch-render": "latest",
     "scratch-render-fonts": "latest",
-    "scratch-svg-renderer": "latest",
     "scratch-storage": "2.0.2",
+    "scratch-svg-renderer": "latest",
     "script-loader": "0.7.2",
     "stats.js": "0.17.0",
     "tap": "16.2.0",

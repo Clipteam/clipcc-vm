@@ -274,7 +274,7 @@ class Scratch3DataBlocks {
     }
 
     listContainsItem (args, util) {
-        return _listContainsItem(args.LIST.id, args.LIST.name, args.ITEM, util);
+        return this._listContainsItem(args.LIST.id, args.LIST.name, args.ITEM, util);
     }
     
     _listContainsItem (id, name, item, util) {

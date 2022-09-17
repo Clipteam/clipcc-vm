@@ -1,5 +1,6 @@
 const Thread = require('./thread');
 const Timer = require('../util/timer');
+const Cast = require('../util/cast');
 
 /**
  * @fileoverview
@@ -7,8 +8,16 @@ const Timer = require('../util/timer');
  * runtime, thread, target, and convenient methods.
  */
 
+const isPromise = function (value) {
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        typeof value.then === 'function'
+    );
+};
+
 class BlockUtility {
-    constructor (sequencer = null, thread = null, version = null, block = null) {
+    constructor (sequencer = null, thread = null, block = null) {
         /**
          * A sequencer block primitives use to branch or start procedures with
          * @type {?Sequencer}
@@ -256,4 +265,186 @@ class BlockUtility {
     }
 }
 
-module.exports = BlockUtility;
+class CompiledBlockUtility extends BlockUtility {
+    constructor (...params) {
+        super(...params);
+        this.refreshCounter = 0;
+    }
+    
+    /**
+     * Create a new timer then return it.
+     * @returns {Timer} a timer instance.
+     */
+    getTimer () {
+        const t = new Timer({
+            now: () => this.thread.target.runtime.currentMSecs
+        });
+        t.start();
+        return t;
+    }
+    
+    /**
+     * Whether need to be refresh for prevent render thread being blocked.
+     * @returns {boolean}
+     */
+    needRefresh () {
+        this.refreshCounter++;
+        if (this.refreshCounter >= 100) {
+            this.refreshCounter = 0;
+            // src/engine/sequencer.js:63
+            return this.thread.target.runtime.sequencer.timer.timeElapsed() > 500;
+        }
+        return false;
+    }
+    
+    /**
+     * Try to simulate an environment that is as close to the original operating mode as possible to run a certain block.
+     * This method should only be used without special compilation optimizations for this block.
+     * @param {string} opcode - block's opcode
+     * @param {object} inputs - block's arguments
+     * @param {boolean} isWarp - Whether to run without refreshing the screen
+     * @returns {any} The return value of the block.
+     */
+    * runInCompatibilityLayer (opcode, inputs, isWarp) {
+        // just use it one time, we should reset it to avoid issues
+        this.thread.stackFrames[this.thread.stackFrames.length - 1].reuse(isWarp);
+        
+        // get block function
+        const blockFunction = this.runtime.getOpcodeFunction(opcode);
+        if (!blockFunction) {
+            console.warn('no-op block ' + opcode, ', skip it.');
+            return;
+        }
+        
+        let reported = blockFunction(inputs, this);
+        // Set callbacks for promise blocks
+        if (isPromise(reported)) {
+            reported.then(value => {
+                this.thread.status = Thread.STATUS_RUNNING;
+                reported = value;
+            }).catch(e => {
+                this.thread.status = Thread.STATUS_RUNNING;
+                console.error('Promise rejected in compatibility layer:', e);
+                reported = null;
+            });
+            this.thread.status = Thread.STATUS_PROMISE_WAIT;
+        }
+        
+        while (this.thread.status !== Thread.STATUS_RUNNING) {
+            if (this.thread.status === Thread.STATUS_YIELD_TICK) {
+                // always yield when It's yield tick.
+                yield;
+                reported = blockFunction(inputs, this);
+            } else if (this.thread.status === Thread.STATUS_YIELD) {
+                this.thread.status = Thread.STATUS_RUNNING;
+                if (!isWarp || this.needRefresh()) yield;
+                reported = blockFunction(inputs, this);
+            } else {
+                // It's a promise, yield it.
+                if (!isWarp || this.needRefresh()) yield;
+            }
+        }
+        
+        return reported;
+    }
+    
+    /**
+     * waiting until all threads specified have completed execution.
+     * params {Thread[]} threads - All threads that need to be waited
+     */
+    * waitThreads (threads) {
+        const { runtime } = this.sequencer;
+        while (true) {
+            let isFinished = true;
+            for (const thread of threads) {
+                if (runtime.threads.includes(thread)) {
+                    isFinished = false;
+                    break;
+                }
+            }
+            if (isFinished) return;
+            let allWaiting = true;
+            for (const thread of threads) {
+                if (!runtime.isWaitingThread(thread)) {
+                    allWaiting = false;
+                    break;
+                }
+            }
+        if (allWaiting) thread.status = Thread.STATUS_YIELD_TICK;
+        yield;
+        }
+    }
+    
+    yield () {
+        this.thread.status = Thread.STATUS_YIELD;
+    }
+    
+    toBoolean (value) {
+        return Cast.toBoolean(value);
+    }
+    
+    lt (v1, v2) {
+        let n1 = +v1;
+        let n2 = +v2;
+        if (n1 === 0 && Cast.isWhiteSpace(v1)) n1 = NaN;
+        else if (n2 === 0 && Cast.isWhiteSpace(v2)) n2 = NaN;
+        if (isNaN(n1) || isNaN(n2)) {
+            const s1 = ('' + v1).toLowerCase();
+            const s2 = ('' + v2).toLowerCase();
+            return s1 < s2;
+        }
+        return n1 < n2;
+    }
+    
+    le (v1, v2) {
+        let n1 = +v1;
+        let n2 = +v2;
+        if (n1 === 0 && Cast.isWhiteSpace(v1)) n1 = NaN;
+        else if (n2 === 0 && Cast.isWhiteSpace(v2)) n2 = NaN;
+        if (isNaN(n1) || isNaN(n2)) {
+            const s1 = ('' + v1).toLowerCase();
+            const s2 = ('' + v2).toLowerCase();
+            return s1 <= s2;
+        }
+        return n1 <= n2;
+    }
+    
+    gt (v1, v2) {
+        let n1 = +v1;
+        let n2 = +v2;
+        if (n1 === 0 && Cast.isWhiteSpace(v1)) n1 = NaN;
+        else if (n2 === 0 && Cast.isWhiteSpace(v2)) n2 = NaN;
+        if (isNaN(n1) || isNaN(n2)) {
+            const s1 = ('' + v1).toLowerCase();
+            const s2 = ('' + v2).toLowerCase();
+            return s1 > s2;
+        }
+        return n1 > n2;
+    }
+    
+    ge (v1, v2) {
+        let n1 = +v1;
+        let n2 = +v2;
+        if (n1 === 0 && Cast.isWhiteSpace(v1)) n1 = NaN;
+        else if (n2 === 0 && Cast.isWhiteSpace(v2)) n2 = NaN;
+        if (isNaN(n1) || isNaN(n2)) {
+            const s1 = ('' + v1).toLowerCase();
+            const s2 = ('' + v2).toLowerCase();
+            return s1 >= s2;
+        }
+        return n1 >= n2;
+    }
+    
+    eq (v1, v2) {
+        const n1 = +v1;
+        if (isNaN(n1) || (n1 === 0 && Cast.isWhiteSpace(v1))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
+        const n2 = +v2;
+        if (isNaN(n2) || (n2 === 0 && Cast.isWhiteSpace(v2))) return ('' + v1).toLowerCase() === ('' + v2).toLowerCase();
+        return n1 === n2;
+    }
+}
+
+module.exports = {
+    BlockUtility,
+    CompiledBlockUtility
+};

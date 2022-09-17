@@ -7,7 +7,8 @@ const BlocksRuntimeCache = require('./blocks-runtime-cache');
 const BlockType = require('../extension-support/block-type');
 const Profiler = require('./profiler');
 const Sequencer = require('./sequencer');
-const execute = require('./execute.js');
+const Compiler = require('./compiler');
+const { execute } = require('./execute.js');
 const ScratchBlocksConstants = require('./scratch-blocks-constants');
 const TargetType = require('../extension-support/target-type');
 const Thread = require('./thread');
@@ -199,6 +200,12 @@ class Runtime extends EventEmitter {
          * @type {String}
          */
         this.version = 'unknown';
+        
+        /**
+         * How many workers should be created for compiler
+         * type {number}
+         */
+        this.compileWorker = 4;
 
         /**
          * A list of threads that are currently running in the VM.
@@ -209,6 +216,9 @@ class Runtime extends EventEmitter {
 
         /** @type {!Sequencer} */
         this.sequencer = new Sequencer(this);
+        
+        /** @type {!Compiler} */
+        this.compiler = new Compiler(this);
 
         /**
          * Storage container for flyout blocks.
@@ -229,6 +239,12 @@ class Runtime extends EventEmitter {
          * @type {?Target}
          */
         this._editingTarget = null;
+        
+        /**
+         * Store block packages
+         * used by compiled scripts
+         */
+         this.packageInstances = {};
 
         /**
          * Map to look up a block primitive's implementation function by its opcode.
@@ -302,9 +318,21 @@ class Runtime extends EventEmitter {
 
         /**
          * Whether the project is in "turbo mode."
-         * @type {Boolean}
+         * @type {boolean}
          */
         this.turboMode = false;
+        
+        /**
+         * Whether use compiler instead of sequencer.
+         * type {boolean}
+         */
+        this.useCompiler = false;
+         
+         /**
+          * Whether precompile scripts
+          * @type {boolean}
+          */
+        this.precompile = false;
 
         // the framerate of clipcc-vm
         // 60 to match default of compatibility mode off
@@ -314,7 +342,7 @@ class Runtime extends EventEmitter {
          * Whether store settings in .cc3 file
          * @type {boolean}
          */
-         this.storeSettings = false;
+        this.storeSettings = false;
 
         /**
          * Whether the project is in "compatibility mode" (30 TPS).
@@ -425,8 +453,6 @@ class Runtime extends EventEmitter {
          * @type {?string}
          */
         this.origin = null;
-
-        // this._initScratchLink();
     }
 
     /**
@@ -789,6 +815,7 @@ class Runtime extends EventEmitter {
             if (defaultBlockPackages.hasOwnProperty(packageName)) {
                 // @todo pass a different runtime depending on package privilege?
                 const packageObject = new (defaultBlockPackages[packageName])(this);
+                this.packageInstances[packageName] = packageObject;
                 // Collect primitives from package.
                 if (packageObject.getPrimitives) {
                     const packagePrimitives = packageObject.getPrimitives();
@@ -1648,7 +1675,7 @@ class Runtime extends EventEmitter {
 
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
-
+     
     /**
      * Create a thread and push it to the list of threads.
      * @param {!string} id ID of block that starts the stack.
@@ -1669,6 +1696,13 @@ class Runtime extends EventEmitter {
 
         thread.pushStack(id);
         this.threads.push(thread);
+        if (this.useCompiler) {
+            if (!thread.stackClick && !thread.updateMonitor) {
+                this.compiler.submitTask(thread);
+            } else {
+                thread.disableCompiler = true;
+            }
+        }
         return thread;
     }
 
@@ -1918,9 +1952,11 @@ class Runtime extends EventEmitter {
         // @todo clear out extensions? turboMode? etc.
 
         // cc - Clear skins in renderer
-        this.renderer._allSkins.forEach(skin => {
-            if (skin && skin.constructor.name !== 'PenSkin') this.renderer.destroySkin(skin._id);
-        });
+        if (this.renderer) {
+            this.renderer._allSkins.forEach(skin => {
+                if (skin && skin.constructor.name !== 'PenSkin') this.renderer.destroySkin(skin._id);
+            });
+        }
 
         // *********** Cloud *******************
 
@@ -2218,6 +2254,33 @@ class Runtime extends EventEmitter {
             this.start();
         }
     }
+    
+    setCompiler (option) {
+        this.resetAllCaches();
+        this.useCompiler = !!option;
+    }
+    
+    precompileScripts () {
+        this.resetAllCaches();
+        this.allScriptsDo((topBlockId, target) => {
+            const topBlock = target.blocks.getBlock(topBlockId);
+            if (this.getIsHat(topBlock.opcode)) {
+                const thread = new Thread(topBlockId);
+                thread.target = target;
+                thread.blockContainer = target.blocks;
+                this.compiler.submitTask(thread);
+            }
+        })
+    }
+    
+    setPrecompile (option) {
+        this.precompile = !!option;
+    }
+    
+    setWorker (num) {
+        this.compileWorker = num;
+        this.compiler.initialize(this.compileWorker);
+    }
 
     /**
      * Emit glows/glow clears for scripts after a single tick.
@@ -2274,6 +2337,16 @@ class Runtime extends EventEmitter {
             }
         }
         this._scriptGlowsPreviousFrame = finalScriptGlows;
+    }
+    
+    /**
+     * Reset all caches.
+     */
+    resetAllCaches () {
+        for (const target of this.targets) {
+            if (target.isOriginal) target.blocks.resetCache();
+        }
+        this.monitorBlocks.resetCache();
     }
 
     /**
@@ -2575,7 +2648,6 @@ class Runtime extends EventEmitter {
 
         for (const category of this._blockInfo) {
             for (const block of category.blocks) {
-                console.log(block);
                 if (block.info.opcode === extendedOpcode) {
                     return {
                         category: category.id,

@@ -186,7 +186,7 @@ class Compiler {
                             // For procedures, we just store code to be inserted by main script.
                             blockCache.compiledProcedures[content.name] = {
                                 status: 'success',
-                                artifact: `function * f${content.name} (util, params) {\n${content.code}\n}\n`
+                                artifact: `function * ${content.name} (util, params) {\n${content.code}\n}\n`
                             };
                             break;
                         }

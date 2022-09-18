@@ -327,6 +327,12 @@ class Runtime extends EventEmitter {
          * type {boolean}
          */
         this.useCompiler = false;
+        
+        /**
+         * Whether Force back to thread loop after 0.5 seconds in compiler mode
+         * type {boolean}
+         */
+         this.warpTimer = true;
          
          /**
           * Whether precompile scripts

@@ -288,11 +288,12 @@ class CompiledBlockUtility extends BlockUtility {
      * @returns {boolean}
      */
     needRefresh () {
+        if (!this.runtime.warpTimer) return false;
         this.refreshCounter++;
         if (this.refreshCounter >= 100) {
             this.refreshCounter = 0;
             // src/engine/sequencer.js:63
-            return this.thread.target.runtime.sequencer.timer.timeElapsed() > 500;
+            return this.sequencer.timer.timeElapsed() > 500;
         }
         return false;
     }

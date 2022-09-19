@@ -67,7 +67,11 @@ class Sequencer {
      * Step through all threads in `this.runtime.threads`, running them in order.
      * @return {Array.<!Thread>} List of inactive threads after stepping.
      */
-    stepThreads () {
+    async stepThreads () {
+        if (!this.runtime.disableCompiler && this.runtime.waitingCompile) {
+            await this.runtime.compiler.compilerPromise;
+        }
+        
         // Work time is 75% of the thread stepping interval.
         const WORK_TIME = 0.75 * this.runtime.currentStepTime;
         // For compatibility with Scatch 2, update the millisecond clock
@@ -179,11 +183,9 @@ class Sequencer {
      */
     stepThread (thread) {
         // If thread is compiled, execute it. otherwise we disable compilation for this thread.
-        if (thread.compiledArtifact && !thread.disableCompiler) {
+        if (!thread.disableCompiler && thread.compiledArtifact) {
             if (executeCompiled(this, thread).done) this.retireThread(thread);
             return;
-        } else {
-            thread.disableCompiler = true;
         }
         
         let currentBlockId = thread.peekStack();

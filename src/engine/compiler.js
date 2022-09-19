@@ -12,7 +12,7 @@ class Compiler {
         this.waitingToCompile = [];
         this.workers = [];
         this._initialized = false;
-        window.compileWorkers = this.workers;
+        this.compilerPromise = Promise.resolve();
     }
     
     /**
@@ -40,7 +40,7 @@ class Compiler {
         }
         const worker = new WebWorker(objectUrl);
         // listen it
-        worker.onmessage = ({data}) => {
+        worker.onmessage = async ({data}) => {
             const { operation, content } = data;
             switch (operation) {
             // triggerred when worker cannot find blocks in its blockContainer.
@@ -138,6 +138,7 @@ class Compiler {
             // ------------
             // triggerred when code had been generated.
             case 'generated': {
+                console.log(this.waitingToCompile);
                 try {
                     for (const taskId in this.waitingToCompile) {
                         const task = this.waitingToCompile[taskId];
@@ -171,6 +172,7 @@ class Compiler {
                 // release worker then perform the next task.
                 this.workers[content.id].available = true;
                 if (this.waitingToCompile.length > 0) this.check();
+                else this.releasePromise();
                 
                 break;
             }
@@ -218,6 +220,7 @@ class Compiler {
                 }
                 
                 if (this.waitingToCompile.length > 0) this.check();
+                else this.releasePromise();
                 break;
             }
             default: 
@@ -272,6 +275,9 @@ class Compiler {
             thread
         };
         this.waitingToCompile.push(task);
+        this.compilerPromise = new Promise(resolve => {
+            this.releasePromise = resolve;
+        });
         this.checkForTask(this.waitingToCompile[this.waitingToCompile.length - 1]);
         
         // console.log(this.waitingToCompile);

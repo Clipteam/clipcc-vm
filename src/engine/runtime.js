@@ -339,6 +339,12 @@ class Runtime extends EventEmitter {
           * @type {boolean}
           */
         this.precompile = false;
+        
+        /**
+         * Whether stepping after complication finished.
+         * type {boolean}
+         */
+        this.waitingCompile = false;
 
         // the framerate of clipcc-vm
         // 60 to match default of compatibility mode off
@@ -1743,6 +1749,13 @@ class Runtime extends EventEmitter {
             return newThread;
         }
         this.threads.push(thread);
+        if (this.useCompiler) {
+            if (!thread.stackClick && !thread.updateMonitor) {
+                this.compiler.submitTask(thread);
+            } else {
+                thread.disableCompiler = true;
+            }
+        }
         return thread;
     }
 
@@ -1934,8 +1947,11 @@ class Runtime extends EventEmitter {
         // For compatibility with Scratch 2, edge triggered hats need to be processed before
         // threads are stepped. See ScratchRuntime.as for original implementation
         newThreads.forEach(thread => {
-            execute(this.sequencer, thread);
-            thread.goToNextBlock();
+            // For compiled thread, It's unnecessary to go to next block.
+            if (!thread.compiledArtifact) {
+                execute(this.sequencer, thread);
+                thread.goToNextBlock();
+            }
         });
         return newThreads;
     }
@@ -2128,7 +2144,7 @@ class Runtime extends EventEmitter {
      * Repeatedly run `sequencer.stepThreads` and filter out
      * inactive threads after each iteration.
      */
-    _step () {
+    async _step () {
         if (this.profiler !== null) {
             if (stepProfilerId === -1) {
                 stepProfilerId = this.profiler.idByName('Runtime._step');
@@ -2155,7 +2171,7 @@ class Runtime extends EventEmitter {
             }
             this.profiler.start(stepThreadsProfilerId);
         }
-        const doneThreads = this.sequencer.stepThreads();
+        const doneThreads = await this.sequencer.stepThreads();
         if (this.profiler !== null) {
             this.profiler.stop();
         }

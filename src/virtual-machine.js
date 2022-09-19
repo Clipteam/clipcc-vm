@@ -382,7 +382,10 @@ class VirtualMachine extends EventEmitter {
             .then(validatedInput => this.deserializeProject(validatedInput[0], validatedInput[1]))
             .then(() => this.runtime.emitProjectLoaded())
             .then(() => {
-                if (this.runtime.precompile) this.runtime.precompileScripts();
+                if (!this.runtime.disableCompiler) {
+                    this.runtime.compiler.compilerPromise = Promise.resolve();
+                    if (this.runtime.precompile) this.runtime.precompileScripts();
+                }
             })
             .catch(error => {
                 // Intentionally rejecting here (want errors to be handled by caller)

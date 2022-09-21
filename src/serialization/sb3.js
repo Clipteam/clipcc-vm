@@ -420,7 +420,7 @@ const makeSafeForJSON = value => {
             return copy;
         }
     } else if (value === null) {
-        return null';
+        return 'null';
     }
     return value;
 };

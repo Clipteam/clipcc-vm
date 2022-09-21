@@ -403,7 +403,7 @@ const makeSafeForJSON = value => {
                     const copy = item.slice();
                     for (let i = 0; i < copy.length; i++) {
                         if (copy[i] === null) {
-                            copy[i] = '';
+                            copy[i] = 'null';
                         }
                     }
                     safed[itemId] = copy;
@@ -414,13 +414,13 @@ const makeSafeForJSON = value => {
             const copy = value.slice();
             for (let i = 0; i < copy.length; i++) {
                 if (copy[i] === null) {
-                    copy[i] = '';
+                    copy[i] = 'null';
                 }
             }
             return copy;
         }
     } else if (value === null) {
-        return '';
+        return null';
     }
     return value;
 };

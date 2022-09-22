@@ -513,7 +513,7 @@ async function processArguments (block, paramNames) {
                     const inputBlock = await getBlock(input.block);
                     args.mutation.push(`"${(await decodeInput(inputBlock, '%', paramNames)).value}"`);
                 } else {
-                    const targetCode = await generateBlock(input.block, paramNames, false, true);
+                    const targetCode = await generateBlock(input.block, false, paramNames, true);
                     args.mutation.push(`"" +(${targetCode.asSafe()})`);
                 }
             }

@@ -753,6 +753,14 @@ class Runtime extends EventEmitter {
         return 65536;
     }
 
+    /**
+     * Event name for stage size update.
+     * @const {string}
+     */
+     static get STAGE_SIZE_UPDATE () {
+        return 'STAGE_SIZE_UPDATE';
+    }
+
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
 
@@ -2745,6 +2753,41 @@ class Runtime extends EventEmitter {
             }
         }
         return null;
+    }
+
+    /**
+     * Set stage size to 16:9 or 4:3 aspect ratio.
+     * @param {boolean} is16x9 True if stage size should be 16:9, false if 4:3.
+     * @return {null}
+     */
+    setStageSize (is16x9) {
+        const width = is16x9 ? 640 : 480;
+        const height = is16x9 ? 360 : 360;
+        const deltaX = width - this.stageWidth;
+        const deltaY = width - this.stageHeight;
+        if (this._monitorState.size > 0) {
+            const offsetX = deltaX / 2;
+            const offsetY = deltaY / 2;
+            for (const monitor of this._monitorState.valueSeq()) {
+                const newMonitor = monitor
+                    .set('x', monitor.get('x') + offsetX)
+                    .set('y', monitor.get('y') + offsetY);
+                this.requestUpdateMonitor(newMonitor);
+            }
+            this.emit(Runtime.MONITORS_UPDATE, this._monitorState);
+        }
+        this.stageWidth = width;
+        this.stageHeight = height;
+        
+        if (this.renderer) {
+            this.renderer.setStageSize(
+                -width / 2,
+                width / 2,
+                -height / 2,
+                height / 2
+            );
+        }
+        this.emit(Runtime.STAGE_SIZE_UPDATE, width, height);
     }
 }
 

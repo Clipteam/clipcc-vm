@@ -167,6 +167,9 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.TURBO_MODE_OFF, () => {
             this.emit(Runtime.TURBO_MODE_OFF);
         });
+        this.runtime.on(Runtime.STAGE_SIZE_UPDATE, (width, height) => {
+            this.emit(Runtime.STAGE_SIZE_UPDATE, width, height);
+        })
 
         this.extensionManager = new ExtensionManager(this.runtime);
         this.ccExtensionManager = config.extensionManager;

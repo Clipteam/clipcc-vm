@@ -2757,12 +2757,12 @@ class Runtime extends EventEmitter {
 
     /**
      * Set stage size to 16:9 or 4:3 aspect ratio.
-     * @param {boolean} is16x9 True if stage size should be 16:9, false if 4:3.
+     * @param {boolean} is16to9 True if stage size should be 16:9, false if 4:3.
      * @return {null}
      */
-    setStageSize (is16x9) {
-        const width = is16x9 ? 640 : 480;
-        const height = is16x9 ? 360 : 360;
+    setStageSize (is16to9) {
+        const width = is16to9 ? 640 : 480;
+        const height = is16to9 ? 360 : 360;
         const deltaX = width - this.stageWidth;
         const deltaY = width - this.stageHeight;
         if (this._monitorState.size > 0) {

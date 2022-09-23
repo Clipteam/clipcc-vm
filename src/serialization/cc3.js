@@ -61,7 +61,8 @@ const serialize = function (options, runtime, targetId) {
     // Store settings in meta
     if (runtime.storeSettings) {
         meta.settings = {
-            frameRate: runtime.frameRate
+            frameRate: runtime.frameRate,
+            is16to9: runtime.stageWidth === 640
         }
     }
 
@@ -100,6 +101,12 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         const { settings } = json.meta;
         if (settings.frameRate)
             runtime.setFramerate(parseInt(settings.frameRate));
+        if (settings.is16to9) {
+            runtime.setStageSize(true);
+        }
+        else { 
+            runtime.setStageSize(false);
+        }
     }
 
     // First keep track of the current target order in the json,

@@ -62,7 +62,8 @@ const serialize = function (options, runtime, targetId) {
     if (runtime.storeSettings) {
         meta.settings = {
             frameRate: runtime.frameRate,
-            is16to9: runtime.stageWidth === 640
+            width: runtime.stageWidth,
+            height: runtime.stageHeight
         }
     }
 
@@ -101,11 +102,11 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         const { settings } = json.meta;
         if (settings.frameRate)
             runtime.setFramerate(parseInt(settings.frameRate));
-        if (settings.is16to9) {
-            runtime.setStageSize(true);
+        if (settings.width && settings.height) {
+            runtime.setStageSize(settings.width, settings.height);
         }
         else { 
-            runtime.setStageSize(false);
+            runtime.setStageSize(480, 360);
         }
     }
 

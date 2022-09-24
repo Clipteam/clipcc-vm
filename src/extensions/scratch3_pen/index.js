@@ -793,8 +793,8 @@ class Scratch3PenBlocks {
     printText (args, util) {
         const penSkinId = this._getPenLayerID(); // 获取画笔图层ID
 
-        const width = util.target.runtime.constructor.STAGE_WIDTH;
-        const height = util.target.runtime.constructor.STAGE_HEIGHT;
+        const width = util.target.runtime.stageWidth;
+        const height = util.target.runtime.stageHeight;
         const ctx = this.bitmapCanvas.getContext('2d');
         ctx.clearRect(0, 0, width, height);
         ctx.save();
@@ -821,8 +821,8 @@ class Scratch3PenBlocks {
     drawRect (args, util) {
         const penSkinId = this._getPenLayerID(); // 获取画笔图层ID
 
-        const width = util.target.runtime.constructor.STAGE_WIDTH;
-        const height = util.target.runtime.constructor.STAGE_HEIGHT;
+        const width = util.target.runtime.stageWidth;
+        const height = util.target.runtime.stageHeight;
         const ctx = this.bitmapCanvas.getContext('2d');
         ctx.clearRect(0, 0, width, height);
         ctx.save();

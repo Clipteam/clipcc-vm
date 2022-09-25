@@ -86,6 +86,8 @@ class Scratch3SensingBlocks {
             sensing_turnoffturbomode: (args, util) => {
                 this.setTurboMode(false);
             },
+            sensing_stage_width: (args, util) => this.runtime.stageWidth,
+            sensing_stage_height: (args, util) => this.runtime.stageHeight,
             sensing_isturbomode: (args, util) => this.runtime.turboMode,
             sensing_distancebetweenposition: this.distanceBetweenPosition,
             sensing_directionbetweenposition: this.directionBetweenPosition,

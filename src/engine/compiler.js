@@ -149,6 +149,9 @@ class Compiler {
                             // insert dependencies to code
                             let insertedCode = `const { packageInstances } = util.runtime\n` + content.code;
                             for (const dependency of content.dependencies) {
+                                if (!blockCache.compiledProcedures[dependency]) {
+                                    throw new Error('unknown function name: ' + dependency);
+                                }
                                 insertedCode += '\n' + blockCache.compiledProcedures[dependency].artifact;
                             }
                             
@@ -167,6 +170,17 @@ class Compiler {
                     }
                 } catch (e) {
                     console.error('cannot create function from code', e);
+                    for (const taskId in this.waitingToCompile) {
+                        const task = this.waitingToCompile[taskId];
+                        if (task.id === content.entry) {
+                            const blockCache = task.thread.blockContainer._cache;
+                            task.thread.disableCompiler = true;
+                                blockCache.compiledScripts[content.entry] = {
+                                status: 'error'
+                            };
+                        }
+                        break;
+                    }
                 }
                 
                 // release worker then perform the next task.
@@ -219,6 +233,7 @@ class Compiler {
                     }
                 }
                 
+                this.workers[content.id].available = true;
                 if (this.waitingToCompile.length > 0) this.check();
                 else this.releasePromise();
                 break;

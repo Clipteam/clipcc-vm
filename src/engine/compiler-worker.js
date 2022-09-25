@@ -361,26 +361,36 @@ async function generateBlock (blockId, isWarp, paramNames, asReporter) {
     }
     case 'operator_and': {
         return new CompiledInput(
-            `${args.OPERAND1.asBoolean()} && ${args.OPERAND2.asBoolean()}`,
+            `${args.OPERAND1? args.OPERAND1.asBoolean() : false} && ${args.OPERAND2? args.OPERAND2.asBoolean() : false}`,
             CompiledInput.TYPE_BOOLEAN,
             false
         );
     }
     case 'operator_or': {
         return new CompiledInput(
-            `${args.OPERAND1.asBoolean()} || ${args.OPERAND2.asBoolean()}`,
+            `${args.OPERAND1? args.OPERAND1.asBoolean() : false} || ${args.OPERAND2? args.OPERAND2.asBoolean() : false}`,
             CompiledInput.TYPE_BOOLEAN,
             false
         );
     }
     case 'operator_not': {
         return new CompiledInput(
-            `!${args.OPERAND.asBoolean()}`,
+            `!${args.OPERAND? args.OPERAND.asBoolean() : false}`,
             CompiledInput.TYPE_BOOLEAN,
             false
         );
     }
     // Functions
+    case 'argument_reporter_boolean':
+    case 'argument_reporter_string_number': {
+        // follow the original logic of Scratch
+        const index = paramNames ? paramNames.lastIndexOf(inputBlock.fields.VALUE.value) : 0;
+        return new CompiledInput(
+            `(params[${index}] || 0)`,
+            CompiledInput.TYPE_STRING,
+            false
+        );
+    }
     case 'procedures_call_return': {
         // get parameters
         const [_paramNames, _paramIds, _paramDefaults] = await getProcedureParamNamesIdsAndDefaults(block.mutation.proccode);
@@ -511,7 +521,7 @@ async function processArguments (block, paramNames) {
                 }
                 if (input.block === input.shadow) { // Non-nested reporter, get the value directly
                     const inputBlock = await getBlock(input.block);
-                    args.mutation.push(`"${(await decodeInput(inputBlock, '%', paramNames)).value}"`);
+                    args.mutation.push(`${(await decodeInput(inputBlock, '%', paramNames)).value}`);
                 } else {
                     const targetCode = await generateBlock(input.block, false, paramNames, true);
                     args.mutation.push(`"" +(${targetCode.asSafe()})`);
@@ -575,21 +585,10 @@ async function decodeInput (inputBlock, name, paramNames) {
     }
     
     switch (inputBlock.opcode) {
-    // function
-    case 'argument_reporter_boolean':
-    case 'argument_reporter_string_number': {
-        // follow the original logic of Scratch
-        const index = paramNames ? paramNames.lastIndexOf(inputBlock.fields.VALUE.value) : 0;
-        return new CompiledInput(
-            `(params[${index}] || 0)`,
-            CompiledInput.TYPE_STRING,
-            false
-        )
-    }
     // basic
     case 'colour_picker': {
         return new CompiledInput(
-            inputBlock.fields.COLOUR.value,
+            `"${inputBlock.fields.COLOUR.value}"`,
             CompiledInput.TYPE_ALWAYS_NUMBER,
             true
         );
@@ -607,7 +606,7 @@ async function decodeInput (inputBlock, name, paramNames) {
     }
     case 'text': {
         return new CompiledInput(
-            inputBlock.fields.TEXT.value,
+            `"${inputBlock.fields.TEXT.value}"`,
             CompiledInput.TYPE_STRING,
             true
         );
@@ -615,7 +614,7 @@ async function decodeInput (inputBlock, name, paramNames) {
     // menu
     case 'sound_sounds_menu': {
         return new CompiledInput(
-            inputBlock.fields.SOUND_MENU.value,
+            `"${inputBlock.fields.SOUND_MENU.value}"`,
             CompiledInput.TYPE_STRING,
             true
         );
@@ -623,7 +622,7 @@ async function decodeInput (inputBlock, name, paramNames) {
     case 'event_broadcast_menu': {
         const broadcastOption = inputBlock.fields.BROADCAST_OPTION;
         const broadcastVariable = await lookupBroadcastMsg(broadcastOption.id, broadcastOption.value);
-        const result = broadcastVariable ? `${broadcastVariable.name}` : '';
+        const result = broadcastVariable ? `"${broadcastVariable.name}"` : '';
         return new CompiledInput(
             result,
             CompiledInput.TYPE_STRING,
@@ -639,11 +638,11 @@ async function decodeInput (inputBlock, name, paramNames) {
             const fields = Object.keys(inputBlock.fields);
             if (inputs.length === 0 && fields.length === 1) {
                 if (fields[0] === 'VARIABLE' || fields[0] === 'LIST') {
-                    const result = await generateBlock(inputBlock.id);
+                    const result = await generateBlock(inputBlock.id, false, paramNames, true);
                     return result;
                 }
                 return new CompiledInput(
-                    inputBlock.fields[fields[0]].value,
+                    `"${inputBlock.fields[fields[0]].value}"`,
                     CompiledInput.TYPE_STRING,
                     true
                 );
@@ -771,21 +770,7 @@ class CompiledInput {
     constructor (value, type, constant = false) {
         this.type = type;
         this.constant = constant;
-        if (this.constant) {
-            switch (type) {
-            case CompiledInput.TYPE_ALWAYS_NUMBER:
-            case CompiledInput.TYPE_NUMBER:
-                this.value = CompiledInput.toNumber(value);
-                break;
-            case CompiledInput.TYPE_BOOLEAN:
-                this.value = CompiledInput.toBoolean(value);
-                break;
-            default:
-                this.value = value;
-            }
-        } else {
-            this.value = value;
-        }
+        this.value = value;
     }
 
     static get TYPE_ALWAYS_NUMBER () {
@@ -812,17 +797,6 @@ class CompiledInput {
         return 5;
     }
     
-    // from src/util/cast.js
-    static toNumber (value) {
-        if (typeof value === 'number') {
-            if (Number.isNaN(value)) return 0;
-            return value;
-        }
-        const n = Number(value);
-        if (Number.isNaN(n)) return 0;
-        return n;
-    }
-    
     static toBoolean (value) {
         if (typeof value === 'boolean') return value;
         if (typeof value === 'string') {
@@ -847,8 +821,8 @@ class CompiledInput {
 
     asString () {
         if (this.type === CompiledInput.TYPE_ALWAYS_NUMBER) return this.value;
-        if (this.constant) return JSON.stringify(`${this.value}`);
         if (this.type === CompiledInput.TYPE_STRING) return this.value;
+        if (this.constant) return JSON.stringify(`${this.value}`);
         return `("" + (${this.value}))`;
     }
 

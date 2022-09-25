@@ -344,7 +344,7 @@ class Runtime extends EventEmitter {
          * Whether stepping after complication finished.
          * type {boolean}
          */
-        this.waitingCompile = false;
+        this._waitingCompile = false;
 
         // the framerate of clipcc-vm
         // 60 to match default of compatibility mode off
@@ -857,6 +857,15 @@ class Runtime extends EventEmitter {
 
     getMonitorState () {
         return this._monitorState;
+    }
+    
+    get waitingCompile () {
+        return this._waitingCompile;
+    }
+    
+    set waitingCompile (value) {
+        this._waitingCompile = value;
+        if (this.compiler.releasePromise) this.compiler.releasePromise();
     }
 
     /**

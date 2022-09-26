@@ -3,7 +3,6 @@
  * Convert block stack to generator function.
  */
 const WebWorker = require('web-worker');
-const GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 const workerScript = require('./compiler-worker');
 
 class Compiler {
@@ -138,104 +137,65 @@ class Compiler {
             // ------------
             // triggerred when code had been generated.
             case 'generated': {
-                console.log(this.waitingToCompile);
+                const [taskId, task] = this._lookupTaskFromEntry(content.entry);
                 try {
-                    for (const taskId in this.waitingToCompile) {
-                        const task = this.waitingToCompile[taskId];
-                        
-                        if (task.id === content.entry) {
-                            const blockCache = task.thread.blockContainer._cache;
-                            
-                            // insert dependencies to code
-                            let insertedCode = `const { packageInstances } = util.runtime\n` + content.code;
-                            for (const dependency of content.dependencies) {
-                                if (!blockCache.compiledProcedures[dependency]) {
-                                    throw new Error('unknown function name: ' + dependency);
-                                }
-                                insertedCode += '\n' + blockCache.compiledProcedures[dependency].artifact;
-                            }
-                            
-                            console.log(`[Worker ${content.id} -> Main] ` + 'the final code is \n' + insertedCode);
-                            // store artifact in block cache and target thread.
-                            const func = eval(`'use strict';\n(function scoped(){return function*(util, params){${insertedCode}}})()`);
-                            blockCache.compiledScripts[content.entry] = {
-                                status: 'success',
-                                artifact: func
-                            };
-                            task.thread.compiledArtifact = func;
-                            // delete task
-                            this.waitingToCompile.splice(taskId, 1);
-                            break;
+                    const blockCache = task.thread.blockContainer._cache;
+                    // insert dependencies to code
+                    let insertedCode = `const { packageInstances } = util.runtime\n` + content.code;
+                    for (const dependency of content.dependencies) {
+                        if (!blockCache.compiledProcedures[dependency]) {
+                            throw new Error('unknown function name: ' + dependency);
                         }
+                        insertedCode += '\n' + blockCache.compiledProcedures[dependency].artifact;
                     }
+                            
+                    console.log(`[Worker ${content.id} -> Main] ` + 'the final code is \n' + insertedCode);
+                    // store artifact in block cache and target thread.
+                    const func = eval(`'use strict';\n(function scoped(){return function*(util, params){${insertedCode}}})()`);
+                    blockCache.compiledScripts[content.entry] = {
+                        status: 'success',
+                        artifact: func
+                    };
+                    task.thread.compiledArtifact = func;
                 } catch (e) {
                     console.error('cannot create function from code', e);
-                    for (const taskId in this.waitingToCompile) {
-                        const task = this.waitingToCompile[taskId];
-                        if (task.id === content.entry) {
-                            const blockCache = task.thread.blockContainer._cache;
-                            task.thread.disableCompiler = true;
-                                blockCache.compiledScripts[content.entry] = {
-                                status: 'error'
-                            };
-                        }
-                        break;
-                    }
+                    const blockCache = task.thread.blockContainer._cache;
+                    task.thread.disableCompiler = true;
+                        blockCache.compiledScripts[content.entry] = {
+                        status: 'error'
+                    };
                 }
-                
-                // release worker then perform the next task.
-                this.workers[content.id].available = true;
-                if (this.waitingToCompile.length > 0) this.check();
-                else this.releasePromise();
-                
+                this._recycleTask(taskId, content.id);
                 break;
             }
             // triggerred when procedures had been generated.
             case 'procedure': {
                 console.log(`[Worker ${content.id} -> Main] ` + 'the final procedure is \n' + content.code);
+                const [taskId, task] = this._lookupTaskFromEntry(content.entry);
                 try {
-                    for (const taskId in this.waitingToCompile) {
-                        const task = this.waitingToCompile[taskId];
-                        
-                        if (task.id === content.entry) {
-                            const blockCache = task.thread.blockContainer._cache;
-                            // For procedures, we just store code to be inserted by main script.
-                            blockCache.compiledProcedures[content.name] = {
-                                status: 'success',
-                                artifact: `function * ${content.name} (util, params) {\n${content.code}\n}\n`
-                            };
-                            break;
-                        }
-                    }
+                    const blockCache = task.thread.blockContainer._cache;
+                    // For procedures, we just store code to be inserted by main script.
+                    blockCache.compiledProcedures[content.name] = {
+                        status: 'success',
+                        artifact: `function * ${content.name} (util, params) {\n${content.code}\n}\n`
+                    };
                 } catch (e) {
                     console.error('cannot create procedure', e);
                 }
-                
                 break;
             }
             // triggered when error occurred in worker
             case 'error': {
+                const [taskId, task] = this._lookupTaskFromEntry(content.entry);
                 console.error(`[Worker ${content.id} -> Main] ` + 'error occurred while generating\n', content.error);
-                this.workers[content.id].available = true;
                 
-                for (const taskId in this.waitingToCompile) {
-                    const task = this.waitingToCompile[taskId];
-                        
-                    if (task.id === content.entry) {
-                        // cannot generate code for block stack, disable compiler for it.
-                        const blockCache = task.thread.blockContainer._cache;
-                        task.thread.disableCompiler = true;
-                        blockCache.compiledScripts[content.entry] = {
-                            status: 'error'
-                        };
-                        this.waitingToCompile.splice(taskId, 1);
-                        break;
-                    }
-                }
-                
-                this.workers[content.id].available = true;
-                if (this.waitingToCompile.length > 0) this.check();
-                else this.releasePromise();
+                // cannot generate code for block stack, disable compiler for it.
+                const blockCache = task.thread.blockContainer._cache;
+                task.thread.disableCompiler = true;
+                blockCache.compiledScripts[content.entry] = {
+                    status: 'error'
+                };
+                this._recycleTask(taskId, content.id);
                 break;
             }
             default: 
@@ -267,10 +227,71 @@ class Compiler {
     }
     
     /**
+     * lookup a task from specified entry.
+     * @param {string} entry
+     */
+    _lookupTaskFromEntry (entry) {
+        for (const taskId in this.waitingToCompile) {
+            const task = this.waitingToCompile[taskId];
+            if (task.id === entry) return [taskId, task];
+        }
+        throw new Error('The task pointed to by entry does not exist.');
+    }
+    
+    /**
+     * Recycle a task and worker
+     * @param {string} taskId
+     * @param {string} workerId
+     */
+    _recycleTask (taskId, workerId) {
+        this.waitingToCompile.splice(taskId, 1);
+        this.workers[workerId].available = true;
+        if (this.waitingToCompile.length > 0) this.check();
+        else this.releasePromise();
+    }
+    
+    _readComment (thread) {
+        const options = {
+            disable: false,
+            enable: false,
+            warp: false,
+            debug: false
+        };
+        const topBlock = thread.blockContainer._blocks[thread.topBlock];
+        console.log(topBlock)
+        if (topBlock.comment) {
+            const { text } = thread.target.comments[topBlock.comment];
+            const topLine = text.split('\n')[0];
+            if (!topLine.startsWith('!compiler ')) return options;
+            const units = topLine.slice(10).split(' ');
+            for (const unit of units) {
+                switch (unit) {
+                case 'disable': 
+                    options.disable = true;
+                    break;
+                case 'enable': 
+                    options.enable = true;
+                    break;
+                case 'warp': 
+                    options.warp = true;
+                    break;    
+                case 'debug': 
+                    options.debug = true;
+                    break;
+                }
+            }
+            return options;
+        }
+        return options;
+    }
+    
+    /**
      * just wanna compile a thread.
      * @param {Thread} thread
      */
     submitTask (thread) {
+        const options = this._readComment(thread);
+        if (options.disable) return;
         const blockCache = thread.blockContainer._cache;
         
         // use cache by default

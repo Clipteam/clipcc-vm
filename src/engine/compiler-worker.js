@@ -585,6 +585,17 @@ async function decodeInput (inputBlock, name, paramNames) {
     }
     
     switch (inputBlock.opcode) {
+    // This shouldn't be here, but we had to introduce a redundant generation mechanism here before all the blocks were compiled and optimized.
+    case 'argument_reporter_boolean':
+    case 'argument_reporter_string_number': {
+        // follow the original logic of Scratch
+        const index = paramNames ? paramNames.lastIndexOf(inputBlock.fields.VALUE.value) : 0;
+        return new CompiledInput(
+            `(params[${index}] || 0)`,
+            CompiledInput.TYPE_STRING,
+            false
+        );
+    }
     // basic
     case 'colour_picker': {
         return new CompiledInput(
@@ -648,6 +659,7 @@ async function decodeInput (inputBlock, name, paramNames) {
                 );
             }
             
+            // @todo use Compatibility Layers only for specified blocks.
             // For most cases, this is a nested input.
             const result = await generateBlock(inputBlock.id, false, paramNames, true);
             return result;

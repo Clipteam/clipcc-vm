@@ -109,10 +109,10 @@ class Scratch3OperatorsBlocks {
 
     indexOf (args) {
         const {STRING, SUBSTRING, POS} = args;
-        let index = STRING.indexOf(SUBSTRING);
+        let index = Cast.toString(STRING).indexOf(Cast.toString(SUBSTRING));
         if (index === -1) return -1;
-        for (let i = 0; i < Number(POS) - 1; i++) {
-            index = STRING.indexOf(SUBSTRING, index + 1);
+        for (let i = 0; i < Cast.toNumber(POS) - 1; i++) {
+            index = Cast.toString(STRING).indexOf(Cast.toString(SUBSTRING), index + 1);
             if (index === -1) return -1;
         }
         return index + 1;

@@ -63,7 +63,8 @@ const serialize = function (options, runtime, targetId) {
         meta.settings = {
             frameRate: runtime.frameRate,
             width: runtime.stageWidth,
-            height: runtime.stageHeight
+            height: runtime.stageHeight,
+            fencing: runtime.fencing
         }
     }
 
@@ -107,6 +108,9 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
         }
         else { 
             runtime.setStageSize(480, 360);
+        }
+        if (settings.fencing) {
+            runtime.setFencing(!settings.fencing);
         }
     }
 

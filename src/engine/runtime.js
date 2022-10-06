@@ -426,6 +426,8 @@ class Runtime extends EventEmitter {
          */
         this.origin = null;
 
+        this.fencing = true;
+
         // this._initScratchLink();
     }
 
@@ -762,7 +764,14 @@ class Runtime extends EventEmitter {
      static get STAGE_SIZE_UPDATE () {
         return 'STAGE_SIZE_UPDATE';
     }
-
+    
+    /* 
+     * Event name for fencing update.
+     * @const {string}
+     */
+    static get FENCING_UPDATE () {
+        return 'FENCING_UPDATE';
+    }
     // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
 
@@ -2789,6 +2798,11 @@ class Runtime extends EventEmitter {
             );
         }
         this.emit(Runtime.STAGE_SIZE_UPDATE, width, height);
+    }
+
+    setFencing(isRemove) {
+        this.fencing = !isRemove;
+        this.emit(Runtime.FENCING_UPDATE, this.fencing);
     }
 }
 

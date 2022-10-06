@@ -170,7 +170,9 @@ class VirtualMachine extends EventEmitter {
         this.runtime.on(Runtime.STAGE_SIZE_UPDATE, (width, height) => {
             this.emit(Runtime.STAGE_SIZE_UPDATE, width, height);
         })
-
+        this.runtime.on(Runtime.FENCING_UPDATE, (fencing) => {
+            this.emit(Runtime.FENCING_UPDATE, fencing);
+        })
         this.extensionManager = new ExtensionManager(this.runtime);
         this.ccExtensionManager = config.extensionManager;
 

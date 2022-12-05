@@ -104,6 +104,10 @@ const TURKISH_ID = 'tr';
 const WELSH_ID = 'cy';
 
 /**
+ * 是否支持Web Speech API
+ */
+const IS_SUPPORTED_WEBSPEECH_API = typeof speechSynthesis !== 'undefined';
+/**
  * Class for the text2speech blocks.
  * @constructor
  */
@@ -696,7 +700,6 @@ class Scratch3Text2SpeechBlocks {
 
         let gender = this.VOICE_INFO[state.voiceId].gender;
         let playbackRate = this.VOICE_INFO[state.voiceId].playbackRate;
-
         // Special case for voices where the synthesis service only provides a
         // single gender voice. In that case, always request the female voice,
         // and set special playback rates for the tenor and giant voices.
@@ -713,6 +716,25 @@ class Scratch3Text2SpeechBlocks {
         if (state.voiceId === KITTEN_ID) {
             words = words.replace(/\S+/g, 'meow');
             locale = this.LANGUAGE_INFO[this.DEFAULT_LANGUAGE].speechSynthLocale;
+        }
+
+        if (IS_SUPPORTED_WEBSPEECH_API) {
+            const utter = new SpeechSynthesisUtterance(words);
+            utter.lang = locale;
+            utter.volume = SPEECH_VOLUME;
+            utter.rate = playbackRate;
+            if (gender === TENOR_ID) {
+                utter.pitch = 1;
+            }
+            if (state.voiceId === GIANT_ID) {
+                utter.pitch = 2;
+            }
+
+            return new Promise(resolve => {
+                speechSynthesis.speak(utter);
+                utter.onend = () => resolve();
+                this.runtime.on('PROJECT_STOP_ALL', () => speechSynthesis.cancel());
+            });
         }
 
         // Build up URL
